@@ -104,12 +104,29 @@ secchi
 
 
 #Depth
+# trying both linear and quadratic terms
 mdepth <- glm(snag~depth, data = pool8.barcodes, family = binomial)
+qdepth <- glm(snag~I(depth^2), data = pool8.barcodes, family = binomial)
+summary(qdepth)
 summary(mdepth)
 mmps(mdepth)
+mmps(qdepth)
 
+
+depthvals <- as.data.frame(seq(from = 0, to = 5, by = 0.1))
+names(depthvals) <- "depth"
+depthvals$preds <- predict(qdepth, depthvals, type = "response") #have to include "response" to make it give you probabilities, not log odds. 
+
+# plot the quadratic logistic regression: don't know how to make this work
 ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes$depth),], 
-       aes(x = depth, y = (snag)))+
+       aes(x = depth, y = as.numeric(as.character(snag))))+
+  geom_point(alpha = 0.5)+
+  geom_line(data = depthvals, aes(x = depth, y = preds), col = "blue", size = 1.5)+
+  ggtitle("CWD Presence vs. Depth (Quadratic)")
+
+# plot the regular logistic regression
+ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag)& !is.na(pool8.barcodes$depth),], 
+       aes(x = depth, y = snag))+
   geom_point(alpha = 0.5)+
   geom_smooth(method = "glm", method.args = list(family = "binomial"))+
   ggtitle("CWD Presence vs. Depth")
@@ -120,10 +137,16 @@ summary(mtemp)
 mmps(mtemp)
 
 ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes$temp),], 
-       aes(x = temp, y = (snag)))+
+       aes(x = temp, y = snag))+
   geom_point(alpha = 0.5)+
   geom_smooth(method = "glm", method.args = list(family = "binomial"))+
   ggtitle("CWD Presence vs. Temperature")
 
+
+fullmod <- glm(snag~depth + I(depth^2) + current + stageht + wingdyke + substrt, data = pool8.barcodes, family = binomial)
+summary(fullmod)
+
+partialmod <- glm(snag~ wingdyke + substrt, data = pool8.barcodes, family = binomial)
+summary(partialmod)
 # Want to do a logistic model with multiple predictors of CWD
-# depth, current, substrate (categorical), aquatic habitat (categorical--don't have this yet), velocity, stageht, wingdam (cat.), dyke (cat.)
+# depth, current, substrate (categorical), aquatic habitat (categorical--don't have this yet), stageht, wingdyke (cat)
