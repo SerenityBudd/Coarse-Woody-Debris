@@ -100,8 +100,12 @@ ggmap(m, extent = "panel", legend = "bottomright") +
   geom_point(aes(x = lon, y = lat, color = as.numeric(sdat)),  data = pool8.barcodes %>% filter(snag == 1), size = .5, alpha = .8) +
   scale_x_continuous(limits = c(-91.4, -91.1)) +
   # set the color to get more intense as the date becomes more recent
-  scale_colour_gradient(low = "#FFEBEE", high = "#C62828", breaks = c(7500,10000,12500,15000), labels = c("07/15/90", "05/19/97", "03/23/04", "01/26/11")) +
-  ggtitle("Map of CWD Presence by Time") + xlab("Longitude") + ylab("Latitude") +
+  scale_colour_gradient(low = "#FFEBEE", high = "#C62828", 
+                        breaks = c(7500,10000,12500,15000), 
+                        labels = c("07/15/90", "05/19/97", "03/23/04", "01/26/11")) +
+  ggtitle("Map of CWD Presence by Time") + 
+  xlab("Longitude") + 
+  ylab("Latitude") +
   theme(plot.title = element_text(color="#C62828", size=14, face="bold")) +
   labs(color = "Date of Sampling")
 #ggsave("CWDTime.png", plot = last_plot(), dpi = 1000)
