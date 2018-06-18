@@ -106,3 +106,20 @@ ggmap(m, extent = "panel", legend = "bottomright") +
   theme(plot.title = element_text(color="#C62828", size=14, face="bold")) +
   labs(color = "Date of Sampling")
 #ggsave("CWDTime.png", plot = last_plot(), dpi = 1000)
+
+# Map color coded by wingdyke presence
+#plot map with barcodes by site type
+wingdyke <- ggmap(m)+
+  ggtitle("Pool 8 Barcodes by Wing Dam/Dyke Presence")+
+  xlab("Longitude")+
+  ylab("Latitude")+ 
+  scale_x_continuous(limits = c(-91.4, -91.1))+
+  geom_point(data = pool8.barcodes[!is.na(pool8.barcodes$wingdyke),], 
+             aes(x = lon, y = lat, color = factor(wingdyke)), 
+             size = 1, 
+             alpha = 0.6, 
+             pch = 20)+
+  scale_color_manual(name = "Presence of Wing Dam or Dyke", labels = c("No Wing Dam/Dyke Present", "Wing Dam/Dyke Present"), values=c("darkred", "dodgerblue2"))+
+  guides(color = guide_legend(override.aes = list(size=10)))
+wingdyke
+#ggsave(filename = "wingdyke.png", plot = wingdyke, dpi = 1000)
