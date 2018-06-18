@@ -1,8 +1,19 @@
 ## MAPPING
 # POOL 8 SNAG PRESENCE/ABSENCE BY BARCODE
 library(ggmap)
+<<<<<<< HEAD
 library(wesanderson)
 
+=======
+library(ggplot2)
+
+#read in the pool8 barcodes data.
+pool8.barcodes <- read.csv("pool8.barcodes.csv")
+str(pool8.barcodes)
+# `snag` is an integer; let's change it to a factor
+pool8.barcodes$snag <- factor(pool8.barcodes$snag)
+ 
+>>>>>>> 361f5c41135f9cf4f639f25d2c2eaa46f4123e3b
 #get map of Pool 8
 m <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "terrain", source = "google")
 ggmap(m)
@@ -14,18 +25,20 @@ pool8.barcodes.snagmap <- ggmap(m)+
   ylab("Latitude")+ 
   scale_x_continuous(limits = c(-91.4, -91.1))+
   geom_point(data = pool8.barcodes[pool8.barcodes$snag %in% c(0,1),], 
-             aes(x = lon, y = lat, color = snag), size = 0.4, alpha = 0.8)+
-  scale_color_manual(values=c("#600000", "#ff0000"))+
-  guides(color = guide_legend(override.aes = list(size=8)))
+             aes(x = lon, y = lat, color = snag), 
+             size = 0.4, 
+             alpha = 0.8)+
+  scale_color_manual(values=c("#600000", "#ff0000"))+ #light and dark red
+  guides(color = guide_legend(override.aes = list(size=8))) #legend size
 pool8.barcodes.snagmap
 #ggsave(filename = "pool8.barcodes.snagmap.png", plot = pool8.barcodes.snagmap, dpi = 1000)
-  # Used the code to remove rows where snag was NA. ggmap would have removed them automatically but would have left a factor level for them in the legend, which we don't want.
-  # How do we make the legend a little bigger?
 
 # Dealing with location codes
 ldat <- read.csv("locationdata.csv")
 dim(ldat)
 ldat <- ldat[ldat$Location.code %in% pool8.barcodes$lcode,] 
+ldat
+  # this has information on some of the locations in our data, but most of ours are randomly sampled locations and are not included here.
 
 # This website (https://umesc.usgs.gov/data_library/fisheries/fish_tables.html#starting_year) gives valid UTM northing and easting ranges for Pool 8.   # valid UTM northing range: 4825460-4861343
   # valid UTM easting range: 635661-644991
