@@ -27,13 +27,13 @@ pool8.barcodes.snagmap <- ggmap(m)+
   guides(color = guide_legend(override.aes = list(size=8))) #legend size
 pool8.barcodes.snagmap
 #ggsave(filename = "pool8.barcodes.snagmap.png", plot = pool8.barcodes.snagmap, dpi = 1000)
-  # Used the code to remove rows where snag was NA. ggmap would have removed them automatically but would have left a factor level for them in the legend, which we don't want.
-  # How do we make the legend a little bigger?
 
 # Dealing with location codes
 ldat <- read.csv("locationdata.csv")
 dim(ldat)
 ldat <- ldat[ldat$Location.code %in% pool8.barcodes$lcode,] 
+ldat
+  # this has information on some of the locations in our data, but most of ours are randomly sampled locations and are not included here.
 
 # This website (https://umesc.usgs.gov/data_library/fisheries/fish_tables.html#starting_year) gives valid UTM northing and easting ranges for Pool 8.   # valid UTM northing range: 4825460-4861343
   # valid UTM easting range: 635661-644991
