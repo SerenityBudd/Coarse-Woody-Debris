@@ -1,19 +1,16 @@
 ## MAPPING
 # POOL 8 SNAG PRESENCE/ABSENCE BY BARCODE
 library(ggmap)
-<<<<<<< HEAD
 library(wesanderson)
-
-=======
 library(ggplot2)
 
 #read in the pool8 barcodes data.
 pool8.barcodes <- read.csv("pool8.barcodes.csv")
 str(pool8.barcodes)
+
 # `snag` is an integer; let's change it to a factor
 pool8.barcodes$snag <- factor(pool8.barcodes$snag)
- 
->>>>>>> 361f5c41135f9cf4f639f25d2c2eaa46f4123e3b
+
 #get map of Pool 8
 m <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "terrain", source = "google")
 ggmap(m)
@@ -53,19 +50,14 @@ ve[2]-ve[1] >= re[2]-re[1]
 
 # POOL 8 LOCATION CODES
 
-# If all barcodes are taken from a location, then why are more/different points shown in the barcodes map than in the location codes map? Shouldn't they be the same, but with some points overlapping in the barcodes map?
+# Create subsetted data frame with location and barcode information for easier comparison
 loc <- pool8.barcodes[,names(pool8.barcodes) %in% c("barcode", "site", "fstation", "sitetype", "pool", "utmzone", "utm_e", "utm_n", "gisgrid", "lon", "lat", "lcode")]
 
-# plot only the fixed sites
-pool8.barcodes[pool8.barcodes$sitetype == "subj.perm",]
+# How many fixed sites do we have?
 a <- pool8.barcodes[pool8.barcodes$sitetype == "subj.perm" & !is.na(pool8.barcodes$sitetype), ]
 a <- droplevels(a)
 table(a$lcode) #there are literally only two location codes that are fixed.
 table(a$barcode) #but there are a bunch of barcodes, which makes sense if each of the locations was visited multiple times. 
-    #this shows lots and lots of rows that are entirely NA
-ind <- apply(pool8.barcodes, 1, function(x) all(is.na(x)))
-sum(ind)
-    #this shows zero rows that are entirely NA
 
 #  plot fixed sites only 
 pool8.fixedsites <- ggmap(m)+
@@ -77,6 +69,7 @@ pool8.fixedsites <- ggmap(m)+
 pool8.fixedsites
 
 # check across all the data, not just pool8
+fishdat <- read.csv("ltrm_fish_data.csv")
 b <- droplevels(fishdat[fishdat$sitetype == "2" & !is.na(fishdat$sitetype),])
 table(b$lcode)
 # sure enough, there are more permanent sites in the other pools, just not pool 8.
@@ -86,7 +79,7 @@ table(b$lcode)
 m <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "terrain", source = "google")
 ggmap(m)
 
-#plot map with points on it 
+#plot map with barcodes by site type
 pool8.barcodes.sitetype <- ggmap(m)+
   ggtitle("Pool 8 Barcodes by Site Type")+
   xlab("Longitude")+
@@ -98,7 +91,6 @@ pool8.barcodes.sitetype <- ggmap(m)+
   guides(color = guide_legend(override.aes = list(size=10)))
 pool8.barcodes.sitetype
 #ggsave(filename = "pool8.barcodes.sitetype.png", plot = pool8.barcodes.sitetype, dpi = 1000)
-
 
 
 ###########
