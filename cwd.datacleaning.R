@@ -86,4 +86,5 @@ pool8.barcodes <- as.data.frame(pool8 %>%
                                   group_by(barcode) %>% 
                                   summarize_all(firstel))
 
-# write.csv(pool8.barcodes, "pool8.barcodes.csv", row.names = F)
+save(pool8.barcodes, file = "pool8.barcodes.Rda")
+
