@@ -27,12 +27,12 @@ dim(fishmisc)
 dim(fishreproduction)
 dim(fishtraits)
 
-str(fishdist) # ehh
-str(fishgrowth) # ehhhhhhhh
-str(species) # good
-str(fishmisc) # good
-str(fishreproduction) # ehhh
-str(fishtraits) # good
+str(fishdist)
+str(fishgrowth) 
+str(species) 
+str(fishmisc) 
+str(fishreproduction) 
+str(fishtraits) 
 
 # notice that the first col of every dataframe is the same
 identical(fishdist$Fishcode, fishgrowth$Fishcode, 
@@ -46,18 +46,40 @@ dim(fishinfo)
 str(fishinfo)
 
 
+# exploring the fish distribution data
 table(fishdist$Mid.Range.Latitude, exclude = F)
 table(fishdist$Mean.Range.Latitude, exclude = F)
 table(fishdist$Ubiquity, exclude = F)
 
-# the same fish not in either latitude col
+# the same fish are not in either latitude col
 identical(fishdist[is.na(fishdist$Mid.Range.Latitude),], 
           fishdist[is.na(fishdist$Mean.Range.Latitude),])
 
-# these are the NA fish
+# these are the fish that are NA for both Lat cols
 fishdist[is.na(fishdist$Mid.Range.Latitude),1]
 
-fishinfo$LTRMP.Ten.Year.Rank
+# grabbing the unique fishcodes from the LTRM data
+FishCodes <- as.data.frame(unique(sort(fishdat$fishcode))[-1])
+colnames(FishCodes) <- c("Fishcode")
+
+# the fishcodes in both the LTRM data and fish traits
+intersect(FishCodes[,1], fishinfo[,"Fishcode"])
+
+# the fishcodes in LTRM data not in fish traits
+setdiff(FishCodes[,1], fishinfo[,"Fishcode"])
+
+# the fishcodes in the fishtraits not the LTRM data
+setdiff(fishinfo[,"Fishcode"], FishCodes[,1])
 
 
-fishdat2 <- sort(fishdat$fishcode)
+# knowing this we should think about removing data on fish that are not in both data sets, there is no point in knowing the traits of a fish if their arent int the UMR and we cannot do our analysis on UMR fish if we have no traits data on them
+
+# checking to see if the ones only in LTRM are typos
+
+# all the U- names are "unidentified fish type"
+# UNID is generally unidentified
+# I am assuming WSSN is supposed to be WDSN
+# YOYF is age-0 fish
+# LRVL is larval
+# NFSH is no fish caught
+# SCBC could be SCBS NOT confident
