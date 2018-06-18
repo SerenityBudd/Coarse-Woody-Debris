@@ -4,6 +4,7 @@
 # Some plots of the different barcodes to see relationships between CWD presence and other variables
 library(plyr)
 library(dplyr)
+library(chron)
 load("pool8.barcodes.Rda")
 #Boxplot of current by CWD
 pool8.barcodes %>% filter(is.na(snag) == FALSE) %>% 
@@ -127,3 +128,10 @@ ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes
 
 # Want to do a logistic model with multiple predictors of CWD
 # depth, current, substrate (categorical), aquatic habitat (categorical--don't have this yet), velocity, stageht, wingdam (cat.), dyke (cat.)
+
+plot(pool8.barcodes$sdat[years(pool8.barcodes$sdat) == 1995], pool8.barcodes$temp[years(pool8.barcodes$sdat) == 1995])
+
+plot(pools$period, pools$temp)
+ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)), aes(x = period, y = temp)) +
+  geom_point(alpha = .5) +
+  geom_smooth(method = "loess")
