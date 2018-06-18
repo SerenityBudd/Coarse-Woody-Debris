@@ -1,10 +1,9 @@
 ## Modeling
 
+load("libraries.R")
 ###########
 # Some plots of the different barcodes to see relationships between CWD presence and other variables
-library(plyr)
-library(dplyr)
-library(chron)
+
 load("pool8.barcodes.Rda")
 #Boxplot of current by CWD
 pool8.barcodes %>% filter(is.na(snag) == FALSE) %>% 
@@ -75,7 +74,6 @@ substrt.cwd
 #ggsave(filename = "substrt.cwd.png", plot = substrt.cwd, dpi = 500)
 
 ## Logistic regression for predicting CWD
-library(car)
 
 #Turbidity
 # convert `snag` to numeric for the purposes of logistic regression

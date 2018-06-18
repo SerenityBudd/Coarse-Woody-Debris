@@ -1,9 +1,6 @@
 ## MAPPING
 # POOL 8 SNAG PRESENCE/ABSENCE BY BARCODE
-library(ggmap)
-library(wesanderson)
-library(ggplot2)
-library(chron)
+load("libraries.R")
 
 #read in the pool8 barcodes data.
 load("pool8.barcodes.Rda")

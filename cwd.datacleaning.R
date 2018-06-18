@@ -1,8 +1,8 @@
+load("libraries.R")
+
 fishdat <- read.csv("ltrm_fish_data.csv")
 head(fishdat)
 str(fishdat)
-library(plyr)
-library(dplyr)
 
 # Filter out the rows from pool8 and create the pool 8 dataframe
 pool8 <- fishdat %>%
@@ -38,7 +38,6 @@ pool8$ftime <- as.character(pool8$ftime)
 # change the date and time formats with `hm()` and `mdy()` from the package lubridate
 #pool8$stim <- hm(pool8$stime)
 #pool8$ftim <- hm(pool8$ftime)
-library(chron)
 
 pool8$sdat <- chron(pool8$sdate, format = c(dates = "m/d/y"))
 pool8$fdat <- chron(pool8$fdate, format = c(dates = "m/d/y"))
@@ -48,8 +47,7 @@ pool8$substrt <- recode_factor(pool8$substrt, `1` = "silt", `2` = "Silt/Clay/Lit
 pool8$sitetype <- recode_factor(pool8$sitetype, `0` = "prim.rand", `1` = "alt.rand", `2` = "subj.perm")
 
 # Add lat/long columns
-library(rgdal)
-library(sp)
+
 #project the utm easting and northing onto a CRS using utm zone 15
 sputm <- SpatialPoints(pool8[,c("utm_e", "utm_n")], proj4string = CRS("+proj=utm +zone=15 +datum=WGS84"))
 #transform to latlon, save as a data frame
