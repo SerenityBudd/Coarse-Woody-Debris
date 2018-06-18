@@ -95,7 +95,8 @@ pool8.barcodes.sitetype
 
 ###########
 # Some plots of the different barcodes to see relationships between snags and other things
-
+library(plyr)
+library(dplyr)
 #Boxplot of current by CWD
 pool8.barcodes %>% filter(is.na(snag) == FALSE) %>% 
   ggplot(aes(x=snag, y=current, fill = snag)) +
@@ -115,6 +116,7 @@ logfct.cwd <- pool8.barcodes %>% filter(is.na(snag) == FALSE) %>%
   xlab("Coarse Woody Debris Presence")+
   ylab("Log of Total Number of Fish Caught")+
   guides(fill = FALSE)
+logfct.cwd
 #ggsave(filename = "logfct.cwd.png", plot = logfct.cwd, dpi = 500)
 
   # Make a vector of labels for the site types
@@ -129,6 +131,7 @@ logfct.cwd.facet <- pool8.barcodes %>% filter(is.na(snag) == FALSE) %>%
   ylab("Log of Total Number of Fish Caught")+
   facet_wrap(~sitetype, labeller = labeller(sitetype = labels))+
   guides(fill = FALSE)
+logfct.cwd.facet
 #ggsave(filename = "logfct.cwd.facet.png", plot = logfct.cwd.facet, dpi = 500)
 
 # have this suggestion from here for a loess plot: https://stats.stackexchange.com/questions/45444/how-do-you-visualize-binary-outcomes-versus-a-continuous-predictor
