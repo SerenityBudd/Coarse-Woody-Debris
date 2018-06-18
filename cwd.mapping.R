@@ -162,20 +162,27 @@ substrt.cwd <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na
   xlab("Substrate Type")+
   ggtitle("Substrate Distributions by CWD Presence")+
   theme(axis.text.x = element_blank())
+substrt.cwd
 #ggsave(filename = "substrt.cwd.png", plot = substrt.cwd, dpi = 500)
-  
 
 ## Logistic regression for predicting CWD
 library(car)
 
 #Turbidity
+  # convert `snag` to numeric for the purposes of logistic regression
 pool8.barcodes$snag <- as.numeric(as.character(pool8.barcodes$snag))
+
+  # logistic model with turbidity
 msecchi <- glm(snag~secchi, 
-               data = pool8.barcodes[!is.na(pool8.barcodes$snag) & is.na(pool8.barcodes$s_qf),], 
+               data = pool8.barcodes[!is.na(pool8.barcodes$snag) 
+                                     & is.na(pool8.barcodes$s_qf),], 
                family = binomial)
 summary(msecchi)
+  # marginal model plots
 mmps(msecchi, main = "Marginal Model Plots for Turbidity Measurements")
+  # note that we should remove the "Linear Predictor" text from this plot
 
+  # plot results of Secchi/Turbidity model
 secchi <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & is.na(pool8.barcodes$s_qf),], 
                  aes(x = secchi, y = (snag)))+
   geom_point(alpha = 0.5)+
@@ -209,12 +216,3 @@ ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes
   geom_point(alpha = 0.5)+
   geom_smooth(method = "glm", method.args = list(family = "binomial"))+
   ggtitle("CWD Presence vs. Temperature")
-
-#FISH COUNTS: yikes
-#~~~~~~~~~~~~~~~~~~~~
-# Make a matrix that shows the number of individuals of each species captured at each barcode
-fishsp.perbarcode <- with(pool8, table(barcode,fishcode)) %>% as.data.frame.matrix()
-fishsp.perbarcode$barcode <- rownames(fishsp.perbarcode)
-rownames(fishsp.perbarcode) <- NULL
-fishsp.perbarcode <- fishsp.perbarcode[,c(103, 1:102)]
-fishsp.perbarcode$barcode <- as.integer(fishsp.perbarcode$barcode)
