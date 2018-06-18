@@ -4,7 +4,7 @@
 # Some plots of the different barcodes to see relationships between CWD presence and other variables
 library(plyr)
 library(dplyr)
-pool8.barcodes <- read.csv("pool8.barcodes.csv")
+load("pool8.barcodes.Rda")
 #Boxplot of current by CWD
 pool8.barcodes %>% filter(is.na(snag) == FALSE) %>% 
   ggplot(aes(x=snag, y=current, fill = snag)) +
