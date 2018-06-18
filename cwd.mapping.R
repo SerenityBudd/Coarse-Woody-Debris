@@ -209,19 +209,3 @@ fishsp.perbarcode$barcode <- rownames(fishsp.perbarcode)
 rownames(fishsp.perbarcode) <- NULL
 fishsp.perbarcode <- fishsp.perbarcode[,c(103, 1:102)]
 fishsp.perbarcode$barcode <- as.integer(fishsp.perbarcode$barcode)
-
-
-
-
-© 2018 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-API
-Training
-Shop
-Blog
-About
