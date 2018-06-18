@@ -1,4 +1,4 @@
-load("libraries.R")
+source("libraries.R")
 
 fishdat <- read.csv("ltrm_fish_data.csv")
 head(fishdat)

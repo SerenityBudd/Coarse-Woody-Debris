@@ -1,6 +1,6 @@
 ## Modeling
 
-load("libraries.R")
+source("libraries.R")
 ###########
 # Some plots of the different barcodes to see relationships between CWD presence and other variables
 

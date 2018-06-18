@@ -1,6 +1,6 @@
 ## MAPPING
 # POOL 8 SNAG PRESENCE/ABSENCE BY BARCODE
-load("libraries.R")
+source("libraries.R")
 
 #read in the pool8 barcodes data.
 load("pool8.barcodes.Rda")
