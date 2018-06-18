@@ -1,4 +1,4 @@
-fishdat <- read.csv("fishdata/ltrm_electro_fish_data_alloptions/ltrm_fish_data.csv")
+fishdat <- read.csv("ltrm_fish_data.csv")
 head(fishdat)
 str(fishdat)
 library(plyr)
