@@ -150,7 +150,7 @@ partialmod <- glm(snag~ wingdyke + substrt, data = pool8.barcodes, family = bino
 summary(partialmod)
 # notice that none of the levels of substrt are significant anymore. 
 
-plot(pool8.barcodes$sdat[years(pool8.barcodes$sdat) == 1995], pool8.barcodes$temp[years(pool8.barcodes$sdat) == 1995], xlab = "Month/Day/1995", ylab = "Temperature in Degrees Celsius")
+plot(pool8.barcodes$sdat[years(pool8.barcodes$sdat) == 1995], pool8.barcodes$temp[years(pool8.barcodes$sdat) == 1995], xlab = "Month/Day/1995", ylab = expression("Temperature in "*degree*"C"))
 
 ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)), 
        aes(x = factor(period), y = temp)) +
