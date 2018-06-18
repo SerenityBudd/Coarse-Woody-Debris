@@ -66,11 +66,10 @@ colnames(FishCodes) <- c("Fishcode")
 intersect(FishCodes[,1], fishinfo[,"Fishcode"])
 
 # the fishcodes in LTRM data not in fish traits
-setdiff(FishCodes[,1], fishinfo[,"Fishcode"])
+ltrmf <- setdiff(FishCodes[,1], fishinfo[,"Fishcode"])
 
 # the fishcodes in the fishtraits not the LTRM data
 setdiff(fishinfo[,"Fishcode"], FishCodes[,1])
-
 
 # knowing this we should think about removing data on fish that are not in both data sets, there is no point in knowing the traits of a fish if their arent int the UMR and we cannot do our analysis on UMR fish if we have no traits data on them
 
@@ -83,3 +82,5 @@ setdiff(fishinfo[,"Fishcode"], FishCodes[,1])
 # LRVL is larval
 # NFSH is no fish caught
 # SCBC could be SCBS NOT confident
+
+table(fishdat[fishdat$fishcode %in% ltrmf,"fishcode"])
