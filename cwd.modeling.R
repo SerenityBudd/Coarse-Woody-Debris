@@ -152,10 +152,11 @@ summary(partialmod)
 # Want to do a logistic model with multiple predictors of CWD
 # depth, current, substrate (categorical), aquatic habitat (categorical--don't have this yet), velocity, stageht, wingdam (cat.), dyke (cat.)
 
-plot(pool8.barcodes$sdat[years(pool8.barcodes$sdat) == 1995], pool8.barcodes$temp[years(pool8.barcodes$sdat) == 1995])
+plot(pool8.barcodes$sdat[years(pool8.barcodes$sdat) == 1995], pool8.barcodes$temp[years(pool8.barcodes$sdat) == 1995], xlab = "Month/Day/1995", ylab = "Temperature in Degrees Celsius")
 
-plot(pools$period, pools$temp)
-ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)), aes(x = period, y = temp)) +
-  geom_point(alpha = .5) +
-  geom_smooth(method = "loess")
-
+ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)), 
+       aes(x = factor(period), y = temp)) +
+  geom_point(alpha = .1) +
+  xlab("Period") +
+  ylab("Temperature") +
+  scale_x_discrete(labels=c("1" = "Jun 15 - Jul 31", "2" = "Aug 1 - Sep 14", "3" = "Sep 15 - Oct 31"))
