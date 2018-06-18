@@ -14,3 +14,6 @@ glimpse(aquahab)
 points <- SpatialPoints(pool8.barcodes[,c("utm_e", "utm_n")])
 proj4string(aquahab)
 proj4string(points) <- "+proj=utm +zone=15 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
+
+#extract data for points (this gets a data frame)
+ext <- over(x = points, y = aquahab)
