@@ -1,7 +1,14 @@
 ## MAPPING
 # POOL 8 SNAG PRESENCE/ABSENCE BY BARCODE
 library(ggmap)
+library(ggplot2)
 
+#read in the pool8 barcodes data.
+pool8.barcodes <- read.csv("pool8.barcodes.csv")
+str(pool8.barcodes)
+# `snag` is an integer; let's change it to a factor
+pool8.barcodes$snag <- factor(pool8.barcodes$snag)
+ 
 #get map of Pool 8
 m <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "terrain", source = "google")
 ggmap(m)
