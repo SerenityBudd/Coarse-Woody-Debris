@@ -1,6 +1,7 @@
 ## MAPPING
 # POOL 8 SNAG PRESENCE/ABSENCE BY BARCODE
 library(ggmap)
+library(wesanderson)
 
 #get map of Pool 8
 m <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "terrain", source = "google")
@@ -109,7 +110,7 @@ logfct.cwd <- pool8.barcodes %>% filter(is.na(snag) == FALSE) %>%
   xlab("Coarse Woody Debris Presence")+
   ylab("Log of Total Number of Fish Caught")+
   guides(fill = FALSE)
-ggsave(filename = "logfct.cwd.png", plot = logfct.cwd, dpi = 500)
+#ggsave(filename = "logfct.cwd.png", plot = logfct.cwd, dpi = 500)
 
   # Make a vector of labels for the site types
   labels <- c(prim.rand = "Primary Random Site", alt.rand = "Alternate Random Site", subj.perm = "Subjective Permanent Site")
@@ -123,7 +124,7 @@ logfct.cwd.facet <- pool8.barcodes %>% filter(is.na(snag) == FALSE) %>%
   ylab("Log of Total Number of Fish Caught")+
   facet_wrap(~sitetype, labeller = labeller(sitetype = labels))+
   guides(fill = FALSE)
-ggsave(filename = "logfct.cwd.facet.png", plot = logfct.cwd.facet, dpi = 500)
+#ggsave(filename = "logfct.cwd.facet.png", plot = logfct.cwd.facet, dpi = 500)
 
 # have this suggestion from here for a loess plot: https://stats.stackexchange.com/questions/45444/how-do-you-visualize-binary-outcomes-versus-a-continuous-predictor
 loess <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag),], aes(x = lat, y = as.numeric(as.character(snag)))) +
@@ -132,7 +133,7 @@ loess <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag),], aes(x = lat
   xlab("N <--    (Latitude)    --> S") +
   ylab("Snag Presence") +
   ggtitle("Pool 8 CWD Presence by Latitude")
-ggsave(filename = "loess.latitude.png", plot = loess, dpi = 500)
+#ggsave(filename = "loess.latitude.png", plot = loess, dpi = 500)
   # can also use scatter.smooth
   # with(pool8.barcodes, scatter.smooth(snag~lat))
 
@@ -153,7 +154,7 @@ substrt.cwd <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na
   xlab("Substrate Type")+
   ggtitle("Substrate Distributions by CWD Presence")+
   theme(axis.text.x = element_blank())
-ggsave(filename = "substrt.cwd.png", plot = substrt.cwd, dpi = 500)
+#ggsave(filename = "substrt.cwd.png", plot = substrt.cwd, dpi = 500)
   
 
 ## Logistic regression for predicting CWD
@@ -176,7 +177,7 @@ secchi <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & is.na(pool8
   ylab("CWD Presence/Absence")+
   theme(plot.title = element_text(size = 18), axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 14))
 secchi
-ggsave(filename = "secchi.png", plot = secchi, dpi = 500)
+#ggsave(filename = "secchi.png", plot = secchi, dpi = 500)
   
 
 #Depth
