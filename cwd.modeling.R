@@ -43,13 +43,13 @@ logfct.cwd.facet
 #ggsave(filename = "logfct.cwd.facet.png", plot = logfct.cwd.facet, dpi = 500)
 
 # have this suggestion from here for a loess plot: https://stats.stackexchange.com/questions/45444/how-do-you-visualize-binary-outcomes-versus-a-continuous-predictor
-loess <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag),], aes(x = lat, y = as.numeric(as.character(snag)))) +
+Loess <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag),], aes(x = lat, y = as.numeric(as.character(snag)))) +
   geom_point(size = 2, alpha = 0.2, pch = 20)+
   stat_smooth(method = "loess", color = "darkred", size = 1.5) +
   xlab("N <--    (Latitude)    --> S") +
   ylab("Snag Presence") +
   ggtitle("Pool 8 CWD Presence by Latitude")
-#ggsave(filename = "loess.latitude.png", plot = loess, dpi = 500)
+#ggsave(filename = "loess.latitude.png", plot = Loess, dpi = 500)
 # can also use scatter.smooth
 # with(pool8.barcodes, scatter.smooth(snag~lat))
 
