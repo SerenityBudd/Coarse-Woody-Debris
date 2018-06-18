@@ -38,10 +38,8 @@ pool8$stime <- as.character(pool8$stime)
 pool8$ftime <- as.character(pool8$ftime)
 
 # change the date and time formats with `hm()` and `mdy()` from the package lubridate
-pool8$sdat <- mdy(pool8$sdate)
-pool8$stim <- hm(pool8$stime)
-pool8$fdat <- mdy(pool8$fdate)
-pool8$ftim <- hm(pool8$ftime)
+#pool8$stim <- hm(pool8$stime)
+#pool8$ftim <- hm(pool8$ftime)
 
 pool8$sdat <- chron(pool8$sdate, format = c(dates = "m/d/y"))
 pool8$fdat <- chron(pool8$fdate, format = c(dates = "m/d/y"))
