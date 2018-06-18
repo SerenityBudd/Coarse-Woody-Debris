@@ -187,3 +187,10 @@ pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_code)) %>% ggplot
   ggtitle("Aquatic Habitat Types by CWD Presence")+
   theme(axis.text.x = element_blank())
 aquahab.bars
+
+# Modeling based on aquatic habitat type and wingdyke
+mod1 <- glm(snag~ wingdyke + aqua_desc, data = pool8.barcodes %>% filter(aqua_desc != "No Photo Coverage"), family = binomial)
+summary(mod1)
+# interpreting this model:
+#   wingdyke has a negative coefficient: presence of wingdyke reduces probability of CWD. *note that they don't distinguish between points above vs. below a wingdyke!!!
+#   Contiguous floodplain lake, contig. floodplain shallow aquatic area, contig. impounded area, non-aquatic area, and tributary channel are all less likely to have CWD. No other terms are significant. 
