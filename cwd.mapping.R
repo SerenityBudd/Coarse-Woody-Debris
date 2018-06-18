@@ -3,9 +3,10 @@
 library(ggmap)
 library(wesanderson)
 library(ggplot2)
+library(chron)
 
 #read in the pool8 barcodes data.
-pool8.barcodes <- read.csv("pool8.barcodes.csv")
+load("pool8.barcodes.Rda")
 str(pool8.barcodes)
 
 # `snag` is an integer; let's change it to a factor
