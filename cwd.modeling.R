@@ -124,3 +124,6 @@ ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes
   geom_point(alpha = 0.5)+
   geom_smooth(method = "glm", method.args = list(family = "binomial"))+
   ggtitle("CWD Presence vs. Temperature")
+
+# Want to do a logistic model with multiple predictors of CWD
+# depth, current, substrate (categorical), aquatic habitat (categorical--don't have this yet), velocity, stageht, wingdam (cat.), dyke (cat.)
