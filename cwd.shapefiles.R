@@ -12,3 +12,5 @@ glimpse(aquahab)
 
 # transform coordinates to spatial points
 points <- SpatialPoints(pool8.barcodes[,c("utm_e", "utm_n")])
+proj4string(aquahab)
+proj4string(points) <- "+proj=utm +zone=15 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
