@@ -11,4 +11,4 @@ aquahab <- readOGR(dsn = ".", layer = "p8_1989_aquahab")
 glimpse(aquahab)
 
 # transform coordinates to spatial points
-points <- SpatialPoints(pool8.barcodes[,c("lon", "lat")])
+points <- SpatialPoints(pool8.barcodes[,c("utm_e", "utm_n")])
