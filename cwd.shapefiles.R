@@ -21,4 +21,5 @@ ext <- over(x = points, y = aquahab)
 # add columns to pool8.barcodes and save the file
 pool8.barcodes$aqua_code <- ext$AQUA_CODE
 pool8.barcodes$aqua_desc <- ext$AQUA_DESC
-# save(pool8.barcodes, file = "pool8.barcodes.Rda")
+pool8.barcodes <- droplevels(pool8.barcodes)
+#save(pool8.barcodes, file = "pool8.barcodes.Rda")
