@@ -158,3 +158,32 @@ ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)),
   xlab("Period") +
   ylab("Temperature") +
   scale_x_discrete(labels=c("1" = "Jun 15 - Jul 31", "2" = "Aug 1 - Sep 14", "3" = "Sep 15 - Oct 31"))
+
+### Investigating aquatic habitats
+
+#someone on stackoverflow made a palette with 25 distinct colors:
+c25 <- c("dodgerblue2","#E31A1C", # red
+         "green4",
+         "#6A3D9A", # purple
+         "#FF7F00", # orange
+         "black","gold1",
+         "skyblue2","#FB9A99", # lt pink
+         "palegreen2",
+         "#CAB2D6", # lt purple
+         "#FDBF6F", # lt orange
+         "gray70", "khaki2",
+         "maroon","orchid1","deeppink1","blue1","steelblue4",
+         "darkturquoise","green1","yellow4","yellow3",
+         "darkorange4","brown")
+
+pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_code)) %>% ggplot(aes(x = aqua_code))+
+  geom_bar(aes(fill = aqua_code))+
+  scale_fill_manual(name = "Aquatic Habitat Type", 
+                    labels = levels(pool8.barcodes$aqua_desc),
+                    values = c25)+
+  facet_wrap(~snag)+
+  ylab("Number of Sampling Events")+
+  xlab("Aquatic Habitat Type")+
+  ggtitle("Aquatic Habitat Types by CWD Presence")+
+  theme(axis.text.x = element_blank())
+aquahab.bars
