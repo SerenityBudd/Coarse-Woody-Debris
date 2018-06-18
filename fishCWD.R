@@ -1,0 +1,5 @@
+fishdist <- read.csv("Table_Distribution.csv")
+fishgrowth <- read.csv("Table_Growth.csv")
+species <- read.csv("Table_LTRMP_Species_List.csv")
+fishtraits <- read.csv("Table_Miscellaneous.csv")
+fishreproduction <- read.csv("Table_Reproduction.csv")
