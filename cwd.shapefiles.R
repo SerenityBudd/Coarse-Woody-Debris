@@ -17,3 +17,8 @@ proj4string(points) <- "+proj=utm +zone=15 +datum=NAD83 +units=m +no_defs +ellps
 
 #extract data for points (this gets a data frame)
 ext <- over(x = points, y = aquahab)
+
+# add columns to pool8.barcodes and save the file
+pool8.barcodes$aqua_code <- ext$AQUA_CODE
+pool8.barcodes$aqua_desc <- ext$AQUA_DESC
+# save(pool8.barcodes, file = "pool8.barcodes.Rda")
