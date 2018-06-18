@@ -20,9 +20,11 @@ pool8.barcodes.snagmap <- ggmap(m)+
   ylab("Latitude")+ 
   scale_x_continuous(limits = c(-91.4, -91.1))+
   geom_point(data = pool8.barcodes[pool8.barcodes$snag %in% c(0,1),], 
-             aes(x = lon, y = lat, color = snag), size = 0.4, alpha = 0.8)+
-  scale_color_manual(values=c("#600000", "#ff0000"))+
-  guides(color = guide_legend(override.aes = list(size=8)))
+             aes(x = lon, y = lat, color = snag), 
+             size = 0.4, 
+             alpha = 0.8)+
+  scale_color_manual(values=c("#600000", "#ff0000"))+ #light and dark red
+  guides(color = guide_legend(override.aes = list(size=8))) #legend size
 pool8.barcodes.snagmap
 #ggsave(filename = "pool8.barcodes.snagmap.png", plot = pool8.barcodes.snagmap, dpi = 1000)
   # Used the code to remove rows where snag was NA. ggmap would have removed them automatically but would have left a factor level for them in the legend, which we don't want.
