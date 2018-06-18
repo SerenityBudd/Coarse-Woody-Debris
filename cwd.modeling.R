@@ -141,14 +141,14 @@ ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes
   geom_smooth(method = "glm", method.args = list(family = "binomial"))+
   ggtitle("CWD Presence vs. Temperature")
 
-
+# Make logistic model with all predictors
 fullmod <- glm(snag~depth + I(depth^2) + current + stageht + wingdyke + substrt, data = pool8.barcodes, family = binomial)
 summary(fullmod)
 
+# Make new model with only the ones that were significant in fullmod
 partialmod <- glm(snag~ wingdyke + substrt, data = pool8.barcodes, family = binomial)
 summary(partialmod)
-# Want to do a logistic model with multiple predictors of CWD
-# depth, current, substrate (categorical), aquatic habitat (categorical--don't have this yet), velocity, stageht, wingdam (cat.), dyke (cat.)
+# notice that none of the levels of substrt are significant anymore. 
 
 plot(pool8.barcodes$sdat[years(pool8.barcodes$sdat) == 1995], pool8.barcodes$temp[years(pool8.barcodes$sdat) == 1995], xlab = "Month/Day/1995", ylab = "Temperature in Degrees Celsius")
 
