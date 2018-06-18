@@ -3,12 +3,10 @@ head(fishdat)
 str(fishdat)
 library(plyr)
 library(dplyr)
+
 # Filter out the rows from pool8 and create the pool 8 dataframe
 pool8 <- fishdat %>%
   filter(pool == "08") %>% droplevels()
-
-# Take a look at the data frame
-head(pool8, 3)
 
 # Edit site names to remove duplicates
 pool8$site <- as.character(pool8$site) #convert to character so we can edit easily
@@ -46,7 +44,6 @@ pool8$fdat <- chron(pool8$fdate, format = c(dates = "m/d/y"))
 
 #change the coding for some of the variables
 pool8$substrt <- recode_factor(pool8$substrt, `1` = "silt", `2` = "Silt/Clay/Little Sand", `3` = "Sand/Mostly Sand", `4` = "Gravel/Rock/Hard Clay")
-
 pool8$sitetype <- recode_factor(pool8$sitetype, `0` = "prim.rand", `1` = "alt.rand", `2` = "subj.perm")
 
 # Add lat/long columns
@@ -61,21 +58,6 @@ names(lonlat) <- c("lon", "lat")
 #join to the original data frame
 pool8 <- cbind(pool8, lonlat)
 pool8$snag <- factor(pool8$snag)
-
-# How many sites are there?
-length(unique(pool8$site))
-# 65 unique sites
-# How many times was each site visited? Aka how many barcodes per site?
-library(dplyr)
-newdf <- data.frame(site = unique(pool8$site))
-nb <- function(x){
-  temp <- pool8[pool8$site == x,]
-  return(length(unique(temp$barcode)))
-}
-newdf$nbarcodes <- sapply(newdf$site, FUN = nb)
-newdf <- newdf[order(newdf$nbarcodes),]
-newdf
-range(newdf$nbarcodes)
 
 # Assuming that data on CWD (and other environmental variables) were only taken once per sampling event (barcode), let's make a data frame with information per barcode.
 
@@ -102,13 +84,8 @@ pool8.wrk <- pool8[ , !names(pool8) %in% c("batchno", "orphflag", "recorder", "u
 pool8.barcodes <- as.data.frame(pool8 %>% 
                                   group_by(barcode) %>% 
                                   summarize_all(firstel))
-head(pool8.barcodes, 3)
-tail(pool8.barcodes, 3)
 
-   # remove rows that are entirely NA
-ind <- apply(pool8.barcodes, 1, function(x) all(is.na(x)))
-  # there don't seem to be any
-write.csv(pool8.barcodes, "pool8.barcodes.csv", row.names = F)
+# write.csv(pool8.barcodes, "pool8.barcodes.csv", row.names = F)
 
 ## MAPPING
 # POOL 8 SNAG PRESENCE/ABSENCE BY BARCODE
