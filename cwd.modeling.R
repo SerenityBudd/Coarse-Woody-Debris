@@ -186,18 +186,15 @@ pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_shortname)) %>% g
   xlab("Aquatic Habitat Type")+
   ggtitle("Aquatic Habitat Types by CWD Presence")+
   theme(axis.text.x = element_blank())
-#not sure why I can't seem to exclude the NOPH rows with filter(aqua_shortname != "NOPH"). Help?
+#not sure why I can't seem to exclude the NOPH rows with filter(aqua_shortname != "NOPH"). Especially weird because the same filtering syntax works fine in mod1 below. Help?
 
 # Modeling based on aquatic habitat type and wingdyke
-mod1 <- glm(snag~ wingdyke + aqua_code + depth, data = pool8.barcodes %>% filter(aqua_code != "NOPH"), family = binomial)
+mod1 <- glm(snag~ wingdyke + aqua_shortname + depth, data = pool8.barcodes %>% filter(aqua_shortname != "NOPH"), family = binomial)
 summary(mod1)
-# interpreting this model:
-#   wingdyke has a negative coefficient: presence of wingdyke reduces probability of CWD. *note that they don't distinguish between points above vs. below a wingdyke!!!
-#   Contiguous floodplain lake, contig. floodplain shallow aquatic area, contig. impounded area, non-aquatic area, and tributary channel are all less likely to have CWD. No other terms are significant. 
 
 # Making a plot of this model, following this tutorial: https://blogs.uoregon.edu/rclub/2016/04/14/plotting-logistic-regressions-part-3/
 depth_range <- seq(from = 0, to = 5, by=.1)
-generated_data <- as.data.frame(expand.grid(depth = depth_range, wingdyke = c(0, 1), aqua_code=c("CFDL", "CFSA", "CIMP", "IACL", "IBP", "IFDL", "MCB", "MNC", "N", "SC", "TRC") ))
+generated_data <- as.data.frame(expand.grid(depth = depth_range, wingdyke = c(0, 1), aqua_shortname = levels(pool8.barcodes$aqua_shortname)[-10] )) #shouldn't exclude this by index number but I can't figure out how to exclude it by name!!
 head(generated_data)
 generated_data$prob <- predict(mod1, newdata = generated_data, type = 'response')
 head(generated_data) 
@@ -216,15 +213,31 @@ ggplot(plot.data, aes(x=depth, y=prob, color=wingdyke_level)) +
   geom_line(lwd=1) + 
   scale_color_manual(values = c("dodgerblue2", "red"))+
   labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
-  facet_wrap(~aqua_code)
+  facet_wrap(~aqua_shortname)
 
 # let's try flipping it, so the facets are by wingdyke presence level and the lines are color coded by aquatic habitat type.
-
-colors <- c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99")
-ggplot(plot.data, aes(x=depth, y=prob, color=aqua_code)) + 
+ggplot(plot.data, aes(x=depth, y=prob, color=aqua_shortname)) + 
   geom_line(lwd=1) + 
-  scale_color_manual(values = brewer.pal(11,"Set1"))+
+  scale_color_manual(values = brewer.pal(12,"Paired"))+
   labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
-  facet_wrap(~wingdyke_level) 
+  facet_wrap(~wingdyke_level)+
+  theme_bw()
 
+#Interaction term between wingdyke and aqua_shortname is not helpful
+mod2 <- glm(snag~ wingdyke + aqua_shortname + depth + wingdyke*aqua_shortname, data = pool8.barcodes %>% filter(aqua_shortname != "NOPH"), family = binomial)
+summary(mod2)
 
+#Interaction term between depth and wingdyke looks a lot better.
+mod3 <- glm(snag~ wingdyke + aqua_shortname + depth + wingdyke*depth, data = pool8.barcodes %>% filter(aqua_shortname != "NOPH"), family = binomial)
+summary(mod3)
+
+plot.data2 <- generated_data
+plot.data2$prob <- predict(mod3, newdata = generated_data, type = 'response')
+
+ggplot(plot.data2, aes(x=depth, y=prob, color=aqua_shortname)) + 
+  geom_line(lwd=1) + 
+  scale_color_manual(values = brewer.pal(12,"Paired"))+
+  labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
+  facet_wrap(~wingdyke_level)+
+  theme_bw()
+# this looks really different, and we should think about how to interpret it. But I'm also not sure this makes biological sense, since maybe wingdams/dykes are only in shallow areas?
