@@ -35,4 +35,7 @@ pool8.barcodes$aqua_shortname <- recode_factor(pool8.barcodes$aqua_code,
                                                `TRC` = "Trib. channel", 
                                                `N` = "Non-aq. area")
 pool8.barcodes <- droplevels(pool8.barcodes)
-save(pool8.barcodes, file = "pool8.barcodes.Rda")
+#save(pool8.barcodes, file = "pool8.barcodes.Rda")
+
+#fortify to a data frame that ggplot can understand
+aquahab.dat <- fortify(aquahab)
