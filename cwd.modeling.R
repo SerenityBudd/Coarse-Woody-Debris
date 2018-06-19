@@ -245,3 +245,26 @@ ggplot(plot.data3, aes(x=depth, y=prob, color=aqua_shortname)) +
 ggplot(data = pool8.barcodes, aes(x = depth, y = wingdyke))+
   geom_point(alpha = 0.2)+
   geom_smooth(method = "glm", method.args = list(family = "binomial"))
+
+# Model with just depth and aquatic habitat type
+# Exclude non-aquatic areas, and habitat types where only one barcode occurred.
+# Not sure why they sampled in non-aquatic areas. 
+
+mod4 <- glm(snag ~ depth + aqua_shortname, 
+            data = pool8.barcodes %>% 
+              filter(!(aqua_shortname %in% c("NOPH", 
+                      "Non-aq. area", 
+                      "IFL--borrow pit", 
+                      "IFL--floodplain dep. lk"))), 
+              family = binomial)
+summary(mod4)
+
+# this doesn't look great. Plot anyway?
+plot.data4 <- as.data.frame(expand.grid(depth = depth_range, aqua_shortname = levels(pool8.barcodes$aqua_shortname)[-c(10,13,6,7)] ))
+plot.data4$prob <- predict(mod4, newdata = plot.data4, type = 'response')
+
+ggplot(plot.data4, aes(x=depth, y=prob, color=aqua_shortname)) + 
+  geom_line(lwd=1.5) + 
+  scale_color_manual(values = brewer.pal(12,"Paired"))+
+  labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence by Water Depth and Aquatic Habitat Type") +
+  theme_bw()
