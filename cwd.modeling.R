@@ -189,8 +189,42 @@ pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_code)) %>% ggplot
 aquahab.bars
 
 # Modeling based on aquatic habitat type and wingdyke
-mod1 <- glm(snag~ wingdyke + aqua_desc, data = pool8.barcodes %>% filter(aqua_desc != "No Photo Coverage"), family = binomial)
+mod1 <- glm(snag~ wingdyke + aqua_code + depth, data = pool8.barcodes %>% filter(aqua_code != "NOPH"), family = binomial)
 summary(mod1)
 # interpreting this model:
 #   wingdyke has a negative coefficient: presence of wingdyke reduces probability of CWD. *note that they don't distinguish between points above vs. below a wingdyke!!!
 #   Contiguous floodplain lake, contig. floodplain shallow aquatic area, contig. impounded area, non-aquatic area, and tributary channel are all less likely to have CWD. No other terms are significant. 
+
+# Making a plot of this model, following this tutorial: https://blogs.uoregon.edu/rclub/2016/04/14/plotting-logistic-regressions-part-3/
+depth_range <- seq(from = 0, to = 5, by=.1)
+generated_data <- as.data.frame(expand.grid(depth = depth_range, wingdyke = c(0, 1), aqua_code=c("CFDL", "CFSA", "CIMP", "IACL", "IBP", "IFDL", "MCB", "MNC", "N", "SC", "TRC") ))
+head(generated_data)
+generated_data$prob <- predict(mod1, newdata = generated_data, type = 'response')
+head(generated_data) 
+
+# make `wingdyke` into a factor
+generated_data$wingdyke_level <- factor(generated_data$wingdyke, labels = c("no wingdam/dyke", "wingdam/dyke present"), ordered=T)
+summary(generated_data)
+
+# actually plot the model: this is where ggplot2 comes in handy.
+plot.data <- generated_data
+# check out the plotting data
+head(plot.data)
+
+#facet by aquatic habitat type, color by wingdyke presence
+ggplot(plot.data, aes(x=depth, y=prob, color=wingdyke_level)) + 
+  geom_line(lwd=1) + 
+  scale_color_manual(values = c("dodgerblue2", "red"))+
+  labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
+  facet_wrap(~aqua_code)
+
+# let's try flipping it, so the facets are by wingdyke presence level and the lines are color coded by aquatic habitat type.
+
+colors <- c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99")
+ggplot(plot.data, aes(x=depth, y=prob, color=aqua_code)) + 
+  geom_line(lwd=1) + 
+  scale_color_manual(values = colors)+
+  labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
+  facet_wrap(~wingdyke_level) 
+
+
