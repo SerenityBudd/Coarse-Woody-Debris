@@ -91,9 +91,9 @@ summary(fishdat[fishdat$fishcode %in% nos,"fishcode"])
 
 # remove the rows of fishcodes that are not in the fish info data
 summary(fishdat[fishdat$fishcode %in% ltrmf,"fishcode"])
-LTRMrm <- c("LRVL", "NFSH", "SCBC", "U-IL", "U-PC", "UNID", "WSSN", "YOYF")
+#LTRMrm <- c("LRVL", "NFSH", "SCBC", "U-IL", "U-PC", "UNID", "WSSN", "YOYF")
 
-ltrmfishdat <- filter(fishdat, !fishcode %in% LTRMrm)
+ltrmfishdat <- filter(fishdat, !fishcode %in% ltrmf)
 
 # explore the fishinfo data
 
@@ -102,7 +102,6 @@ myfunc <- function (vec) {
 }
 
 apply(fishinfo, 2, myfunc)
-
 
 # plot things
 
@@ -120,9 +119,12 @@ colnames(pool8.bb) <- c("Fishcode", "nosnag", "snag")
 pool8.fishtraits <- inner_join(pool8.bb, fishinfo, by = "Fishcode")
 
 
-ggplot(data = filter(pool8.fishtraits,!is.na(snag) & !is.na(nosnag)), aes(x = Fishcode, y = snag/(snag+nosnag))) +
+ggplot(data = filter(pool8.fishtraits,!is.na(snag) & !is.na(nosnag)), 
+       aes(x = Fishcode, y = snag/(snag+nosnag), color = snag/(snag+nosnag))) +
+#  scale_color_brewer(wes_palette("Rushmore1")) +
   geom_point() +
-  theme(axis.text.x = element_text(size = 5, angle=60))
+  theme(axis.text.x = element_text(size = 5, angle=60)) 
+  
 
 
         
