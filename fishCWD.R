@@ -63,19 +63,16 @@ FishCodes <- as.data.frame(unique(sort(fishdat$fishcode))[-1])
 colnames(FishCodes) <- c("Fishcode")
 
 # the fishcodes in both the LTRM data and fish traits
-intersect(FishCodes[,1], fishinfo[,"Fishcode"])
+inters <- intersect(FishCodes[,1], fishinfo[,"Fishcode"])
 
 # the fishcodes in LTRM data not in fish traits
 ltrmf <- setdiff(FishCodes[,1], fishinfo[,"Fishcode"])
 
 # the fishcodes in the fishtraits not the LTRM data
-setdiff(fishinfo[,"Fishcode"], FishCodes[,1])
+traitsf <- setdiff(fishinfo[,"Fishcode"], FishCodes[,1])
 
-# knowing this we should think about removing data on fish that are not in both data sets, there is no point in knowing the traits of a fish if their arent int the UMR and we cannot do our analysis on UMR fish if we have no traits data on them
-
-# checking to see if the ones only in LTRM are typos
-
-# all the U- names are "unidentified fish type"
+# all the U- names are "unidentified fish type", hopefully keep some of these
+#        GET RID
 # UNID is generally unidentified
 # I am assuming WSSN is supposed to be WDSN
 # YOYF is age-0 fish
@@ -83,4 +80,51 @@ setdiff(fishinfo[,"Fishcode"], FishCodes[,1])
 # NFSH is no fish caught
 # SCBC could be SCBS NOT confident
 
-table(fishdat[fishdat$fishcode %in% ltrmf,"fishcode"])
+# remove the rows of fishcodes not in the ltrm data
+fishinfo <- filter(fishinfo, Fishcode %in% inters)
+identical(as.character(fishinfo[,1]), inters)
+
+# the fish info data says the LTRM proj has not collected these
+nos <- fishinfo[fishinfo$LTRMP == "N","Fishcode"]
+# they have, so we will keep them
+summary(fishdat[fishdat$fishcode %in% nos,"fishcode"])
+
+# remove the rows of fishcodes that are not in the fish info data
+summary(fishdat[fishdat$fishcode %in% ltrmf,"fishcode"])
+LTRMrm <- c("LRVL", "NFSH", "SCBC", "U-IL", "U-PC", "UNID", "WSSN", "YOYF")
+
+ltrmfishdat <- filter(fishdat, !fishcode %in% LTRMrm)
+
+# explore the fishinfo data
+
+myfunc <- function (vec) {
+  table(vec, exclude = F)
+}
+
+apply(fishinfo, 2, myfunc)
+
+# consider removing Wilcox.Ucrit, we only have data on 32/152 fish
+fishinfo[!is.na(fishinfo$Wilcox.Ucrit), "Fishcode"]
+
+#these are the 31 fish, the nos are included
+fishinfo[is.na(fishinfo$LTRMP.Ten.Year.Rank), "Fishcode"] 
+
+# Swim.Factor NA = 65
+# Shape.Factor NA = 65
+# Current.Preference NA = 64
+# Substrate.Preference NA = 65
+# Spawning.Substrate NA = 70
+# Silt.Tolerance = 66
+# Turbidity.Tolerance = 68
+# Large.River.Species = 24
+# Trophic.Guild = 69
+# Water.Column.Preference = 64
+# Adult.Habitat = 65
+# Adult.Trophic.Level = 66
+# Relative.Anadromy = 66
+# Egg.Bouyancy = 82
+
+
+
+
+
