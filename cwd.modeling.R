@@ -210,14 +210,15 @@ head(plot.data)
 
 #facet by aquatic habitat type, color by wingdyke presence
 ggplot(plot.data, aes(x=depth, y=prob, color=wingdyke_level)) + 
-  geom_line(lwd=1) + 
+  geom_line(lwd=1.5) + 
   scale_color_manual(values = c("dodgerblue2", "red"))+
   labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
-  facet_wrap(~aqua_shortname)
+  facet_wrap(~aqua_shortname)+
+  theme_bw()
 
 # let's try flipping it, so the facets are by wingdyke presence level and the lines are color coded by aquatic habitat type.
 ggplot(plot.data, aes(x=depth, y=prob, color=aqua_shortname)) + 
-  geom_line(lwd=1) + 
+  geom_line(lwd=1.5) + 
   scale_color_manual(values = brewer.pal(12,"Paired"))+
   labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
   facet_wrap(~wingdyke_level)+
@@ -235,7 +236,7 @@ plot.data3 <- generated_data
 plot.data3$prob <- predict(mod3, newdata = generated_data, type = 'response')
 
 ggplot(plot.data3, aes(x=depth, y=prob, color=aqua_shortname)) + 
-  geom_line(lwd=1) + 
+  geom_line(lwd=1.5) + 
   scale_color_manual(values = brewer.pal(12,"Paired"))+
   labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
   facet_wrap(~wingdyke_level)+
@@ -249,6 +250,7 @@ ggplot(data = pool8.barcodes, aes(x = depth, y = wingdyke))+
 
 mod4 <- glm(snag~ wingdyke + aqua_shortname + depth + I(wingdyke*depth)^2, data = pool8.barcodes %>% filter(aqua_shortname != "NOPH"), family = binomial)
 summary(mod4)
+# the coefficient for the quadratic term is highly significant, but it's also absolutely tiny. This is probably meaningless.
 
 plot.data4 <- generated_data
 plot.data4$prob <- predict(mod4, newdata = generated_data, type = 'response')
@@ -260,5 +262,5 @@ ggplot(plot.data4, aes(x=depth, y=prob, color=aqua_shortname)) +
   facet_wrap(~wingdyke_level)+
   theme_bw()
 
-#these graphs look identical... not sure why.
+#Predictions are identical because the quadratic term is so incredibly tiny. 
 identical(plot.data3$prob, plot.data4$prob)
