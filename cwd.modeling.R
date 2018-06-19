@@ -268,5 +268,3 @@ ggplot(plot.data4, aes(x=depth, y=prob, color=aqua_shortname)) +
   scale_color_manual(values = brewer.pal(12,"Paired"))+
   labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence by Water Depth and Aquatic Habitat Type") +
   theme_bw()
-  labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
-  theme_bw()
