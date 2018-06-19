@@ -176,17 +176,17 @@ c25 <- c("dodgerblue2","#E31A1C", # red
          "darkturquoise","green1","yellow4","yellow3",
          "darkorange4","brown")
 
-pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_code)) %>% ggplot(aes(x = aqua_code))+
-  geom_bar(aes(fill = aqua_code))+
+pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_shortname)) %>% ggplot(aes(x = aqua_shortname))+
+  geom_bar(aes(fill = aqua_shortname))+
   scale_fill_manual(name = "Aquatic Habitat Type", 
-                    labels = levels(pool8.barcodes$aqua_desc),
+                    labels = levels(pool8.barcodes$aqua_shortname),
                     values = c25)+
   facet_wrap(~snag)+
   ylab("Number of Sampling Events")+
   xlab("Aquatic Habitat Type")+
   ggtitle("Aquatic Habitat Types by CWD Presence")+
   theme(axis.text.x = element_blank())
-aquahab.bars
+#not sure why I can't seem to exclude the NOPH rows with filter(aqua_shortname != "NOPH"). Help?
 
 # Modeling based on aquatic habitat type and wingdyke
 mod1 <- glm(snag~ wingdyke + aqua_code + depth, data = pool8.barcodes %>% filter(aqua_code != "NOPH"), family = binomial)
@@ -223,7 +223,7 @@ ggplot(plot.data, aes(x=depth, y=prob, color=wingdyke_level)) +
 colors <- c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99")
 ggplot(plot.data, aes(x=depth, y=prob, color=aqua_code)) + 
   geom_line(lwd=1) + 
-  scale_color_manual(values = colors)+
+  scale_color_manual(values = brewer.pal(11,"Set1"))+
   labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
   facet_wrap(~wingdyke_level) 
 
