@@ -103,28 +103,26 @@ myfunc <- function (vec) {
 
 apply(fishinfo, 2, myfunc)
 
-# consider removing Wilcox.Ucrit, we only have data on 32/152 fish
-fishinfo[!is.na(fishinfo$Wilcox.Ucrit), "Fishcode"]
 
-#these are the 31 fish, the nos are included
-fishinfo[is.na(fishinfo$LTRMP.Ten.Year.Rank), "Fishcode"] 
+# plot things
 
-# Swim.Factor NA = 65
-# Shape.Factor NA = 65
-# Current.Preference NA = 64
-# Substrate.Preference NA = 65
-# Spawning.Substrate NA = 70
-# Silt.Tolerance = 66
-# Turbidity.Tolerance = 68
-# Large.River.Species = 24
-# Trophic.Guild = 69
-# Water.Column.Preference = 64
-# Adult.Habitat = 65
-# Adult.Trophic.Level = 66
-# Relative.Anadromy = 66
-# Egg.Bouyancy = 82
+load("pool8.barcodes.Rda")
+#pool8.barcodes$snag <- as.numeric(pool8.barcodes$snag)
+pool8.b <- pool8.barcodes[,c("fishcode", "snag")]
+pool8.b <- pool8.b[order(pool8.b$fishcode),] 
+pool8.b <- pool8.b[-c(1:204),]
+pool8.bb <- as.data.frame(table(pool8.b))
+
+pool8.bb <- data.frame(pool8.bb[2:58, c("fishcode", "Freq")], 
+                       pool8.bb[60:116, "Freq"])
+colnames(pool8.bb) <- c("Fishcode", "nosnag", "snag")
+
+pool8.fishtraits <- inner_join(pool8.bb, fishinfo, by = "Fishcode")
 
 
+ggplot(data = filter(pool8.fishtraits,!is.na(snag) & !is.na(nosnag)), aes(x = Fishcode, y = snag/(snag+nosnag))) +
+  geom_point() +
+  theme(axis.text.x = element_text(size = 5, angle=60))
 
 
-
+        
