@@ -1,13 +1,12 @@
 # Working with aquatic habitat shape files 
-library(rgdal)
-
+source("libraries.R")
 # show the files available to read
-list.files(".", pattern='\\.shp$')
+list.files("aquahab/", pattern='\\.shp$')
 # does the file exist?
-file.exists('p8_1989_aquahab.shp')
+file.exists('aquahab/p8_1989_aquahab.shp')
 
 # read the file in. Need to have all the files (.sbn, .sbx, .dbf, .prj) in the same folder, for some reason. Also, remember to *leave off the .shp extension on the shapefile!!!!!!*
-aquahab <- readOGR(dsn = ".", layer = "p8_1989_aquahab")
+aquahab <- readOGR(dsn = "aquahab", layer = "p8_1989_aquahab")
 glimpse(aquahab)
 
 # transform coordinates to spatial points
