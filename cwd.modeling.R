@@ -231,13 +231,34 @@ summary(mod2)
 mod3 <- glm(snag~ wingdyke + aqua_shortname + depth + wingdyke*depth, data = pool8.barcodes %>% filter(aqua_shortname != "NOPH"), family = binomial)
 summary(mod3)
 
-plot.data2 <- generated_data
-plot.data2$prob <- predict(mod3, newdata = generated_data, type = 'response')
+plot.data3 <- generated_data
+plot.data3$prob <- predict(mod3, newdata = generated_data, type = 'response')
 
-ggplot(plot.data2, aes(x=depth, y=prob, color=aqua_shortname)) + 
+ggplot(plot.data3, aes(x=depth, y=prob, color=aqua_shortname)) + 
   geom_line(lwd=1) + 
   scale_color_manual(values = brewer.pal(12,"Paired"))+
   labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
   facet_wrap(~wingdyke_level)+
   theme_bw()
 # this looks really different, and we should think about how to interpret it. But I'm also not sure this makes biological sense, since maybe wingdams/dykes are only in shallow areas?
+ggplot(data = pool8.barcodes, aes(x = depth, y = wingdyke))+
+  geom_point(alpha = 0.2)+
+  geom_smooth(method = "glm", method.args = list(family = "binomial"))
+# hmm...
+# What about a quadratic term?
+
+mod4 <- glm(snag~ wingdyke + aqua_shortname + depth + I(wingdyke*depth)^2, data = pool8.barcodes %>% filter(aqua_shortname != "NOPH"), family = binomial)
+summary(mod4)
+
+plot.data4 <- generated_data
+plot.data4$prob <- predict(mod4, newdata = generated_data, type = 'response')
+
+ggplot(plot.data4, aes(x=depth, y=prob, color=aqua_shortname)) + 
+  geom_line(lwd=1) + 
+  scale_color_manual(values = brewer.pal(12,"Paired"))+
+  labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
+  facet_wrap(~wingdyke_level)+
+  theme_bw()
+
+#these graphs look identical... not sure why.
+identical(plot.data3$prob, plot.data4$prob)
