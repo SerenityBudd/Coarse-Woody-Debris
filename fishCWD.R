@@ -5,7 +5,7 @@ fishdist <- read.csv("Table_Distribution.csv")[,-c(2:5)]
 fishdist <- fishdist[order(fishdist$Fishcode),] 
 
 fishgrowth <- read.csv("Table_Growth.csv")
-fishgrowth <- fishgrowth[order(fishgrowth$Fishcode),] 
+fishgrowth <- fishgrowth[order(fishgrowth$Fishcode),]
 
 species <- read.csv("Table_LTRMP_Species_List.csv")
 species <- species[order(species$Fishcode),] 
@@ -27,12 +27,12 @@ dim(fishmisc)
 dim(fishreproduction)
 dim(fishtraits)
 
-str(fishdist)
-str(fishgrowth) 
 str(species) 
 str(fishmisc) 
-str(fishreproduction) 
 str(fishtraits) 
+str(fishreproduction) 
+str(fishgrowth) 
+str(fishdist)
 
 # notice that the first col of every dataframe is the same
 identical(fishdist$Fishcode, fishgrowth$Fishcode, 
@@ -41,6 +41,10 @@ identical(fishdist$Fishcode, fishgrowth$Fishcode,
 
 # combine the important dataframes into fishinfo
 fishinfo <- left_join(left_join(species, fishmisc, by = "Fishcode"), fishtraits, by = "Fishcode")
+fishinfo <- left_join(fishinfo, fishreproduction, by = "Fishcode")
+fishinfo <- left_join(fishinfo, fishgrowth, by = "Fishcode")
+fishinfo <- left_join(fishinfo, fishdist, by = "Fishcode")
+
 
 dim(fishinfo)
 str(fishinfo)
@@ -127,4 +131,76 @@ ggplot(data = filter(pool8.fishtraits,!is.na(snag) & !is.na(nosnag)),
   
 
 
-        
+fishcluster <- na.omit(fishinfo[,c("Fishcode", "Wilcox.Migratory", "Wilcox.Pass.Dams", "Current.Preference", "Substrate.Preference", "Turbidity.Tolerance")])
+# Wilcox.Migratory, Wilcox.Pass.Dams, Current.Preference, Substrate.Preference, Turbidity.Tolerance
+fish.scaled <- scale(fishcluster[,-1])
+fish.k4 <- kmeans(fish.scaled, centers=4, iter.max=100, nstart=25)
+fish.k4
+
+fish.k4.clust <- lapply(1:4, function(nc) fishcluster$Fishcode[fish.k4$cluster==nc])  
+fish.k4.clust   
+
+pairs(fishcluster[,-1], panel=function(x,y) text(x,y,fish.k4$cluster))
+
+library(cluster)
+clusplot(fish.scaled, fish.k4$cluster, color=TRUE, shade=TRUE, 
+         labels=2, lines=0)
+
+library(fpc)
+plotcluster(fish.scaled, fish.k4$cluster)
+
+n <- nrow(fish.scaled)
+wss <- rep(0, 6)
+wss[1] <- (n - 1) * sum(apply(fish.scaled, 2, var))
+for (i in 2:6){
+  wss[i] <- sum(kmeans(fish.scaled, centers = i, iter.max=100, nstart=25)$withinss)
+  plot(1:6, wss, type = "b", xlab = "Number of clusters", ylab = "Within groups sum of squares")
+}
+
+#seven life history attributes describing the co-evolution of traits associated with reproduction. The life history traits included ,  "longevity", "age at maturation", "total fecundity", "egg size" (mean diameter of mature, fully yolked ovarianoocytes), and "parental care" 
+
+select(fishinfo, contains("length"))[1,]
+
+
+#  c(Maximum.Literature.Length, Length.at.Maturity, Maximum.Age, Age.at.Maturity, Mean.Fecundity, Mean.Ovum.Diameter, Parental.Care)
+
+select(fishinfo, contains("length"))
+select(fishinfo, contains("age"))
+select(fishinfo, contains("fecundity"))
+select(fishinfo, contains("ov"))
+select(fishinfo, contains("parent"))
+
+fishcluster <- na.omit(fishinfo[,c("Fishcode", "Maximum.Literature.Length", "Length.at.Maturity", "Maximum.Age", "Age.at.Maturity", "Mean.Fecundity", "Mean.Ovum.Diameter", "Parental.Care")])
+# Wilcox.Migratory, Wilcox.Pass.Dams, Current.Preference, Substrate.Preference, Turbidity.Tolerance
+fish.scaled <- scale(fishcluster[,-1])
+fish.k3 <- kmeans(fish.scaled, centers=3, iter.max=100, nstart=25)
+fish.k3
+
+fish.k3.clust <- lapply(1:3, function(nc) fishcluster$Fishcode[fish.k3$cluster==nc])  
+fish.k3.clust   
+
+pairs(fishcluster[,-1], panel=function(x,y) text(x,y,fish.k3$cluster))
+
+library(cluster)
+clusplot(fish.scaled, fish.k3$cluster, color=TRUE, shade=TRUE, 
+         labels=2, lines=0)
+
+library(fpc)
+plotcluster(fish.scaled, fish.k4$cluster)
+
+n <- nrow(fish.scaled)
+wss <- rep(0, 6)
+wss[1] <- (n - 1) * sum(apply(fish.scaled, 2, var))
+for (i in 2:6){
+  wss[i] <- sum(kmeans(fish.scaled, centers = i, iter.max=100, nstart=25)$withinss)
+}
+plot(1:6, wss, type = "b", xlab = "Number of clusters", ylab = "Within groups sum of squares")
+
+
+#72      LKSG                    2159.0              889.0          80
+#72               20         385079               2.90             1
+
+#89      PDFH                    2235.0             1067.0          30
+#89                9         139389               3.35             1
+
+
