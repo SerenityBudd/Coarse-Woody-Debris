@@ -10,23 +10,68 @@ str(pool8.barcodes)
 pool8.barcodes$snag <- factor(pool8.barcodes$snag)
 
 #get map of Pool 8
-m <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "terrain", source = "google")
+m <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "roadmap", source = "google")
 ggmap(m)
 
-#plot map with points on it 
+# plot map with points on it 
 pool8.barcodes.snagmap <- ggmap(m)+
   ggtitle("Pool 8 Sampling Locations by CWD Presence")+
   xlab("Longitude")+
   ylab("Latitude")+ 
   scale_x_continuous(limits = c(-91.4, -91.1))+
   geom_point(data = pool8.barcodes[pool8.barcodes$snag %in% c(0,1),], 
-             aes(x = lon, y = lat, color = snag), 
-             size = 0.4, 
+             aes(x = lon, y = lat, color = snag, pch = snag), 
+             size = .7, 
              alpha = 0.8)+
   scale_color_manual(values=c("#600000", "#ff0000"))+ #light and dark red
-  guides(color = guide_legend(override.aes = list(size=8))) #legend size
+  guides(color = guide_legend(title = "Coarse\nWoody\nDebris",
+                              override.aes = list(size=8)),
+         pch = guide_legend(title = "Coarse\nWoody\nDebris",
+                              override.aes = list(size=8))) #legend size
 pool8.barcodes.snagmap
 #ggsave(filename = "pool8.barcodes.snagmap.png", plot = pool8.barcodes.snagmap, dpi = 1000)
+
+# data frame for box
+boxdf <- data.frame(x1=c(-91.292), x2=c(-91.188), y1=c(43.68), y2=c(43.757))
+
+# plot map with box to zoom into 
+pool8.barcodes.snagmap.box <- ggmap(m)+
+  ggtitle("Pool 8 Sampling Locations by CWD Presence")+
+  xlab("Longitude")+
+  ylab("Latitude")+ 
+  scale_x_continuous(limits = c(-91.4, -91.1))+
+  geom_point(data = pool8.barcodes[pool8.barcodes$snag %in% c(0,1),], 
+             aes(x = lon, y = lat, color = snag, pch = snag), 
+             size = .7, 
+             alpha = 0.8)+
+  scale_color_manual(values=c("#600000", "#ff0000"))+ #light and dark red
+  guides(color = guide_legend(title = "Coarse\nWoody\nDebris",
+                              override.aes = list(size=8)),
+         pch = guide_legend(title = "Coarse\nWoody\nDebris",
+                            override.aes = list(size=8))) + 
+  geom_rect(inherit.aes = FALSE, data=boxdf, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), alpha = 0, color="black") 
+pool8.barcodes.snagmap.box
+
+# get a zoomed in map of pool8
+mm <- get_map(location = c(-91.24, mean(range(pool8.barcodes$lat))), zoom = 13, maptype = "roadmap", source = "google")
+ggmap(mm)
+
+# plot map of pool8 zoomed in
+pool8.barcodes.snagmap.zoom <- ggmap(mm)+
+  ggtitle("Pool 8 Sampling Locations by CWD Presence")+
+  xlab("Longitude")+
+  ylab("Latitude")+ 
+  geom_point(data = pool8.barcodes[pool8.barcodes$snag %in% c(0,1),], 
+             aes(x = lon, y = lat, color = snag, pch = snag), 
+             size = 1, 
+             alpha = 0.8)+
+  scale_color_manual(values=c("#600000", "#ff0000"))+ #light and dark red
+  guides(color = guide_legend(title = "Coarse\nWoody\nDebris",
+                              override.aes = list(size=8)),
+         pch = guide_legend(title = "Coarse\nWoody\nDebris",
+                            override.aes = list(size=8))) + #legend size
+  geom_rect(inherit.aes = FALSE, data=boxdf, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), alpha = 0, color="black")
+pool8.barcodes.snagmap.zoom
 
 # Dealing with location codes
 ldat <- read.csv("locationdata.csv")
@@ -73,9 +118,6 @@ table(b$lcode)
 # sure enough, there are more permanent sites in the other pools, just not pool 8.
 
 # make another plot color-coded by site type
-#get map of Pool 8
-m <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "terrain", source = "google")
-ggmap(m)
 
 #plot map with barcodes by site type
 pool8.barcodes.sitetype <- ggmap(m)+
@@ -84,33 +126,11 @@ pool8.barcodes.sitetype <- ggmap(m)+
   ylab("Latitude")+ 
   scale_x_continuous(limits = c(-91.4, -91.1))+
   geom_point(data = pool8.barcodes[!is.na(pool8.barcodes$sitetype),], 
-             aes(x = lon, y = lat, color = sitetype), size = 0.3, alpha = 0.6, pch = 20)+
-  scale_color_manual(name = "Site Type", labels = c("Primary Random", "Alternate Random", "Subjective Permanent"), values=c("#7302F8", "#F87302", "#02F873"))+
+             aes(x = lon, y = lat, color = sitetype), size = 0.5, alpha = 0.6, pch = 20)+
+  scale_color_manual(name = "Site Type", labels = c("Primary Random", "Alternate Random", "Subjective Permanent"), values=c("#0B775E", "#FAD510", "#F2300F"))+
   guides(color = guide_legend(override.aes = list(size=10)))
 pool8.barcodes.sitetype
 #ggsave(filename = "pool8.barcodes.sitetype.png", plot = pool8.barcodes.sitetype, dpi = 1000)
-
-mmm <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "roadmap", source = "google", color="bw")
-ggmap(mmm)
-
-# plot map of CWD by time
-ggmap(mmm, extent = "panel", legend = "bottomright") +
-  # plot the lat and lon points of all CWD
-  # use sdate because sdate and fdate were the same
-  geom_point(aes(x = lon, y = lat, color = as.numeric(sdat)),  
-             data = pool8.barcodes %>% filter(snag == 1), 
-             size = .5, alpha = .8, pch = 19) +
-  scale_x_continuous(limits = c(-91.4, -91.1)) +
-  # set the color to get more intense as the date becomes more recent
-  scale_colour_gradient(low = "#400036", high = "#FF00D8", 
-                        breaks = c(7500,10000,12500,15000), 
-                        labels = c("07/15/90", "05/19/97", "03/23/04", "01/26/11")) +
-  ggtitle("Map of CWD Presence by Time") + 
-  xlab("Longitude") + 
-  ylab("Latitude") +
-  theme(plot.title = element_text(color="#600051", size=14, face="bold")) +
-  labs(color = "Date of Sampling")
-#ggsave("CWDTime.png", plot = last_plot(), dpi = 1000)
 
 # Map color coded by wingdyke presence
 #plot map with barcodes by site type
@@ -122,9 +142,33 @@ wingdyke <- ggmap(m)+
   geom_point(data = pool8.barcodes[!is.na(pool8.barcodes$wingdyke),], 
              aes(x = lon, y = lat, color = factor(wingdyke)), 
              size = 1, 
-             alpha = 0.6, 
+             alpha = 0.8, 
              pch = 20)+
-  scale_color_manual(name = "Presence of Wing Dam or Dyke", labels = c("No Wing Dam/Dyke Present", "Wing Dam/Dyke Present"), values=c("darkred", "dodgerblue2"))+
+  scale_color_manual(name = "Presence of Wing Dam or Dyke", labels = c("No Wing Dam/Dyke Present", "Wing Dam/Dyke Present"), values=c("#FF8300", "#5D00C6"))+
   guides(color = guide_legend(override.aes = list(size=10)))
 wingdyke
 #ggsave(filename = "wingdyke.png", plot = wingdyke, dpi = 1000)
+
+
+# get a black and white map of pool8
+mmm <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "roadmap", source = "google", color="bw")
+ggmap(mmm)
+
+# plot map of CWD by time
+ggmap(mmm, extent = "panel", legend = "bottomright") +
+  # plot the lat and lon points of all CWD
+  # use sdate because sdate and fdate were the same
+  geom_point(aes(x = lon, y = lat, color = as.numeric(sdat)),  
+             data = pool8.barcodes %>% filter(snag == 1), 
+             size = .5, alpha = .8, pch = 19) +
+  scale_x_continuous(limits = c(-91.4, -91.1)) +
+  # set the color to get brighter as the date becomes more recent
+  scale_colour_gradient(low = "#400036", high = "#FF00D8", 
+                        breaks = c(7500,10000,12500,15000), 
+                        labels = c("07/15/90", "05/19/97", "03/23/04", "01/26/11")) +
+  ggtitle("Map of CWD Presence by Time") + 
+  xlab("Longitude") + 
+  ylab("Latitude") +
+  theme(plot.title = element_text(color="#600051", size=14, face="bold")) +
+  labs(color = "Date of Sampling")
+#ggsave("CWDTime.png", plot = last_plot(), dpi = 2000)
