@@ -11,3 +11,4 @@ library(RColorBrewer)
 library(rgdal)
 library(rgeos) #might need to install this one
 library(scales)
+library(maptools)
