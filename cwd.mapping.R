@@ -119,16 +119,21 @@ table(b$lcode)
 
 # make another plot color-coded by site type
 
-#plot map with barcodes by site type
-pool8.barcodes.sitetype <- ggmap(m)+
+pool8.barcodes.sitetype <- ggmap(mmm)+
   ggtitle("Pool 8 Barcodes by Site Type")+
   xlab("Longitude")+
   ylab("Latitude")+ 
   scale_x_continuous(limits = c(-91.4, -91.1))+
   geom_point(data = pool8.barcodes[!is.na(pool8.barcodes$sitetype),], 
-             aes(x = lon, y = lat, color = sitetype), size = 0.5, alpha = 0.6, pch = 20)+
-  scale_color_manual(name = "Site Type", labels = c("Primary Random", "Alternate Random", "Subjective Permanent"), values=c("#0B775E", "#FAD510", "#F2300F"))+
-  guides(color = guide_legend(override.aes = list(size=10)))
+             aes(x = lon, y = lat, color = sitetype), size = 0.65, alpha = 0.8, pch = 20)+
+  scale_color_manual(name = "Site Type", labels = c("Primary Random", "Alternate Random",
+                                                    "Subjective Permanent"), 
+                     values=c("#D41A1A", "#1A1AD4", "#FFC300"))+
+  guides(color = guide_legend(override.aes = list(size=10))) +
+  # add the sub perm sites on top in a bigger size
+  geom_point(data = pool8.barcodes[!is.na(pool8.barcodes$sitetype) &
+                                     pool8.barcodes$sitetype == "subj.perm",], 
+             size = 1, alpha = 0.8, pch = 20, color = "#FFC300")
 pool8.barcodes.sitetype
 #ggsave(filename = "pool8.barcodes.sitetype.png", plot = pool8.barcodes.sitetype, dpi = 1000)
 
