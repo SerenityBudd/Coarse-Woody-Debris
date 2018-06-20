@@ -49,18 +49,20 @@ Loess <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag),], aes(x = lat
   xlab("N <--    (Latitude)    --> S") +
   ylab("Snag Presence") +
   ggtitle("Pool 8 CWD Presence by Latitude")
+Loess
 #ggsave(filename = "loess.latitude.png", plot = Loess, dpi = 500)
 # can also use scatter.smooth
 # with(pool8.barcodes, scatter.smooth(snag~lat))
 
 # loess plot over time (by date)
-ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag),], aes(x = sdate, y = as.numeric(as.character(snag)))) +
+timeplot <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag),], aes(x = sdate, y = as.numeric(as.character(snag)))) +
   geom_point(size = 2, alpha = 0.3, pch = 20)+
   stat_smooth(method = "loess", color = "blue", size = 1) +
   xlab("Date") +
   ylab("Snag Presence") +
   ggtitle("Pool 8 snag presence by date")+
   theme_bw()
+timeplot 
 
 substrt.cwd <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes$substrt),], aes(x = substrt))+
   geom_bar(aes(fill = substrt))+
@@ -150,8 +152,10 @@ partialmod <- glm(snag~ wingdyke + substrt, data = pool8.barcodes, family = bino
 summary(partialmod)
 # notice that none of the levels of substrt are significant anymore. 
 
+#Make plot of water temperature over one year
 plot(pool8.barcodes$sdat[years(pool8.barcodes$sdat) == 1995], pool8.barcodes$temp[years(pool8.barcodes$sdat) == 1995], xlab = "Month/Day/1995", ylab = expression("Temperature in "*degree*"C"))
 
+#ggplot version of water tempreature graph
 ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)), 
        aes(x = factor(period), y = temp)) +
   geom_point(alpha = .1) +
@@ -161,20 +165,9 @@ ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)),
 
 ### Investigating aquatic habitats
 
-#someone on stackoverflow made a palette with 25 distinct colors:
-c25 <- c("dodgerblue2","#E31A1C", # red
-         "green4",
-         "#6A3D9A", # purple
-         "#FF7F00", # orange
-         "black","gold1",
-         "skyblue2","#FB9A99", # lt pink
-         "palegreen2",
-         "#CAB2D6", # lt purple
-         "#FDBF6F", # lt orange
-         "gray70", "khaki2",
-         "maroon","orchid1","deeppink1","blue1","steelblue4",
-         "darkturquoise","green1","yellow4","yellow3",
-         "darkorange4","brown")
+# establish color scale
+myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#808080", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB")
+names(myColors) <- levels(aquahabdf$aqua_shortname)
 
 pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_shortname)) %>% ggplot(aes(x = aqua_shortname))+
   geom_bar(aes(fill = aqua_shortname))+
