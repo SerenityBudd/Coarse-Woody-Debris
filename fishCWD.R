@@ -49,19 +49,6 @@ fishinfo <- left_join(fishinfo, fishdist, by = "Fishcode")
 dim(fishinfo)
 str(fishinfo)
 
-
-# exploring the fish distribution data
-table(fishdist$Mid.Range.Latitude, exclude = F)
-table(fishdist$Mean.Range.Latitude, exclude = F)
-table(fishdist$Ubiquity, exclude = F)
-
-# the same fish are not in either latitude col
-identical(fishdist[is.na(fishdist$Mid.Range.Latitude),], 
-          fishdist[is.na(fishdist$Mean.Range.Latitude),])
-
-# these are the fish that are NA for both Lat cols
-fishdist[is.na(fishdist$Mid.Range.Latitude),1]
-
 # grabbing the unique fishcodes from the LTRM data
 FishCodes <- as.data.frame(unique(sort(fishdat$fishcode))[-1])
 colnames(FishCodes) <- c("Fishcode")
@@ -95,41 +82,17 @@ summary(fishdat[fishdat$fishcode %in% nos,"fishcode"])
 
 # remove the rows of fishcodes that are not in the fish info data
 summary(fishdat[fishdat$fishcode %in% ltrmf,"fishcode"])
-#LTRMrm <- c("LRVL", "NFSH", "SCBC", "U-IL", "U-PC", "UNID", "WSSN", "YOYF")
 
 ltrmfishdat <- filter(fishdat, !fishcode %in% ltrmf)
 
 # explore the fishinfo data
-
-myfunc <- function (vec) {
-  table(vec, exclude = F)
+for (i in 1:ncol(fishinfo)) {
+  print(colnames(fishinfo)[i]) 
+  print(summary(fishinfo[,i]))
 }
 
-apply(fishinfo, 2, myfunc)
-
-# plot things
-
-load("pool8.barcodes.Rda")
-#pool8.barcodes$snag <- as.numeric(pool8.barcodes$snag)
-pool8.b <- pool8.barcodes[,c("fishcode", "snag")]
-# order pool8.b by fishcode
-pool8.b <- pool8.b[order(pool8.b$fishcode),] 
-# remove rows with missing fishcodes
-pool8.b <- pool8.b[-c(1:204),]
-# make the table a dataframe so we can work with it
-pool8.bb <- as.data.frame(table(pool8.b))
-
-pool8.bb <- data.frame(pool8.bb[2:58, c("fishcode", "Freq")], 
-                       pool8.bb[60:116, "Freq"])
-colnames(pool8.bb) <- c("Fishcode", "nosnag", "snag")
-
-pool8.fishtraits <- inner_join(pool8.bb, fishinfo, by = "Fishcode")
-
-#plot snag/(snag + nosnag) by fishcode
-ggplot(data = filter(pool8.fishtraits,!is.na(snag) & !is.na(nosnag)), 
-       aes(x = Fishcode, y = snag/(snag+nosnag), color = snag/(snag+nosnag))) +
-  geom_point() +
-  theme(axis.text.x = element_text(size = 5, angle=60)) 
+# remove the columns with too many NAs
+fishinfo <- select(fishinfo, -c(Animal, Wilcox.Ucrit, Freshwater.Marine, Maximum.LTRMP.Length, Substock:Trophy))
   
 # use cluster analysis on the fish data 
 # c("Fishcode", "Wilcox.Migratory", "Wilcox.Pass.Dams", "Current.Preference", "Substrate.Preference", "Turbidity.Tolerance")
@@ -215,3 +178,27 @@ text(fish.pc$scores[,1], fish.pc$scores[,2], labels=fishcluster$Fishcode, cex=0.
 
 # the fish that were outliers were #72 - LKSG and #89 - PDFH
 
+
+# PLOT THINGS
+
+load("pool8.barcodes.Rda")
+#pool8.barcodes$snag <- as.numeric(pool8.barcodes$snag)
+pool8.b <- pool8.barcodes[,c("fishcode", "snag")]
+# order pool8.b by fishcode
+pool8.b <- pool8.b[order(pool8.b$fishcode),] 
+# remove rows with missing fishcodes
+pool8.b <- pool8.b[-c(1:204),]
+# make the table a dataframe so we can work with it
+pool8.bb <- as.data.frame(table(pool8.b))
+
+pool8.bb <- data.frame(pool8.bb[2:58, c("fishcode", "Freq")], 
+                       pool8.bb[60:116, "Freq"])
+colnames(pool8.bb) <- c("Fishcode", "nosnag", "snag")
+
+pool8.fishtraits <- inner_join(pool8.bb, fishinfo, by = "Fishcode")
+
+#plot snag/(snag + nosnag) by fishcode
+ggplot(data = filter(pool8.fishtraits,!is.na(snag) & !is.na(nosnag)), 
+       aes(x = Fishcode, y = snag/(snag+nosnag), color = snag/(snag+nosnag))) +
+  geom_point() +
+  theme(axis.text.x = element_text(size = 5, angle=60)) 
