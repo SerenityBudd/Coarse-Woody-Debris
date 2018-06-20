@@ -45,7 +45,6 @@ names(lonlat) <- c("lon", "lat")
 #join to the original data frame
 aquahabdf <- cbind(aquahabdf, lonlat)
 
-
 #Create a custom color scale with colors mapped to aquatic habitat types
 myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#808080", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB")
 names(myColors) <- levels(aquahabdf$AQUA_CODE)
