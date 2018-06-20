@@ -167,19 +167,20 @@ ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)),
 
 # establish color scale
 myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#808080", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB")
-names(myColors) <- levels(aquahabdf$aqua_shortname)
+names(myColors) <- levels(aquahabdf$aqua_desc)
 
-pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_shortname)) %>% ggplot(aes(x = aqua_shortname))+
-  geom_bar(aes(fill = aqua_shortname))+
+pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_desc)) %>% ggplot(aes(x = aqua_desc))+
+  geom_bar(aes(fill = aqua_desc))+
   scale_fill_manual(name = "Aquatic Habitat Type", 
-                    labels = levels(pool8.barcodes$aqua_shortname),
-                    values = c25)+
+                    labels = levels(pool8.barcodes$aqua_desc),
+                    values = myColors)+
   facet_wrap(~snag)+
   ylab("Number of Sampling Events")+
   xlab("Aquatic Habitat Type")+
   ggtitle("Aquatic Habitat Types by CWD Presence")+
   theme(axis.text.x = element_blank())
 #not sure why I can't seem to exclude the NOPH rows with filter(aqua_shortname != "NOPH"). Especially weird because the same filtering syntax works fine in mod1 below. Help?
+#note that this color-coding is off because the factors have been releveled into alphabetical order.
 
 # Modeling based on aquatic habitat type and wingdyke
 mod1 <- glm(snag~ wingdyke + aqua_shortname + depth, data = pool8.barcodes %>% filter(aqua_shortname != "NOPH"), family = binomial)

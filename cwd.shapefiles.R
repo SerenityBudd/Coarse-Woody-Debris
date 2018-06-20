@@ -57,3 +57,9 @@ gghabs <- ggplot(data = aquahabdf, aes(x=lon, y=lat, fill = AQUA_CODE, group = g
 print(gghabs)
 #ggsave("aquahabs.png", plot = gghabs, dpi = 2000)
 #note that you have to use the group = group parameter to get the polygons to plot in the right order. Don't quite know what it means, but it's essential. 
+
+
+### More recent shapefile
+hab2010 <- readOGR(dsn = "2010_armycorps_shapefile/", layer = "aqa_2010_lvl3_011918")
+glimpse(hab2010)
+#could try subsetting this and setting the bounding box according to min/max utm values from pool8
