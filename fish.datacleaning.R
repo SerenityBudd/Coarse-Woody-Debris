@@ -91,6 +91,18 @@ for (i in 1:ncol(fishinfo)) {
   print(summary(fishinfo[,i]))
 }
 
+#Quicky determine how many NA's are in each column of the data frame. 
+nacount <- function(x){
+  na.df <- data.frame(name = names(x), nas = NA)
+  for(i in 1:ncol(x)){
+    na.df$nas[i] <- sum(is.na(x[,i]))
+  }
+  return(na.df)
+}
+
+# count NA's
+nacount(fishinfo)
+
 # remove the columns with too many NAs
 fishinfo <- select(fishinfo, -c(Animal, Wilcox.Ucrit, Freshwater.Marine, Maximum.LTRMP.Length, Substock:Trophy))
 
@@ -100,11 +112,16 @@ fishcluster <- select(fishinfo, c(Fishcode, Exploit.Rank:Wilcox.Pass.Dams, Conse
 # removes the columns that are not important to cluster analysis
 fishcluster <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff))
 
-fishclustercomplete <- fishcluster[complete.cases(fishcluster),]
-
-
+# quickly see summaries for the new df fishcluster
 for (i in 1:ncol(fishcluster)) {
   print(colnames(fishcluster)[i]) 
   print(summary(fishcluster[,i]))
 }
+
+# count NA's
+nacount(fishcluster)
+
+# make a dataframe of fishcluster with all the NAs removed
+fishclustercomplete <- fishcluster[complete.cases(fishcluster),]
+
 
