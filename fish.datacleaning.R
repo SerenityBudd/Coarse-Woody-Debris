@@ -110,7 +110,11 @@ fishinfo <- select(fishinfo, -c(Animal, Wilcox.Ucrit, Freshwater.Marine, Maximum
 fishcluster <- select(fishinfo, c(Fishcode, Exploit.Rank:Wilcox.Pass.Dams, Conservation.Status:Trophic.Guild, Water.Column.Preference:Egg.Bouyancy,Maximum.Fecundity:Mean.Incubation,Larval.Growth:Ubiquity))
 
 # removes the columns that are not important to cluster analysis
-fishcluster <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff))
+fishcluster1 <- fishinfo[,c("Fishcode", "Maximum.Literature.Length", "Length.at.Maturity", "Maximum.Age", "Age.at.Maturity", "Mean.Fecundity", "Mean.Ovum.Diameter", "Parental.Care")]
+
+fishcluster2 <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff))
+
+fishcluster3 <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff,Egg.Bouyancy,Mean.Ovum.Diameter,Mean.Incubation,Larval.Growth))
 
 # quickly see summaries for the new df fishcluster
 for (i in 1:ncol(fishcluster)) {
@@ -121,7 +125,7 @@ for (i in 1:ncol(fishcluster)) {
 # count NA's
 nacount(fishcluster)
 
-# make a dataframe of fishcluster with all the NAs removed
-fishclustercomplete <- fishcluster[complete.cases(fishcluster),]
-
+# make a dataframe of fishcluster with all the NAs removed, *** NOTE which "fishcluster" is used
+fishclustercomplete <- fishcluster3[complete.cases(fishcluster3),]
+#save(fishclustercomplete, file = "fishclustercomplete.Rda")
 
