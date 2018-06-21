@@ -91,9 +91,25 @@ for (i in 1:ncol(fishinfo)) {
   print(summary(fishinfo[,i]))
 }
 
+
+#Quicky determine how many NA's are in each column of the data frame. 
+nacount <- function(x){
+  na.df <- data.frame(name = names(x), nas = NA)
+  for(i in 1:ncol(x)){
+    na.df$nas[i] <- sum(is.na(x[,i]))
+  }
+  return(na.df)
+}
+
 # remove the columns with too many NAs
 fishinfo <- select(fishinfo, -c(Animal, Wilcox.Ucrit, Freshwater.Marine, Maximum.LTRMP.Length, Substock:Trophy))
+# count NA's
+nacount(fishinfo)
 
 fishcluster <- select(fishinfo, c(Exploit.Rank:Wilcox.Pass.Dams, Conservation.Status:Trophic.Guild, Water.Column.Preference:Egg.Bouyancy,Maximum.Fecundity:Mean.Incubation,Larval.Growth:Ubiquity))
+# count NA's
+nacount(fishcluster)
 
 fishcluster <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff))
+# count NA's
+nacount(fishcluster)
