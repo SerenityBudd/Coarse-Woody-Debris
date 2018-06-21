@@ -177,4 +177,32 @@ pool8.cwd.timemap <- ggmap(mmm, extent = "panel", legend = "bottomright") +
   theme(plot.title = element_text(color="#600051", size=14, face="bold")) +
   labs(color = "Date of Sampling")
 pool8.cwd.timemap
-#ggsave(filename = "pool8.cwd.timemap.png", plot = pool8.cwd.timemap, dpi = 2000)
+#ggsave(filename = "pool8.cwd.timemap.png", plot = pool8.cwd.timemap, dpi = 1000)
+
+
+LOESS <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag),], aes(x = lat, y = as.numeric(as.character(snag)))) +
+  geom_point(size = 2, alpha = 0.2, pch = 20)+
+  stat_smooth(method = "loess", color = "darkred", size = 1.5) +
+  xlab("N \n   \n  (Latitude)  \n  \n S") +
+  ylab("Snag Presence") +
+  theme(axis.text.x = element_text(angle=270), 
+        axis.title.x =  element_text(angle=270, vjust = .5),
+        axis.text.y = element_text(angle=270), 
+        axis.title.y =  element_text(angle=270)) 
+LOESS
+#ggsave(filename = "LOESS.png", plot = LOESS, dpi = 1000)
+
+secchim <- ggmap(m)+
+  ggtitle("Pool 8 Barcodes by Secchi Level")+
+  xlab("Longitude")+
+  ylab("Latitude")+ 
+  scale_x_continuous(limits = c(-91.4, -91.1))+
+  geom_point(data = pool8.barcodes[abs(!is.na(pool8.barcodes$secchi)) & 
+                                     pool8.barcodes$secchi >= 0,], 
+             aes(x = lon, y = lat, color = secchi), 
+             size = 1, 
+             alpha = 0.8, 
+             pch = 20)#+
+#  scale_color_manual(name = "Secchi Level", labels = c("No Wing Dam/Dyke Present", "Wing Dam/Dyke Present"), values=c("#FF8300", "#5D00C6"))+
+ # guides(color = guide_legend(override.aes = list(size=10)))
+secchim
