@@ -75,7 +75,7 @@ fish.3.clust
 fish.scaled <- scale(fishclustercomplete[,-1])
 clusplot(fish.scaled, cut.3, color=TRUE, shade=TRUE, 
          labels=2, lines=0)
-
+plotcluster(fish.scaled, cut.3)
 
 #########################################################
 # principal components
