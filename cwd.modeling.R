@@ -106,42 +106,67 @@ secchi
 
 #Depth
 # trying both linear and quadratic terms
-mdepth <- glm(snag~depth, data = pool8.barcodes, family = binomial)
-qdepth <- glm(snag~I(depth^2), data = pool8.barcodes, family = binomial)
+data2 <- pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes$depth),]
+data2$snag <- as.numeric(as.character(data2$snag))
+
+mdepth <- glm(snag~depth, data = data2, family = binomial)
+qdepth <- glm(snag~I(depth^2), data = data2, family = binomial)
 summary(qdepth)
 summary(mdepth)
 mmps(mdepth)
 mmps(qdepth)
 
-
 depthvals <- as.data.frame(seq(from = 0, to = 5, by = 0.1))
 names(depthvals) <- "depth"
-depthvals$preds <- predict(qdepth, depthvals, type = "response") #have to include "response" to make it give you probabilities, not log odds. 
+depthvals$preds <- predict(qdepth, depthvals, type = "response", se.fit = T)$fit
+depthvals$se <- predict(qdepth, depthvals, type = "response", se.fit = T)$se.fit
+#have to include "response" to make it give you probabilities, not log odds. 
 
 # plot the quadratic logistic regression: don't know how to make this work
-ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes$depth),], 
-       aes(x = depth, y = as.numeric(as.character(snag))))+
-  geom_point(alpha = 0.5)+
-  geom_line(data = depthvals, aes(x = depth, y = preds), col = "blue", size = 1.5)+
-  ggtitle("CWD Presence vs. Depth (Quadratic)")
-
-# plot the regular logistic regression
-ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag)& !is.na(pool8.barcodes$depth),], 
+ggplot(data = data2, 
        aes(x = depth, y = snag))+
   geom_point(alpha = 0.5)+
-  geom_smooth(method = "glm", method.args = list(family = "binomial"))+
-  ggtitle("CWD Presence vs. Depth")
+  stat_smooth(method = glm, 
+              formula = y ~ I(x^2), 
+              method.args = list(family = "binomial"),
+              size = 1.5)+
+  ggtitle("CWD Presence vs. Depth (Quadratic)")+
+  xlab("Depth (meters)")+
+  ylab("Coarse Woody Debris Presence")+
+  theme(text = element_text(size=20))
+
+# plot the regular logistic regression
+ggplot(data = data2, 
+       aes(x = depth, y = snag))+
+  geom_point(alpha = 0.5)+
+  stat_smooth(method = glm, 
+              formula = y ~ x, 
+              method.args = list(family = "binomial"),
+              size = 1.5)+
+  ggtitle("CWD Presence vs. Depth")+
+  xlab("Depth (meters)")+
+  ylab("Coarse Woody Debris Presence")+
+  theme(text = element_text(size=20))
 
 #Temperature
-mtemp <- glm(snag~temp, data = pool8.barcodes, family = binomial)
+data3 <- pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes$temp),]
+data3$snag <- as.numeric(as.character(data3$snag))
+
+mtemp <- glm(snag~temp, data = data3, family = binomial)
 summary(mtemp)
 mmps(mtemp)
 
-ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag) & !is.na(pool8.barcodes$temp),], 
+ggplot(data = data3, 
        aes(x = temp, y = snag))+
   geom_point(alpha = 0.5)+
-  geom_smooth(method = "glm", method.args = list(family = "binomial"))+
-  ggtitle("CWD Presence vs. Temperature")
+  stat_smooth(method = glm, 
+              formula = y ~ x, 
+              method.args = list(family = "binomial"),
+              size = 1.5)+
+  ggtitle("CWD Presence vs. Water Temperature")+
+  xlab("Water Temperature (ºC)")+
+  ylab("Coarse Woody Debris Presence")+
+  theme(text = element_text(size=20))
 
 # Make logistic model with all predictors
 fullmod <- glm(snag~depth + I(depth^2) + current + stageht + wingdyke + substrt, data = pool8.barcodes, family = binomial)
@@ -153,22 +178,34 @@ summary(partialmod)
 # notice that none of the levels of substrt are significant anymore. 
 
 #Make plot of water temperature over one year
-plot(pool8.barcodes$sdat[years(pool8.barcodes$sdat) == 1995], pool8.barcodes$temp[years(pool8.barcodes$sdat) == 1995], xlab = "Month/Day/1995", ylab = expression("Temperature in "*degree*"C"))
+data1995 <- 
+plot(pool8.barcodes$sdat[years(pool8.barcodes$sdat) == 1995], pool8.barcodes$temp[years(pool8.barcodes$sdat) == 1995], xlab = "Month/Day/1995", ylab = expression("Temperature in ºC"), main = "Water temperature over time, 1995")
 
-#ggplot version of water tempreature graph
+#ggplot version of water temperature graph
 ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)), 
        aes(x = factor(period), y = temp)) +
   geom_point(alpha = .1) +
   xlab("Period") +
   ylab("Temperature") +
-  scale_x_discrete(labels=c("1" = "Jun 15 - Jul 31", "2" = "Aug 1 - Sep 14", "3" = "Sep 15 - Oct 31"))
+  scale_x_discrete(labels=c("1" = "Jun 15 - Jul 31", "2" = "Aug 1 - Sep 14", "3" = "Sep 15 - Oct 31"))+
+  theme(text = element_text(size=20))
 
 ### Investigating aquatic habitats
 
 # establish color scale
-myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#808080", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB")
-names(myColors) <- levels(aquahabdf$aqua_desc)
+myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB", "#808080")
+names(myColors) <- levels(pool8.barcodes$aqua_desc)
 
+testcolors <- data.frame(x = 1:16, 
+                         y = 1:16, 
+                         name = factor(levels(pool8.barcodes$aqua_desc), levels = levels(pool8.barcodes$aqua_desc)))
+
+#graph to check which colors go with which levels
+ggplot(data = testcolors, aes(x = x, y = y))+
+  geom_point(aes(color = name, size = 3))+
+  scale_color_manual(values = myColors)
+
+#the colors are still messed up on this graph!!
 pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_desc)) %>% ggplot(aes(x = aqua_desc))+
   geom_bar(aes(fill = aqua_desc))+
   scale_fill_manual(name = "Aquatic Habitat Type", 
@@ -178,17 +215,17 @@ pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_desc)) %>% ggplot
   ylab("Number of Sampling Events")+
   xlab("Aquatic Habitat Type")+
   ggtitle("Aquatic Habitat Types by CWD Presence")+
+  theme(text = element_text(size=20))+
   theme(axis.text.x = element_blank())
-#not sure why I can't seem to exclude the NOPH rows with filter(aqua_shortname != "NOPH"). Especially weird because the same filtering syntax works fine in mod1 below. Help?
-#note that this color-coding is off because the factors have been releveled into alphabetical order.
+#This color-coding is still off and I don't know why.
 
-# Modeling based on aquatic habitat type and wingdyke
-mod1 <- glm(snag~ wingdyke + aqua_shortname + depth, data = pool8.barcodes %>% filter(aqua_shortname != "NOPH"), family = binomial)
+# Modeling based on aquatic habitat type and wingdyke and depth
+mod1 <- glm(snag~ wingdyke + aqua_desc + depth, data = pool8.barcodes, family = binomial)
 summary(mod1)
 
-# Making a plot of this model, following this tutorial: https://blogs.uoregon.edu/rclub/2016/04/14/plotting-logistic-regressions-part-3/
+# Making a plot of the habitat/wingdyke/depth model, following this tutorial: https://blogs.uoregon.edu/rclub/2016/04/14/plotting-logistic-regressions-part-3/
 depth_range <- seq(from = 0, to = 5, by=.1)
-generated_data <- as.data.frame(expand.grid(depth = depth_range, wingdyke = c(0, 1), aqua_shortname = levels(pool8.barcodes$aqua_shortname)[-10] )) #shouldn't exclude this by index number but I can't figure out how to exclude it by name!!
+generated_data <- as.data.frame(expand.grid(depth = depth_range, wingdyke = c(0, 1), aqua_desc = levels(droplevels(pool8.barcodes)$aqua_desc)))
 head(generated_data)
 generated_data$prob <- predict(mod1, newdata = generated_data, type = 'response')
 head(generated_data) 
@@ -206,36 +243,45 @@ head(plot.data)
 ggplot(plot.data, aes(x=depth, y=prob, color=wingdyke_level)) + 
   geom_line(lwd=1.5) + 
   scale_color_manual(values = c("dodgerblue2", "red"))+
-  labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
-  facet_wrap(~aqua_shortname)+
-  theme_bw()
+  labs(x="Water depth (meters)", y="Probability of CWD presence", title="Probability of Coarse Woody Debris Presence") +
+  facet_wrap(~aqua_desc)+
+  theme_bw()+
+  theme(text = element_text(size=20))
 
 # let's try flipping it, so the facets are by wingdyke presence level and the lines are color coded by aquatic habitat type.
-ggplot(plot.data, aes(x=depth, y=prob, color=aqua_shortname)) + 
+bigplot <- ggplot(plot.data, aes(x=depth, y=prob, color=aqua_desc)) + 
   geom_line(lwd=1.5) + 
-  scale_color_manual(values = brewer.pal(12,"Paired"))+
-  labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
+  scale_color_manual(name = "Aquatic Habitat Type", values = myColors)+
+  labs(x="Water depth (meters)", y="P(CWD)", 
+       title="Probability of Coarse Woody Debris Presence") +
   facet_wrap(~wingdyke_level)+
-  theme_bw()
+  theme_bw()+
+  theme(axis.title.x = element_text(size = 20), 
+        axis.title.y = element_text(size = 20),
+        title = element_text(size = 20))
+# ggsave(file = "bigplot.png", plot = bigplot, dpi = 500)
+######################
 
-#Interaction term between wingdyke and aqua_shortname is not helpful
-mod2 <- glm(snag~ wingdyke + aqua_shortname + depth + wingdyke*aqua_shortname, data = pool8.barcodes %>% filter(aqua_shortname != "NOPH"), family = binomial)
+#Interaction term between wingdyke and aqua_desc is not helpful
+mod2 <- glm(snag~ wingdyke + aqua_desc + depth + wingdyke*aqua_desc, data = pool8.barcodes, family = binomial)
 summary(mod2)
 
 #Interaction term between depth and wingdyke looks a lot better.
-mod3 <- glm(snag~ wingdyke + aqua_shortname + depth + wingdyke*depth, data = pool8.barcodes %>% filter(aqua_shortname != "NOPH"), family = binomial)
+mod3 <- glm(snag~ wingdyke + aqua_desc + depth + wingdyke*depth, data = pool8.barcodes, family = binomial)
 summary(mod3)
 
 plot.data3 <- generated_data
 plot.data3$prob <- predict(mod3, newdata = generated_data, type = 'response')
 
-ggplot(plot.data3, aes(x=depth, y=prob, color=aqua_shortname)) + 
+#Plot of P(CWD) vs depth and aquahab type, accounting for wingdyke/depth interaction
+ggplot(plot.data3, aes(x=depth, y=prob, color=aqua_desc)) + 
   geom_line(lwd=1.5) + 
-  scale_color_manual(values = brewer.pal(12,"Paired"))+
-  labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence") +
+  scale_color_manual(values = myColors)+
+  labs(x="Water depth (meters)", y="Probability of CWD presence", title="Probability of Coarse Woody Debris Presence") +
   facet_wrap(~wingdyke_level)+
   theme_bw()
 # this looks really different, and we should think about how to interpret it. But I'm also not sure this makes biological sense, since maybe wingdams/dykes are only in shallow areas?
+#where are wingdams located?
 ggplot(data = pool8.barcodes, aes(x = depth, y = wingdyke))+
   geom_point(alpha = 0.2)+
   geom_smooth(method = "glm", method.args = list(family = "binomial"))
@@ -244,21 +290,8 @@ ggplot(data = pool8.barcodes, aes(x = depth, y = wingdyke))+
 # Exclude non-aquatic areas, and habitat types where only one barcode occurred.
 # Not sure why they sampled in non-aquatic areas. 
 
-mod4 <- glm(snag ~ depth + aqua_shortname, 
-            data = pool8.barcodes %>% 
-              filter(!(aqua_shortname %in% c("NOPH", 
-                      "Non-aq. area", 
-                      "IFL--borrow pit", 
-                      "IFL--floodplain dep. lk"))), 
+mod4 <- glm(snag ~ depth + aqua_desc, 
+            data = pool8.barcodes, 
               family = binomial)
 summary(mod4)
-
-# this doesn't look great. Plot anyway?
-plot.data4 <- as.data.frame(expand.grid(depth = depth_range, aqua_shortname = levels(pool8.barcodes$aqua_shortname)[-c(10,13,6,7)] ))
-plot.data4$prob <- predict(mod4, newdata = plot.data4, type = 'response')
-
-ggplot(plot.data4, aes(x=depth, y=prob, color=aqua_shortname)) + 
-  geom_line(lwd=1.5) + 
-  scale_color_manual(values = brewer.pal(12,"Paired"))+
-  labs(x="Water depth (meters)", y="P(CWD)", title="Probability of Coarse Woody Debris Presence by Water Depth and Aquatic Habitat Type") +
-  theme_bw()
+#depth is not significant in this model.
