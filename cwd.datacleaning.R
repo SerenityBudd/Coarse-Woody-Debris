@@ -85,3 +85,7 @@ pool8.barcodes <- as.data.frame(pool8 %>%
                                   summarize_all(firstel))
 
 #save(pool8.barcodes, file = "pool8.barcodes.Rda")
+for (i in 1:ncol(pool8.barcodes)) {
+  print(colnames(pool8.barcodes)[i]) 
+  print(summary(pool8.barcodes[,i]))
+}
