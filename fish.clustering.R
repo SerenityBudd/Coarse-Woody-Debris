@@ -1,30 +1,23 @@
 source("libraries.R")
 
 # use cluster analysis on the fish data 
-# c("Fishcode", "Wilcox.Migratory", "Wilcox.Pass.Dams", "Current.Preference", "Substrate.Preference", "Turbidity.Tolerance")
-# c("Fishcode", Maximum.Literature.Length, Length.at.Maturity, Maximum.Age, Age.at.Maturity, Mean.Fecundity, Mean.Ovum.Diameter, Parental.Care)
 
-select(fishinfo, contains("length"))
-select(fishinfo, contains("age"))
-select(fishinfo, contains("fecundity"))
-select(fishinfo, contains("ov"))
-select(fishinfo, contains("parent"))
+#fishcluster <- na.omit(fishinfo[,c("Fishcode", "Maximum.Literature.Length", "Length.at.Maturity", "Maximum.Age", "Age.at.Maturity", "Mean.Fecundity", "Mean.Ovum.Diameter", "Parental.Care")])
 
-fishcluster <- na.omit(fishinfo[,c("Fishcode", "Maximum.Literature.Length", "Length.at.Maturity", "Maximum.Age", "Age.at.Maturity", "Mean.Fecundity", "Mean.Ovum.Diameter", "Parental.Care")])
-
+#########################################################
 # using Partitioning Methods
-fish.scaled <- scale(fishcluster[,-1])
+fish.scaled <- scale(fishclustercomplete[,-1])
 
 # partitioning into 3 groups
 fish.k3 <- kmeans(fish.scaled, centers=3, iter.max=100, nstart=25)
 fish.k3
 
 # these are the 3 groups
-fish.k3.clust <- lapply(1:3, function(nc) fishcluster$Fishcode[fish.k3$cluster==nc])  
+fish.k3.clust <- lapply(1:3, function(nc) fishclustercomplete$Fishcode[fish.k3$cluster==nc])  
 fish.k3.clust   
 
 # plot the scatterplot matrix
-pairs(fishcluster[,-1], panel=function(x,y) text(x,y,fish.k3$cluster))
+pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,fish.k3$cluster))
 
 # Cluster Plot against first 2 principal components
 clusplot(fish.scaled, fish.k3$cluster, color=TRUE, shade=TRUE, 
@@ -41,49 +34,58 @@ for (i in 2:6){
 }
 plot(1:6, wss, type = "b", xlab = "Number of clusters", ylab = "Within groups sum of squares")
 
+#########################################################
 # using Hierarchical Clustering
-fish.dist <- dist(scale(fishcluster[,-1]))
-
-# single linkage
-fish.single.link <- hclust(fish.dist, method='single')
-plot(fish.single.link, labels=fishcluster$Fishcode)
+fish.dist <- dist(scale(fishclustercomplete[,-1]))
 
 # complete linkage
 fish.complete.link <- hclust(fish.dist, method='complete')
-plot(fish.complete.link, labels=fishcluster$Fishcode)
+plot(fish.complete.link, labels=fishclustercomplete$Fishcode)
 
 # looking at 2 groups
 cut.2 <- cutree(fish.complete.link, k=2)
 
-pairs(fishcluster[,-1], panel=function(x,y) text(x,y,cut.2))
+pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.2))
 
-food.2.clust <- lapply(1:2, function(nc) fishcluster$Fishcode[cut.2==nc])  
-food.2.clust
+fish.2.clust <- lapply(1:2, function(nc) fishclustercomplete$Fishcode[cut.2==nc])  
+fish.2.clust
 
 # looking at 3 groups
 cut.3 <- cutree(fish.complete.link, k=3)
 
-pairs(fishcluster[,-1], panel=function(x,y) text(x,y,cut.3))
+#pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.3))
 
-food.3.clust <- lapply(1:3, function(nc) fishcluster$Fishcode[cut.3==nc])  
-food.3.clust
+fish.3.clust <- lapply(1:3, function(nc) fishclustercomplete$Fishcode[cut.3==nc])  
+fish.3.clust
 
+clusplot(fish.scaled, cut.3, color=TRUE, shade=TRUE, 
+         labels=3, lines=0)
+
+
+#########################################################
 # principal components
-fish.pc <- princomp(fishcluster[,-1],cor=T)
+fish.pc <- princomp(fishclustercomplete[,-1],cor=T)
 
 # Setting up the colors for the 3 clusters on the plot:
-my.color.vector <- rep("red", times=nrow(fishcluster))
+my.color.vector <- rep("red", times=nrow(fishclustercomplete))
 my.color.vector[cut.3==2] <- "blue"
 my.color.vector[cut.3==3] <- "orange"
 
 # Plotting the PC scores:
 plot(fish.pc$scores[,1], fish.pc$scores[,2], ylim=range(fish.pc$scores[,1]), 
      xlab="PC 1", ylab="PC 2", type ='n', lwd=2)
-text(fish.pc$scores[,1], fish.pc$scores[,2], labels=fishcluster$Fishcode, cex=0.7, lwd=2,
+text(fish.pc$scores[,1], fish.pc$scores[,2], labels=fishclustercomplete$Fishcode, cex=0.7, lwd=2,
      col=my.color.vector)
 
 # the fish that were outliers were #72 - LKSG and #89 - PDFH
 
+
+
+
+
+
+
+#########################################################
 
 # PLOT THINGS
 
