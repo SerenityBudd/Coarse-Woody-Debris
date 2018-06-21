@@ -9,6 +9,8 @@ file.exists('aquahab/p8_1989_aquahab.shp')
 # read the file in. Need to have all the files (.sbn, .sbx, .dbf, .prj) in the same folder, for some reason. Also, remember to *leave off the .shp extension on the shapefile!!!!!!*
 aquahab <- readOGR(dsn = "aquahab", layer = "p8_1989_aquahab")
 glimpse(aquahab)
+aquahab@data$AQUA_CODE <- factor(aquahab@data$AQUA_CODE, levels(aquahab@data$AQUA_CODE)[c(1:12, 14:16, 13)])
+aquahab@data$AQUA_DESC <- factor(aquahab@data$AQUA_DESC, levels(aquahab@data$AQUA_DESC)[c(1:11, 13:16, 12)])
 
 # transform coordinates to spatial points
 points <- SpatialPoints(pool8.barcodes[,c("utm_e", "utm_n")])
@@ -17,8 +19,8 @@ proj4string(points) <- "+proj=utm +zone=15 +datum=NAD83 +units=m +no_defs +ellps
 
 #extract data for points (this gets a data frame)
 ext <- over(x = points, y = aquahab)
-ext$AQUA_CODE <- factor(ext$AQUA_CODE, levels(ext$AQUA_CODE)[c(1:12, 14:16, 13)])
-ext$AQUA_DESC <- factor(ext$AQUA_DESC, levels(ext$AQUA_DESC)[c(1:11, 13:16, 12)])
+#ext$AQUA_CODE <- factor(ext$AQUA_CODE, levels(ext$AQUA_CODE)[c(1:12, 14:16, 13)])
+#ext$AQUA_DESC <- factor(ext$AQUA_DESC, levels(ext$AQUA_DESC)[c(1:11, 13:16, 12)])
 
 # add columns to pool8.barcodes and save the file
 pool8.barcodes$aqua_code <- ext$AQUA_CODE
