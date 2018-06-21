@@ -46,7 +46,7 @@ logfct.cwd.facet
 Loess <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag),], aes(x = lat, y = as.numeric(as.character(snag)))) +
   geom_point(size = 2, alpha = 0.2, pch = 20)+
   stat_smooth(method = "loess", color = "darkred", size = 1.5) +
-  xlab("N <--    (Latitude)    --> S") +
+  xlab("S <--    (Latitude)    --> N") +
   ylab("Snag Presence") +
   ggtitle("Pool 8 CWD Presence by Latitude")
 Loess

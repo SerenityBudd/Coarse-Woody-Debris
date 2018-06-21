@@ -51,6 +51,7 @@ pool8.barcodes.snagmap.box <- ggmap(m)+
                             override.aes = list(size=8))) + 
   geom_rect(inherit.aes = FALSE, data=boxdf, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), alpha = 0, color="black") 
 pool8.barcodes.snagmap.box
+#ggsave(filename = "pool8.barcodes.snagmap.box.png", plot = pool8.barcodes.snagmap.box, dpi = 1000)
 
 # get a zoomed in map of pool8
 mm <- get_map(location = c(-91.24, mean(range(pool8.barcodes$lat))), zoom = 13, maptype = "roadmap", source = "google")
@@ -72,6 +73,7 @@ pool8.barcodes.snagmap.zoom <- ggmap(mm)+
                             override.aes = list(size=8))) + #legend size
   geom_rect(inherit.aes = FALSE, data=boxdf, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), alpha = 0, color="black")
 pool8.barcodes.snagmap.zoom
+#ggsave(filename = "pool8.barcodes.snagmap.zoom.png", plot = pool8.barcodes.snagmap.zoom, dpi = 1000)
 
 # Dealing with location codes
 ldat <- read.csv("locationdata.csv")
@@ -117,8 +119,11 @@ b <- droplevels(fishdat[fishdat$sitetype == "2" & !is.na(fishdat$sitetype),])
 table(b$lcode)
 # sure enough, there are more permanent sites in the other pools, just not pool 8.
 
-# make another plot color-coded by site type
+# get a black and white map of pool8
+mmm <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "roadmap", source = "google", color="bw")
+ggmap(mmm)
 
+# make another plot color-coded by site type
 pool8.barcodes.sitetype <- ggmap(mmm)+
   ggtitle("Pool 8 Barcodes by Site Type")+
   xlab("Longitude")+
@@ -133,7 +138,7 @@ pool8.barcodes.sitetype <- ggmap(mmm)+
   # add the sub perm sites on top in a bigger size
   geom_point(data = pool8.barcodes[!is.na(pool8.barcodes$sitetype) &
                                      pool8.barcodes$sitetype == "subj.perm",], 
-             size = 1, alpha = 0.8, pch = 20, color = "#FFC300")
+             size = 1.5, alpha = 0.8, pch = 20, color = "#FFC300")
 pool8.barcodes.sitetype
 #ggsave(filename = "pool8.barcodes.sitetype.png", plot = pool8.barcodes.sitetype, dpi = 1000)
 
@@ -154,13 +159,8 @@ wingdyke <- ggmap(m)+
 wingdyke
 #ggsave(filename = "wingdyke.png", plot = wingdyke, dpi = 1000)
 
-
-# get a black and white map of pool8
-mmm <- get_map(location = c(mean(range(pool8.barcodes$lon)), mean(range(pool8.barcodes$lat))), zoom = 11, maptype = "roadmap", source = "google", color="bw")
-ggmap(mmm)
-
 # plot map of CWD by time
-ggmap(mmm, extent = "panel", legend = "bottomright") +
+pool8.cwd.timemap <- ggmap(mmm, extent = "panel", legend = "bottomright") +
   # plot the lat and lon points of all CWD
   # use sdate because sdate and fdate were the same
   geom_point(aes(x = lon, y = lat, color = as.numeric(sdat)),  
@@ -176,4 +176,5 @@ ggmap(mmm, extent = "panel", legend = "bottomright") +
   ylab("Latitude") +
   theme(plot.title = element_text(color="#600051", size=14, face="bold")) +
   labs(color = "Date of Sampling")
-#ggsave("CWDTime.png", plot = last_plot(), dpi = 2000)
+pool8.cwd.timemap
+#ggsave(filename = "pool8.cwd.timemap.png", plot = pool8.cwd.timemap, dpi = 2000)
