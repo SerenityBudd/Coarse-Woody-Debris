@@ -14,13 +14,13 @@ aquahab@data$AQUA_DESC <- factor(aquahab@data$AQUA_DESC, levels(aquahab@data$AQU
 
 # transform coordinates to spatial points
 points <- SpatialPoints(pool8.barcodes[,c("utm_e", "utm_n")])
+plot(aquahab)
+plot(points, add = T)
 proj4string(aquahab)
 proj4string(points) <- "+proj=utm +zone=15 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
 
 #extract data for points (this gets a data frame)
 ext <- over(x = points, y = aquahab)
-#ext$AQUA_CODE <- factor(ext$AQUA_CODE, levels(ext$AQUA_CODE)[c(1:12, 14:16, 13)])
-#ext$AQUA_DESC <- factor(ext$AQUA_DESC, levels(ext$AQUA_DESC)[c(1:11, 13:16, 12)])
 
 # add columns to pool8.barcodes and save the file
 pool8.barcodes$aqua_code <- ext$AQUA_CODE
@@ -36,7 +36,7 @@ polygons.df <- fortify(aquahab, region = "OBJECTID")
 
 # merge the "fortified" data with the data from our spatial object
 aquahabdf <- inner_join(polygons.df, aquahab@data, by = "id")
-names(aquahabdf)[2:3] <- c("utm_e", "utm_n")
+names(aquahabdf)[1:2] <- c("utm_e", "utm_n")
 
 #project the utm easting and northing onto a CRS using utm zone 15
 sputm <- SpatialPoints(aquahabdf[,c("utm_e", "utm_n")], proj4string = CRS("+proj=utm +zone=15 +datum=WGS84"))
@@ -48,16 +48,17 @@ names(lonlat) <- c("lon", "lat")
 aquahabdf <- cbind(aquahabdf, lonlat)
 
 #Create a custom color scale with colors mapped to aquatic habitat types
-myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#808080", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB")
-names(myColors) <- levels(aquahabdf$AQUA_CODE)
+myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB", "#808080")
+names(myColors) <- levels(aquahabdf$AQUA_DESC)
 
-gghabs <- ggplot(data = aquahabdf, aes(x=lon, y=lat, fill = AQUA_CODE, group = group)) +
+gghabs <- ggplot(data = aquahabdf, aes(x=lon, y=lat, fill = AQUA_DESC, group = group)) +
   geom_polygon() +
   coord_equal()+
   scale_fill_manual(name = "Aquatic Habitat Type", values = myColors)+
   ggtitle("Aquatic Habitat Types in Pool 8")
 print(gghabs)
-#ggsave("aquahabs.png", plot = gghabs, dpi = 2000)
+ggsave("aquahabs.2000.png", plot = gghabs, dpi = 2000)
+ggsave("aquahabs.500.png", plot = gghabs, dpi = 500)
 #note that you have to use the group = group parameter to get the polygons to plot in the right order. Don't quite know what it means, but it's essential. 
 
 
