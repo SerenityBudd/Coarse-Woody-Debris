@@ -1,12 +1,27 @@
 source("libraries.R")
 
 # use cluster analysis on the fish data 
-
-#fishcluster <- na.omit(fishinfo[,c("Fishcode", "Maximum.Literature.Length", "Length.at.Maturity", "Maximum.Age", "Age.at.Maturity", "Mean.Fecundity", "Mean.Ovum.Diameter", "Parental.Care")])
-
+load("fishclustercomplete.Rda")
 #########################################################
 # using Partitioning Methods
 fish.scaled <- scale(fishclustercomplete[,-1])
+
+# partitioning into 2 groups
+fish.k2 <- kmeans(fish.scaled, centers=2, iter.max=100, nstart=25)
+fish.k2
+
+# these are the 2 groups
+fish.k2.clust <- lapply(1:2, function(nc) fishclustercomplete$Fishcode[fish.k2$cluster==nc])  
+fish.k2.clust   
+
+# plot the scatterplot matrix
+#pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,fish.k2$cluster))
+
+# Cluster Plot against first 2 principal components
+clusplot(fish.scaled, fish.k2$cluster, color=TRUE, shade=TRUE, 
+         labels=2, lines=0)
+
+plotcluster(fish.scaled, fish.k2$cluster)
 
 # partitioning into 3 groups
 fish.k3 <- kmeans(fish.scaled, centers=3, iter.max=100, nstart=25)
@@ -17,7 +32,7 @@ fish.k3.clust <- lapply(1:3, function(nc) fishclustercomplete$Fishcode[fish.k3$c
 fish.k3.clust   
 
 # plot the scatterplot matrix
-pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,fish.k3$cluster))
+#pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,fish.k3$cluster))
 
 # Cluster Plot against first 2 principal components
 clusplot(fish.scaled, fish.k3$cluster, color=TRUE, shade=TRUE, 
@@ -44,27 +59,28 @@ plot(fish.complete.link, labels=fishclustercomplete$Fishcode)
 
 # looking at 2 groups
 cut.2 <- cutree(fish.complete.link, k=2)
-
-pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.2))
+#pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.2))
 
 fish.2.clust <- lapply(1:2, function(nc) fishclustercomplete$Fishcode[cut.2==nc])  
 fish.2.clust
 
 # looking at 3 groups
 cut.3 <- cutree(fish.complete.link, k=3)
-
 #pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.3))
 
 fish.3.clust <- lapply(1:3, function(nc) fishclustercomplete$Fishcode[cut.3==nc])  
 fish.3.clust
 
+# making a clusplot
+fish.scaled <- scale(fishclustercomplete[,-1])
 clusplot(fish.scaled, cut.3, color=TRUE, shade=TRUE, 
-         labels=3, lines=0)
+         labels=2, lines=0)
 
 
 #########################################################
 # principal components
 fish.pc <- princomp(fishclustercomplete[,-1],cor=T)
+summary(fish.pc,loadings=T)
 
 # Setting up the colors for the 3 clusters on the plot:
 my.color.vector <- rep("red", times=nrow(fishclustercomplete))
