@@ -49,17 +49,178 @@ aquahabdf <- cbind(aquahabdf, lonlat)
 
 #Create a custom color scale with colors mapped to aquatic habitat types
 myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB", "#808080")
-names(myColors) <- levels(aquahabdf$AQUA_DESC)
+names(myColors) <- levels(aquahabdf$AQUA_CODE)
 
-gghabs <- ggplot(data = aquahabdf, aes(x=lon, y=lat, fill = AQUA_DESC, group = group)) +
+gghabs <- ggplot(data = aquahabdf, aes(x=lon, y=lat, fill = AQUA_CODE, group = group)) +
   geom_polygon() +
   coord_equal(ratio = 1.2)+
   scale_fill_manual(name = "Aquatic Habitat Type", values = myColors)+
   ggtitle("Aquatic Habitat Types in Pool 8")
 print(gghabs)
-ggsave("aquahabs.2000.png", plot = gghabs, dpi = 2000)
-ggsave("aquahabs.500.png", plot = gghabs, dpi = 500)
+#ggsave("aquahabs.2000.png", plot = gghabs, dpi = 2000)
+#ggsave("aquahabs.500.png", plot = gghabs, dpi = 500)
 #note that you have to use the group = group parameter to get the polygons to plot in the right order. Don't quite know what it means, but it's essential. 
+
+# Characterizing the habitat types
+#we're accounting for a lot of the variability in depth by adjusting for habitat type
+#show density curves for each habitat type and depth: like the histograms, but all together. Do this in general for a lot of different variables: characterize the habitat types. 
+#do lots of univariate/bivariate models to predict CWD
+
+#how many points do we have per aquatic habitat type?
+table(pool8.barcodes$aqua_code)
+#take out the ones with fewer than ten
+p8b <- pool8.barcodes[!pool8.barcodes$aqua_code %in% c("IACL", "IBP", "IFDL", "IMML", "ITDL", "TC", "NOPH", NA),]
+p8b$secchi <- abs(p8b$secchi)
+
+#which ones was that?
+notenough <- c("IACL", "IBP", "IFDL", "IMML", "ITDL", "TC", "NOPH", NA)
+#how many points do we have per aquatic habitat type now?
+table(p8b$aqua_code, exclude = notenough) #`exclude =` allows you to specify which factor levels to leave out
+
+#boxplot of depth
+shortnames <- c("Abandoned Channel Lk", "Floodplain Depression Lk", "Shallow Aquatic Area", "Impounded Area", "Main Channel Boundary", "Main Navigation Channel", "Non-aquatic Area", "Secondary Channel", "Tributary Channel")
+ggplot(data = p8b, 
+       aes(x = droplevels(aqua_code), 
+           y = depth, 
+           fill = aqua_code))+
+  geom_boxplot()+
+  scale_fill_manual(name = "Aquatic Habitat Type", 
+                    values = myColors, 
+                    labels = shortnames)+
+  xlab("Aquatic Habitat Type")+
+  ylab("Water Depth (meters)")+
+  ggtitle("Water Depth by Aquatic Habitat Type")
+
+#density plot of depth
+ggplot(data = p8b, aes(x = depth))+
+  geom_line(stat = "density", aes(color = aqua_code), 
+               size = 1)+
+  scale_color_manual(name = "Aquatic Habitat Type", 
+                     values = myColors, 
+                     labels = shortnames)+
+  xlab("Water Depth (meters)")+
+  ylab("Density")+
+  ggtitle("Water Depth Distributions by Aquatic Habitat Type")
+
+#density plot of current
+ggplot(data = p8b, aes(x = current))+
+  geom_line(stat = "density", aes(color = aqua_code), 
+               size = 1)+
+  scale_color_manual(name = "Aquatic Habitat Type", 
+                     values = myColors, 
+                     labels = shortnames)+
+  xlab("Current (m/s)")+
+  ylab("Density")+
+  ggtitle("Current Distributions by Aquatic Habitat Type")
+
+#boxplot of current
+ggplot(data = p8b, 
+       aes(x = droplevels(aqua_code), 
+           y = current, 
+           fill = aqua_code))+
+  geom_boxplot()+
+  scale_fill_manual(name = "Aquatic Habitat Type", 
+                    values = myColors, 
+                    labels = shortnames)+
+  xlab("Aquatic Habitat Type")+
+  ylab("Current (m/s)")+
+  ggtitle("Current by Aquatic Habitat Type")
+
+#boxplot of secchi depth
+ggplot(data = p8b, 
+       aes(x = droplevels(aqua_code), 
+           y = secchi, 
+           fill = aqua_code))+
+  geom_boxplot()+
+  scale_fill_manual(name = "Aquatic Habitat Type", 
+                    values = myColors, 
+                    labels = shortnames)+
+  xlab("Aquatic Habitat Type")+
+  ylab("Secchi Depth (cm)")+
+  ggtitle("Secchi Depth by Aquatic Habitat Type")
+
+#density plot of secchi depth
+ggplot(data = p8b, aes(x = secchi))+
+  geom_line(stat = "density", aes(color = aqua_code), 
+            size = 1)+
+  scale_color_manual(name = "Aquatic Habitat Type", 
+                     values = myColors, 
+                     labels = shortnames)+
+  xlab("Secchi Depth (cm)")+
+  ylab("Density")+
+  ggtitle("Secchi Depth Distributions by Aquatic Habitat Type")
+
+#boxplot of dissolved oxygen (do)
+ggplot(data = p8b, 
+       aes(x = droplevels(aqua_code), 
+           y = do, 
+           fill = aqua_code))+
+  geom_boxplot()+
+  scale_fill_manual(name = "Aquatic Habitat Type", 
+                    values = myColors, 
+                    labels = shortnames)+
+  xlab("Aquatic Habitat Type")+
+  ylab("Dissolved Oxygen (mg/L)")+
+  ggtitle("Dissolved Oxygen by Aquatic Habitat Type")
+
+#density plot of dissolved oxygen (do)
+ggplot(data = p8b, aes(x = do))+
+  geom_line(stat = "density", aes(color = aqua_code), 
+            size = 1)+
+  scale_color_manual(name = "Aquatic Habitat Type", 
+                     values = myColors, 
+                     labels = shortnames)+
+  xlab("Dissolved Oxygen (mg/L)")+
+  ylab("Density")+
+  ggtitle("Dissolved Oxygen Distributions by Aquatic Habitat Type")
+
+#boxplot of temperature
+ggplot(data = p8b, 
+       aes(x = droplevels(aqua_code), 
+           y = temp, 
+           fill = aqua_code))+
+  geom_boxplot()+
+  scale_fill_manual(name = "Aquatic Habitat Type", 
+                    values = myColors, 
+                    labels = shortnames)+
+  xlab("Aquatic Habitat Type")+
+  ylab("Water Temperature (ºC)")+
+  ggtitle("Water Temperature by Aquatic Habitat Type")
+
+#density plot of temperature
+ggplot(data = p8b, aes(x = temp))+
+  geom_line(stat = "density", aes(color = aqua_code), 
+            size = 1)+
+  scale_color_manual(name = "Aquatic Habitat Type", 
+                     values = myColors, 
+                     labels = shortnames)+
+  xlab("Water Temperature (ºC)")+
+  ylab("Density")+
+  ggtitle("Temperature Distributions by Aquatic Habitat Type")
+
+#boxplot of conductivity
+ggplot(data = p8b, 
+       aes(x = droplevels(aqua_code), 
+           y = cond, 
+           fill = aqua_code))+
+  geom_boxplot()+
+  scale_fill_manual(name = "Aquatic Habitat Type", 
+                    values = myColors, 
+                    labels = shortnames)+
+  xlab("Aquatic Habitat Type")+
+  ylab("Conductivity (Siemens/cm)")+
+  ggtitle("Conductivity by Aquatic Habitat Type")
+
+#density plot of conductivity
+ggplot(data = p8b, aes(x = cond))+
+  geom_line(stat = "density", aes(color = aqua_code), 
+            size = 1)+
+  scale_color_manual(name = "Aquatic Habitat Type", 
+                     values = myColors, 
+                     labels = shortnames)+
+  xlab("Conductivity (Siemens/cm)")+
+  ylab("Density")+
+  ggtitle("Conductivity Distributions by Aquatic Habitat Type")
 
 
 ### More recent shapefile
