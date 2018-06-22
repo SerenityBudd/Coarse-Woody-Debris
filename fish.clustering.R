@@ -4,6 +4,7 @@ source("libraries.R")
 load("fishclustercomplete.Rda")
 #########################################################
 # using Partitioning Methods
+fishclustercomplete <- filter(fishclustercomplete, !Common.Name %in% c("Lake sturgeon","Paddlefish"))
 fish.scaled <- scale(fishclustercomplete[,-1])
 
 # partitioning into 2 groups
@@ -55,7 +56,7 @@ fish.dist <- dist(scale(fishclustercomplete[,-1]))
 
 # complete linkage
 fish.complete.link <- hclust(fish.dist, method='complete')
-plot(fish.complete.link, labels=fishclustercomplete$Fishcode)
+plot(fish.complete.link, labels=fishclustercomplete$Common.Name)
 
 # looking at 2 groups
 cut.2 <- cutree(fish.complete.link, k=2)
@@ -73,9 +74,9 @@ fish.3.clust
 
 # making a clusplot
 fish.scaled <- scale(fishclustercomplete[,-1])
-clusplot(fish.scaled, cut.3, color=TRUE, shade=TRUE, 
+clusplot(fish.scaled, cut.2, color=TRUE, shade=TRUE, 
          labels=2, lines=0)
-plotcluster(fish.scaled, cut.3)
+plotcluster(fish.scaled, cut.2)
 
 #########################################################
 # principal components
