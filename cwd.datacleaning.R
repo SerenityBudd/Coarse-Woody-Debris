@@ -89,3 +89,16 @@ for (i in 1:ncol(pool8.barcodes)) {
   print(colnames(pool8.barcodes)[i]) 
   print(summary(pool8.barcodes[,i]))
 }
+
+#########
+#See Molly's email 6/22/18 at 2pm for descriptions of variables. Also see the metadata file: https://www.sciencebase.gov/catalog/file/get/5a708ef0e4b06e28e9cae58f?f=__disk__26%2F00%2F43%2F260043b3d8895c99f3be0a19f9f6816214bd35e6&transform=1&allowOpen=true
+newdat <- read.csv("more.electrofishing.data.txt")
+names(newdat)[25:27] <- c("landcover_abbr", "landcover_short", "landcover_desc")
+names(newdat)[29] <- "dist_landcover"
+names(newdat)[31] <- "dist_aquahab"
+names(newdat)[34:35] <- c("aqua_code", "aqua_desc")
+newdat$snagyn <- ifelse(newdat$snag == 0, "no", "yes")
+with(newdat, table(snagyn, stratum))
+with(newdat, table(snagyn, stratum, year))
+
+newdat %>% group_by(year, stratum) %>% summarize(propsnag = sum(snag == 1)/sum(snag %in% c(0,1)))
