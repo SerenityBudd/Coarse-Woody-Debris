@@ -53,7 +53,7 @@ names(myColors) <- levels(aquahabdf$AQUA_DESC)
 
 gghabs <- ggplot(data = aquahabdf, aes(x=lon, y=lat, fill = AQUA_DESC, group = group)) +
   geom_polygon() +
-  coord_equal()+
+  coord_equal(ratio = 1.2)+
   scale_fill_manual(name = "Aquatic Habitat Type", values = myColors)+
   ggtitle("Aquatic Habitat Types in Pool 8")
 print(gghabs)
