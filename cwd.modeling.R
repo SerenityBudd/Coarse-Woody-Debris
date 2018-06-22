@@ -181,7 +181,7 @@ summary(partialmod)
 data1995 <- 
 plot(pool8.barcodes$sdat[years(pool8.barcodes$sdat) == 1995], pool8.barcodes$temp[years(pool8.barcodes$sdat) == 1995], xlab = "Month/Day/1995", ylab = expression("Temperature in ºC"), main = "Water temperature over time, 1995")
 
-#ggplot version of water temperature graph
+#ggplot temperature graph showing sampling periods
 ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)), 
        aes(x = factor(period), y = temp)) +
   geom_point(alpha = .1) +
@@ -220,7 +220,7 @@ pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_desc)) %>% ggplot
 #This color-coding is still off and I don't know why.
 
 # Modeling based on aquatic habitat type and wingdyke and depth
-mod1 <- glm(snag~ wingdyke + aqua_desc + depth, data = pool8.barcodes, family = binomial)
+mod1 <- glm(snag ~ wingdyke + aqua_desc + depth, data = pool8.barcodes, family = binomial)
 summary(mod1)
 
 # Making a plot of the habitat/wingdyke/depth model, following this tutorial: https://blogs.uoregon.edu/rclub/2016/04/14/plotting-logistic-regressions-part-3/
@@ -245,8 +245,8 @@ ggplot(plot.data, aes(x=depth, y=prob, color=wingdyke_level)) +
   scale_color_manual(values = c("dodgerblue2", "red"))+
   labs(x="Water depth (meters)", y="Probability of CWD presence", title="Probability of Coarse Woody Debris Presence") +
   facet_wrap(~aqua_desc)+
-  theme_bw()+
-  theme(text = element_text(size=20))
+  theme_bw()
+#overlay data on this to show where the points fall with respect to depth (rug?)
 
 # let's try flipping it, so the facets are by wingdyke presence level and the lines are color coded by aquatic habitat type.
 bigplot <- ggplot(plot.data, aes(x=depth, y=prob, color=aqua_desc)) + 
