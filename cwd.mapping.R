@@ -15,7 +15,7 @@ ggmap(m)
 
 # plot map with points on it 
 pool8.barcodes.snagmap <- ggmap(m)+
-  ggtitle("Pool 8 Sampling Locations by CWD Presence")+
+  ggtitle("CWD in Pool 8")+
   xlab("Longitude")+
   ylab("Latitude")+ 
   scale_x_continuous(limits = c(-91.4, -91.1))+
@@ -27,7 +27,8 @@ pool8.barcodes.snagmap <- ggmap(m)+
   guides(color = guide_legend(title = "Coarse\nWoody\nDebris",
                               override.aes = list(size=8)),
          pch = guide_legend(title = "Coarse\nWoody\nDebris",
-                              override.aes = list(size=8))) #legend size
+                              override.aes = list(size=8)))+ #legend size
+  theme(text = element_text(size=20))
 pool8.barcodes.snagmap
 #ggsave(filename = "pool8.barcodes.snagmap.png", plot = pool8.barcodes.snagmap, dpi = 1000)
 
@@ -36,7 +37,7 @@ boxdf <- data.frame(x1=c(-91.292), x2=c(-91.188), y1=c(43.68), y2=c(43.757))
 
 # plot map with box to zoom into 
 pool8.barcodes.snagmap.box <- ggmap(m)+
-  ggtitle("Pool 8 Sampling Locations by CWD Presence")+
+  ggtitle("CWD in Pool 8")+
   xlab("Longitude")+
   ylab("Latitude")+ 
   scale_x_continuous(limits = c(-91.4, -91.1))+
@@ -49,7 +50,8 @@ pool8.barcodes.snagmap.box <- ggmap(m)+
                               override.aes = list(size=8)),
          pch = guide_legend(title = "Coarse\nWoody\nDebris",
                             override.aes = list(size=8))) + 
-  geom_rect(inherit.aes = FALSE, data=boxdf, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), alpha = 0, color="black") 
+  geom_rect(inherit.aes = FALSE, data=boxdf, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), alpha = 0, color="black")+
+  theme(text = element_text(size=20))
 pool8.barcodes.snagmap.box
 #ggsave(filename = "pool8.barcodes.snagmap.box.png", plot = pool8.barcodes.snagmap.box, dpi = 1000)
 
@@ -59,7 +61,7 @@ ggmap(mm)
 
 # plot map of pool8 zoomed in
 pool8.barcodes.snagmap.zoom <- ggmap(mm)+
-  ggtitle("Pool 8 Sampling Locations by CWD Presence")+
+  ggtitle("CWD in Pool 8")+
   xlab("Longitude")+
   ylab("Latitude")+ 
   geom_point(data = pool8.barcodes[pool8.barcodes$snag %in% c(0,1),], 
@@ -71,7 +73,8 @@ pool8.barcodes.snagmap.zoom <- ggmap(mm)+
                               override.aes = list(size=8)),
          pch = guide_legend(title = "Coarse\nWoody\nDebris",
                             override.aes = list(size=8))) + #legend size
-  geom_rect(inherit.aes = FALSE, data=boxdf, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), alpha = 0, color="black")
+  geom_rect(inherit.aes = FALSE, data=boxdf, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), alpha = 0, color="black")+
+  theme(text = element_text(size=20))
 pool8.barcodes.snagmap.zoom
 #ggsave(filename = "pool8.barcodes.snagmap.zoom.png", plot = pool8.barcodes.snagmap.zoom, dpi = 1000)
 
@@ -125,7 +128,7 @@ ggmap(mmm)
 
 # make another plot color-coded by site type
 pool8.barcodes.sitetype <- ggmap(mmm)+
-  ggtitle("Pool 8 Barcodes by Site Type")+
+  ggtitle("Pool 8 Sampling Sites by Site Type")+
   xlab("Longitude")+
   ylab("Latitude")+ 
   scale_x_continuous(limits = c(-91.4, -91.1))+
@@ -138,14 +141,15 @@ pool8.barcodes.sitetype <- ggmap(mmm)+
   # add the sub perm sites on top in a bigger size
   geom_point(data = pool8.barcodes[!is.na(pool8.barcodes$sitetype) &
                                      pool8.barcodes$sitetype == "subj.perm",], 
-             size = 1.5, alpha = 0.8, pch = 20, color = "#FFC300")
+             size = 1.5, alpha = 0.8, pch = 20, color = "#FFC300")+
+  theme(text = element_text(size=20))
 pool8.barcodes.sitetype
 #ggsave(filename = "pool8.barcodes.sitetype.png", plot = pool8.barcodes.sitetype, dpi = 1000)
 
 # Map color coded by wingdyke presence
 #plot map with barcodes by site type
 wingdyke <- ggmap(m)+
-  ggtitle("Pool 8 Barcodes by Wing Dam/Dyke Presence")+
+  ggtitle("Wing Dams/Dykes in Pool 8")+
   xlab("Longitude")+
   ylab("Latitude")+ 
   scale_x_continuous(limits = c(-91.4, -91.1))+
@@ -154,8 +158,9 @@ wingdyke <- ggmap(m)+
              size = 1, 
              alpha = 0.8, 
              pch = 20)+
-  scale_color_manual(name = "Presence of Wing Dam or Dyke", labels = c("No Wing Dam/Dyke Present", "Wing Dam/Dyke Present"), values=c("#FF8300", "#5D00C6"))+
-  guides(color = guide_legend(override.aes = list(size=10)))
+  scale_color_manual(name = "", labels = c("No Dam at Site", "Dam/Dyke at Site"), values=c("#FF8300", "#5D00C6"))+
+  guides(color = guide_legend(override.aes = list(size=10)))+
+  theme(text = element_text(size=20))
 wingdyke
 #ggsave(filename = "wingdyke.png", plot = wingdyke, dpi = 1000)
 
@@ -175,7 +180,8 @@ pool8.cwd.timemap <- ggmap(mmm, extent = "panel", legend = "bottomright") +
   xlab("Longitude") + 
   ylab("Latitude") +
   theme(plot.title = element_text(color="#600051", size=14, face="bold")) +
-  labs(color = "Date of Sampling")
+  labs(color = "Date of Sampling")+
+  theme(text = element_text(size=20))
 pool8.cwd.timemap
 #ggsave(filename = "pool8.cwd.timemap.png", plot = pool8.cwd.timemap, dpi = 1000)
 
@@ -188,12 +194,13 @@ LOESS <- ggplot(data = pool8.barcodes[!is.na(pool8.barcodes$snag),], aes(x = lat
   theme(axis.text.x = element_text(angle=270), 
         axis.title.x =  element_text(angle=270, vjust = .5),
         axis.text.y = element_text(angle=270), 
-        axis.title.y =  element_text(angle=270)) 
+        axis.title.y =  element_text(angle=270))+
+  theme(text = element_text(size=20))
 LOESS
 #ggsave(filename = "LOESS.png", plot = LOESS, dpi = 1000)
 
 secchim <- ggmap(m)+
-  ggtitle("Pool 8 Barcodes by Secchi Level")+
+  ggtitle("Pool 8 Sampling Sites by Secchi Depth")+
   xlab("Longitude")+
   ylab("Latitude")+ 
   scale_x_continuous(limits = c(-91.4, -91.1))+
@@ -202,7 +209,8 @@ secchim <- ggmap(m)+
              aes(x = lon, y = lat, color = secchi), 
              size = 1, 
              alpha = 0.8, 
-             pch = 20)#+
+             pch = 20)+
+  theme(text = element_text(size=20))#+
 #  scale_color_manual(name = "Secchi Level", labels = c("No Wing Dam/Dyke Present", "Wing Dam/Dyke Present"), values=c("#FF8300", "#5D00C6"))+
  # guides(color = guide_legend(override.aes = list(size=10)))
 secchim
