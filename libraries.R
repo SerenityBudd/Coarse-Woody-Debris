@@ -9,9 +9,11 @@ library(sp)
 library(car)
 library(RColorBrewer)
 library(rgdal)
-library(rgeos) #might need to install this one
+library(rgeos) 
 library(scales)
 library(cluster)
 library(fpc)
 library(maptools)
-
+library(Rtsne)
+library(klaR)
+library(rfishbase)
