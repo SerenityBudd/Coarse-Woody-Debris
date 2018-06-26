@@ -102,5 +102,27 @@ names(newdat)[34:35] <- c("aqua_code", "aqua_desc")
 newdat$snagyn <- ifelse(newdat$snag == 0, "no", "yes")
 with(newdat, table(snagyn, stratum))
 with(newdat, table(snagyn, stratum, year))
+newdat$stratum_name[newdat$stratum == "SCB"] <- "Side Channel Border"
+newdat$stratum_name[newdat$stratum == "MCB-U"] <- "Main Channel Border--Unstructured"
+newdat$stratum_name[newdat$stratum == "MCB-W"] <- "Main Channel Border--Wing Dam Area"
+newdat$stratum_name[newdat$stratum == "TWZ"] <- "Tailwater Zone"
+newdat$stratum_name[newdat$stratum == "BWC-S"] <- "Backwater, Contiguous Shoreline"
+newdat$stratum_name[newdat$stratum == "IMP-O"] <- "Impounded--Offshore"
+newdat$stratum_name[newdat$stratum == "IMP-S"] <- "Impounded--Shoreline"
+newdat$stratum_name <- factor(newdat$stratum_name)
 
 newdat %>% group_by(year, stratum) %>% summarize(propsnag = sum(snag == 1)/sum(snag %in% c(0,1)))
+
+#project the utm easting and northing onto a CRS using utm zone 15
+newdat_sp <- SpatialPoints(newdat[,c("utm_e", "utm_n")], proj4string = CRS("+proj=utm +zone=15 +datum=WGS84"))
+
+#transform to latlon, save as a data frame
+newdat_lonlat <- as.data.frame(spTransform(newdat_sp, CRS("+proj=longlat +datum=WGS84")))
+
+#rename the columns
+names(newdat_lonlat) <- c("lon", "lat")
+#join to the original data frame
+newdat <- cbind(newdat, newdat_lonlat)
+#save(newdat, file = "newdat.Rda")
+
+
