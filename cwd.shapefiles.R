@@ -9,6 +9,7 @@ file.exists('aquahab/p8_1989_aquahab.shp')
 # read the file in. Need to have all the files (.sbn, .sbx, .dbf, .prj) in the same folder, for some reason. Also, remember to *leave off the .shp extension on the shapefile!!!!!!*
 aquahab <- readOGR(dsn = "aquahab", layer = "p8_1989_aquahab")
 glimpse(aquahab)
+aquahab@proj4string #this is in UTM, zone 15. 
 aquahab@data$AQUA_CODE <- factor(aquahab@data$AQUA_CODE, levels(aquahab@data$AQUA_CODE)[c(1:12, 14:16, 13)])
 aquahab@data$AQUA_DESC <- factor(aquahab@data$AQUA_DESC, levels(aquahab@data$AQUA_DESC)[c(1:11, 13:16, 12)])
 
@@ -16,8 +17,10 @@ aquahab@data$AQUA_DESC <- factor(aquahab@data$AQUA_DESC, levels(aquahab@data$AQU
 points <- SpatialPoints(pool8.barcodes[,c("utm_e", "utm_n")])
 plot(aquahab)
 plot(points, add = T)
-proj4string(aquahab)
+proj4string(aquahab) #equivalent call to `aquahab@proj4string`. UTM zone 15
+proj4string(points) #no projection for the points yet
 proj4string(points) <- "+proj=utm +zone=15 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
+proj4string(points) #now has same projection
 
 #extract data for points (this gets a data frame)
 ext <- over(x = points, y = aquahab)
@@ -51,14 +54,30 @@ aquahabdf <- cbind(aquahabdf, lonlat)
 myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB", "#808080")
 names(myColors) <- levels(aquahabdf$AQUA_CODE)
 
-gghabs <- ggplot(data = aquahabdf, aes(x=lon, y=lat, fill = AQUA_CODE, group = group)) +
-  geom_polygon() +
+#transform sampling points
+pointslonlat <- as.data.frame(spTransform(points, CRS("+proj=longlat +datum=WGS84")))
+names(pointslonlat) <- c("lon", "lat")
+
+gghabs <- ggplot(data = aquahabdf) +
+  geom_polygon(aes(x = lon, y = lat, fill = AQUA_CODE, group = group)) +
   coord_equal(ratio = 1.2)+
   scale_fill_manual(name = "Aquatic Habitat Type", values = myColors)+
   ggtitle("Aquatic Habitat Types in Pool 8")
 print(gghabs)
 #ggsave("aquahabs.2000.png", plot = gghabs, dpi = 2000)
 #ggsave("aquahabs.500.png", plot = gghabs, dpi = 500)
+
+gghabs_wpoints <- ggplot(data = aquahabdf) +
+  geom_polygon(aes(x = lon, y = lat, fill = AQUA_CODE, group = group)) +
+  coord_equal(ratio = 1.2)+
+  scale_fill_manual(name = "Aquatic Habitat Type", values = myColors)+
+  ggtitle("Aquatic Habitat Types in Pool 8")+
+  geom_point(data = pointslonlat, aes(x = lon, y = lat), size = 0.2, alpha = 0.5, pch = 20)
+print(gghabs_wpoints)
+#note that there's misalignment between the points and the habitat areas!
+#ggsave("aquahabs_wpoints.2000.png", plot = gghabs_wpoints, dpi = 2000)
+#ggsave("aquahabs_wpooints.500.png", plot = gghabs_wpoints, dpi = 500)
+
 #note that you have to use the group = group parameter to get the polygons to plot in the right order. Don't quite know what it means, but it's essential. 
 
 # Characterizing the habitat types
