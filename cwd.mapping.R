@@ -214,3 +214,22 @@ secchim <- ggmap(m)+
 #  scale_color_manual(name = "Secchi Level", labels = c("No Wing Dam/Dyke Present", "Wing Dam/Dyke Present"), values=c("#FF8300", "#5D00C6"))+
  # guides(color = guide_legend(override.aes = list(size=10)))
 secchim
+
+
+load("newdat.Rda")
+#Create a custom color scale with colors mapped to aquatic habitat types
+strataColors <- c("#08A4BC", "#0CC891", "#1071C1", "#0B47AD", "#200BAD", "#678CCC", "#AD0B98")
+names(strataColors) <- levels(newdat$stratum_name)
+
+ggplot(data = newdat, aes(x = lon, y = lat, color = stratum_name))+
+  geom_point(size = 0.6)+
+  scale_color_manual(values = strataColors)
+#these colors correspond more closely to the original map but they aren't distinctive enough for this graph
+
+#another attempt:
+strataColors2 <- c("chartreuse3", "blue", "dodgerblue2", "red", "darkred", "orange", "magenta")
+names(strataColors) <- levels(newdat$stratum_name)
+
+ggplot(data = newdat, aes(x = lon, y = lat, color = stratum_name))+
+  geom_point(size = 0.6)+
+  scale_color_manual(values = strataColors2)
