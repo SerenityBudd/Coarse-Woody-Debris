@@ -288,6 +288,87 @@ summary(mod4)
 
 #Investigate aquatic habitat strata
 load("newdat.Rda")
+source("libraries.R")
+source("color_schemes.R")
 
+# Number of Sampling Points by Stratum
+newdat %>% filter(!is.na(snag)) %>% filter(!is.na(stratum_name)) %>% ggplot(aes(x = stratum_name))+
+  geom_bar(aes(fill = stratum_name))+
+  scale_fill_manual(name = "Aquatic Habitat Stratum", 
+                    labels = names(strataColors_distinct),
+                    values = strataColors_distinct)+
+  facet_wrap(~snag)+
+  ylab("Number of Sampling Events")+
+  xlab("Aquatic Habitat Stratum")+
+  ggtitle("Aquatic Habitat Strata by CWD Presence")+
+  theme(text = element_text(size=20))+
+  theme(axis.text.x = element_blank())
 
+# Points by year
+by_year <- data.frame(year = sort(unique(newdat$year)),
+                      CWDpoints = NA,
+                      totpoints = NA,
+                      propCWD = NA)
 
+for(i in 1:nrow(by_year)){
+  by_year$CWDpoints[i] <- sum(newdat$snag[newdat$year == by_year$year[i]])
+}
+
+for(i in 1:nrow(by_year)){
+  by_year$totpoints[i] <- nrow(newdat[newdat$year == by_year$year[i],])
+}
+
+by_year$propCWD <- round(by_year$CWDpoints / by_year$totpoints, 2)
+by_year
+
+#Proportion of points with CWD by year
+ggplot(data = by_year, aes(x = year, y = propCWD)) +
+  geom_line(size = 1.5)+
+  geom_point(size = 3, col = "red")+
+  ggtitle("Proportion of Sites with CWD by Sampling Year")+
+  xlab("Year of Sampling") +
+  ylab("Proportion of Sites with CWD")+
+  theme(text = element_text(size=20))
+
+#CWD points and total points by year
+ggplot(data = by_year, aes(x = year))+
+  geom_line(aes(y = totpoints), size = 1.5)+
+  geom_line(aes(y = CWDpoints), size = 1.5, col = "red")+
+  ggtitle("# CWD Points and # Points Sampled by Year")
+#not sure how to make a legend for this one
+
+#CWD points by total points sampled
+with(by_year, plot(CWDpoints~totpoints, pch = 1, col = "darkred", main = "CWD Points vs. Total Points Sampled"))
+
+#Table by stratum and year
+stratum.year <- as.data.frame(newdat %>% 
+                                group_by(year, stratum_name) %>% 
+                                summarize(totpoints = n(), 
+                                          CWDpoints = sum(snag), 
+                                          propCWD = round(sum(snag/n()), 4))
+                              )
+
+#Number of points by stratum and year
+ggplot(data = stratum.year, aes(x = year, y = totpoints, color = stratum_name))+
+  geom_line(size = 1.5)+
+  scale_color_manual(name = "Aquatic Habitat Stratum", 
+                     values = strataColors_distinct)+
+  ggtitle("Number of Points Sampled by Stratum Over Time")+
+  ylab("Number of Sampling Points")+
+  xlab("Year")+
+  theme_bw()+
+  theme(text = element_text(size=20))
+
+#Proportion of CWD by Stratum and Year
+ggplot(data = stratum.year, aes(x = year, y = propCWD, color = stratum_name))+
+  geom_line(size = 1.5)+
+  scale_color_manual(name = "Aquatic Habitat Stratum", 
+                     values = strataColors_distinct)+
+  ggtitle("Proportion of Points with CWD by Year")+
+  ylab("Proportion of Points with CWD")+
+  xlab("Year")+
+  theme_bw()+
+  theme(text = element_text(size=20))
+  
+  
+  
