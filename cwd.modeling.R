@@ -193,17 +193,7 @@ ggplot(data = pool8.barcodes %>% filter(period %in% c(1,2,3), !is.na(temp)),
 ### Investigating aquatic habitats
 
 # establish color scale
-myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB", "#808080")
-names(myColors) <- levels(pool8.barcodes$aqua_desc)
-
-testcolors <- data.frame(x = 1:16, 
-                         y = 1:16, 
-                         name = factor(levels(pool8.barcodes$aqua_desc), levels = levels(pool8.barcodes$aqua_desc)))
-
-#graph to check which colors go with which levels
-ggplot(data = testcolors, aes(x = x, y = y))+
-  geom_point(aes(color = name, size = 3))+
-  scale_color_manual(values = myColors)
+source("color_schemes.R")
 
 #the colors are still messed up on this graph!!
 pool8.barcodes %>% filter(!is.na(snag)) %>% filter(!is.na(aqua_desc)) %>% ggplot(aes(x = aqua_desc))+
@@ -295,3 +285,9 @@ mod4 <- glm(snag ~ depth + aqua_desc,
               family = binomial)
 summary(mod4)
 #depth is not significant in this model.
+
+#Investigate aquatic habitat strata
+load("newdat.Rda")
+
+
+
