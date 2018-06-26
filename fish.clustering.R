@@ -3,6 +3,57 @@ source("libraries.R")
 # use cluster analysis on the fish data 
 load("fishclustercomplete.Rda")
 #########################################################
+# using gower methods
+gower_dist <- daisy(fishclustercomplete[,-1], metric = c("gower"))
+gower_mat <- as.matrix(gower_dist)
+
+# Calculate silhouette width for many k using PAM
+
+sil_width <- c(NA)
+
+for(i in 2:10){
+  
+  pam_fit <- pam(gower_dist,
+                 diss = TRUE,
+                 k = i)
+  
+  sil_width[i] <- pam_fit$silinfo$avg.width
+  
+}
+
+# Plot sihouette width (higher is better)
+
+plot(1:10, sil_width,
+     xlab = "Number of clusters",
+     ylab = "Silhouette Width")
+lines(1:10, sil_width)
+
+pam_fit <- pam(gower_dist, diss = TRUE, k = 2)
+
+pam_results <- fishclustercomplete %>%
+  dplyr::select(-Common.Name) %>%
+  mutate(cluster = pam_fit$clustering) %>%
+  group_by(cluster) %>%
+  do(the_summary = summary(.))
+
+pam_results$the_summary
+
+fishclustercomplete[pam_fit$medoids, ]
+
+tsne_obj <- Rtsne(gower_dist, is_distance = TRUE)
+
+tsne_data <- tsne_obj$Y %>%
+  data.frame() %>%
+  setNames(c("X", "Y")) %>%
+  mutate(cluster = factor(pam_fit$clustering),
+         name = fishclustercomplete$Common.Name)
+
+ggplot(aes(x = X, y = Y), data = tsne_data) +
+  geom_point(aes(color = cluster))
+
+
+#########################################################
+
 # using Partitioning Methods
 #fishclustercomplete <- filter(fishclustercomplete, !Common.Name %in% c("Lake sturgeon","Paddlefish"))
 fish.scaled <- scale(fishclustercomplete[,-1])
@@ -31,6 +82,12 @@ fish.k3
 # these are the 3 groups
 fish.k3.clust <- lapply(1:3, function(nc) fishclustercomplete$Common.Name[fish.k3$cluster==nc])  
 fish.k3.clust   
+
+# 
+clus1 <- fishclustercomplete[as.data.frame(c(fish.k3.clust[1]))[,1],]
+clus2 <- fishclustercomplete[as.data.frame(c(fish.k3.clust[2]))[,1],]
+clus3 <- fishclustercomplete[as.data.frame(c(fish.k3.clust[3]))[,1],]
+
 
 # plot the scatterplot matrix
 #pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,fish.k3$cluster))
