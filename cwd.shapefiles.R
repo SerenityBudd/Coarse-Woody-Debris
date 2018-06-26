@@ -74,6 +74,7 @@ gghabs_wpoints <- ggplot(data = aquahabdf) +
   ggtitle("Aquatic Habitat Types in Pool 8")+
   geom_point(data = pointslonlat, aes(x = lon, y = lat), size = 0.2, alpha = 0.5, pch = 20)
 print(gghabs_wpoints)
+
 #note that there's misalignment between the points and the habitat areas!
 #ggsave("aquahabs_wpoints.2000.png", plot = gghabs_wpoints, dpi = 2000)
 #ggsave("aquahabs_wpooints.500.png", plot = gghabs_wpoints, dpi = 500)
