@@ -1,5 +1,4 @@
 source("libraries.R")
-library(Rtsne)
 
 # use cluster analysis on the fish data 
 load("fishclustercomplete.Rda")
