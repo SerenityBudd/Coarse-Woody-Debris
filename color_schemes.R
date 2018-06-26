@@ -38,4 +38,4 @@ names(strataColors) <- strata_names
 
 # More distinct colors for aquatic habitat strata
 strataColors_distinct <- c("chartreuse3", "blue", "dodgerblue2", "red", "darkred", "orange", "magenta")
-names(strataColors) <- strata_names
+names(strataColors_distinct) <- strata_names
