@@ -10,6 +10,8 @@ file.exists('aquahab/p8_1989_aquahab.shp')
 aquahab <- readOGR(dsn = "aquahab", layer = "p8_1989_aquahab")
 glimpse(aquahab)
 aquahab@proj4string #this is in UTM, zone 15. 
+aquahab <- spTransform(aquahab, "+proj=utm +zone=15 +datum=NAD27 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
+
 aquahab@data$AQUA_CODE <- factor(aquahab@data$AQUA_CODE, levels(aquahab@data$AQUA_CODE)[c(1:12, 14:16, 13)])
 aquahab@data$AQUA_DESC <- factor(aquahab@data$AQUA_DESC, levels(aquahab@data$AQUA_DESC)[c(1:11, 13:16, 12)])
 
@@ -19,8 +21,9 @@ plot(aquahab)
 plot(points, add = T)
 proj4string(aquahab) #equivalent call to `aquahab@proj4string`. UTM zone 15
 proj4string(points) #no projection for the points yet
-proj4string(points) <- "+proj=utm +zone=15 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
+proj4string(points) <- proj4string(aquahab)
 proj4string(points) #now has same projection
+#may have to have the same projection in order to plot together. 
 
 #extract data for points (this gets a data frame)
 ext <- over(x = points, y = aquahab)
@@ -51,12 +54,12 @@ names(lonlat) <- c("lon", "lat")
 aquahabdf <- cbind(aquahabdf, lonlat)
 
 #Create a custom color scale with colors mapped to aquatic habitat types
-myColors <- c("#09BF2B", "#0CC891", "#08A4BC", "#1071C1", "#AD0B98", "#AD0B47", "#D685A3", "#AD200B", "#C24875", "#200BAD", "#0B47AD", "#9B783C", "#678CCC", "#B3C6E6", "#C596EB", "#808080")
-names(myColors) <- levels(aquahabdf$AQUA_CODE)
+source("color_schemes.R")
 
 #transform sampling points
 pointslonlat <- as.data.frame(spTransform(points, CRS("+proj=longlat +datum=WGS84")))
-names(pointslonlat) <- c("lon", "lat")
+
+#names(pointslonlat) <- c("lon", "lat")
 
 gghabs <- ggplot(data = aquahabdf) +
   geom_polygon(aes(x = lon, y = lat, fill = AQUA_CODE, group = group)) +
