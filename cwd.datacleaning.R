@@ -92,6 +92,8 @@ for (i in 1:ncol(pool8.barcodes)) {
 
 #########
 #See Molly's email 6/22/18 at 2pm for descriptions of variables. Also see the metadata file: https://www.sciencebase.gov/catalog/file/get/5a708ef0e4b06e28e9cae58f?f=__disk__26%2F00%2F43%2F260043b3d8895c99f3be0a19f9f6816214bd35e6&transform=1&allowOpen=true
+source("libraries.R")
+
 newdat <- read.csv("more.electrofishing.data.txt")
 names(newdat)[25:27] <- c("landcover_abbr", "landcover_short", "landcover_desc")
 names(newdat)[29] <- "dist_landcover"
