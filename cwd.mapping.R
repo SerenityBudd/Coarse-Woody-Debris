@@ -215,11 +215,10 @@ secchim <- ggmap(m)+
  # guides(color = guide_legend(override.aes = list(size=10)))
 secchim
 
-
+#load data
 load("newdat.Rda")
-#Create a custom color scale with colors mapped to aquatic habitat types
-strataColors <- c("#08A4BC", "#0CC891", "#1071C1", "#0B47AD", "#200BAD", "#678CCC", "#AD0B98")
-names(strataColors) <- levels(newdat$stratum_name)
+#Establish color scales
+source("color_schemes.R")
 
 ggplot(data = newdat, aes(x = lon, y = lat, color = stratum_name))+
   geom_point(size = 0.6)+
@@ -227,13 +226,11 @@ ggplot(data = newdat, aes(x = lon, y = lat, color = stratum_name))+
 #these colors correspond more closely to the original map but they aren't distinctive enough for this graph
 
 #another attempt:
-strataColors2 <- c("chartreuse3", "blue", "dodgerblue2", "red", "darkred", "orange", "magenta")
-names(strataColors) <- levels(newdat$stratum_name)
-
 ggplot(data = newdat, aes(x = lon, y = lat, color = stratum_name))+
   geom_point(size = 0.7)+
   coord_fixed(1.2)+
-  scale_color_manual(name = "Aquatic Habitat Stratum", values = strataColors2)+
+  scale_color_manual(name = "Aquatic Habitat Stratum", 
+                     values = strataColors_distinct)+
   guides(color = guide_legend(override.aes = list(size=6)))+
   theme(text = element_text(size=18))+
   ggtitle("Sampling Points by Aquatic Habitat Stratum")
