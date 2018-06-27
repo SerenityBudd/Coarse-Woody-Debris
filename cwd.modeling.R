@@ -4,7 +4,7 @@ source("libraries.R")
 ###########
 # Some plots of the different barcodes to see relationships between CWD presence and other variables
 
-load("pool8.barcodes.Rda")
+load("data/pool8.barcodes.Rda")
 #Boxplot of current by CWD
 pool8.barcodes %>% filter(is.na(snag) == FALSE) %>% 
   ggplot(aes(x=snag, y=current, fill = snag)) +
@@ -287,7 +287,7 @@ summary(mod4)
 #depth is not significant in this model.
 
 #Investigate aquatic habitat strata
-load("newdat.Rda")
+load("data/newdat.Rda")
 source("libraries.R")
 source("color_schemes.R")
 

@@ -3,7 +3,7 @@
 source("libraries.R")
 
 #read in the pool8 barcodes data.
-load("pool8.barcodes.Rda")
+load("data/pool8.barcodes.Rda")
 str(pool8.barcodes)
 
 # `snag` is an integer; let's change it to a factor
@@ -79,7 +79,7 @@ pool8.barcodes.snagmap.zoom
 #ggsave(filename = "pool8.barcodes.snagmap.zoom.png", plot = pool8.barcodes.snagmap.zoom, dpi = 1000)
 
 # Dealing with location codes
-ldat <- read.csv("locationdata.csv")
+ldat <- read.csv("data/locationdata.csv")
 dim(ldat)
 ldat <- ldat[ldat$Location.code %in% pool8.barcodes$lcode,] 
 ldat
@@ -117,7 +117,7 @@ pool8.fixedsites <- ggmap(m)+
 pool8.fixedsites
 
 # check across all the data, not just pool8
-fishdat <- read.csv("ltrm_fish_data.csv")
+fishdat <- read.csv("data/ltrm_fish_data.csv")
 b <- droplevels(fishdat[fishdat$sitetype == "2" & !is.na(fishdat$sitetype),])
 table(b$lcode)
 # sure enough, there are more permanent sites in the other pools, just not pool 8.
@@ -216,7 +216,7 @@ secchim <- ggmap(m)+
 secchim
 
 #load data
-load("newdat.Rda")
+load("data/newdat.Rda")
 #Establish color scales
 source("color_schemes.R")
 

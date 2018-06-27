@@ -1,7 +1,7 @@
 source("libraries.R")
 
 # use cluster analysis on the fish data 
-load("fishclustercomplete.Rda")
+load("data/fishclustercomplete.Rda")
 #########################################################
 # using gower methods
 gower_dist <- daisy(fishclustercomplete[,-1], metric = c("gower"))
@@ -163,7 +163,7 @@ text(fish.pc$scores[,1], fish.pc$scores[,2], labels=fishclustercomplete$sciname,
 
 # PLOT THINGS
 
-load("pool8.barcodes.Rda")
+load("data/pool8.barcodes.Rda")
 #pool8.barcodes$snag <- as.numeric(pool8.barcodes$snag)
 pool8.b <- pool8.barcodes[,c("fishcode", "snag")]
 # order pool8.b by fishcode

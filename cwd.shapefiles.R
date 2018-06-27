@@ -1,6 +1,6 @@
 # Working with aquatic habitat shape files 
 source("libraries.R")
-load("pool8.barcodes.Rda")
+load("data/pool8.barcodes.Rda")
 # show the files available to read
 list.files("aquahab/", pattern='\\.shp$')
 # does the file exist?
@@ -32,7 +32,7 @@ ext <- over(x = points, y = aquahab)
 pool8.barcodes$aqua_code <- ext$AQUA_CODE
 pool8.barcodes$aqua_desc <- ext$AQUA_DESC
 #save(pool8.barcodes, file = "pool8.barcodes.Rda")
-load("pool8.barcodes.Rda")
+load("data/pool8.barcodes.Rda")
 # Plotting aquatic habitats with colors, following this tutorial: http://mazamascience.com/WorkingWithData/?p=1494
 # add to data a new column termed "id" composed of the rownames of data
 aquahab@data$id <- aquahab@data$OBJECTID
