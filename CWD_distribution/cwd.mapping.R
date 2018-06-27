@@ -220,12 +220,7 @@ load("data/newdat.Rda")
 #Establish color scales
 source("color_schemes.R")
 
-ggplot(data = newdat, aes(x = lon, y = lat, color = stratum_name))+
-  geom_point(size = 0.6)+
-  scale_color_manual(values = strataColors)
-#these colors correspond more closely to the original map but they aren't distinctive enough for this graph
-
-#another attempt:
+#Map electrofishing points by stratum type
 ggplot(data = newdat, aes(x = lon, y = lat, color = stratum_name))+
   geom_point(size = 0.7)+
   coord_fixed(1.2)+
