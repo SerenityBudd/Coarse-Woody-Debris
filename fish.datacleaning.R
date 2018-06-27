@@ -135,3 +135,16 @@ fishclustercomplete <- fishcluster4[complete.cases(fishcluster4),]
 #save(fishclustercomplete, file = "fishclustercomplete.Rda")
 fishclustercomplete$Common.Name <- as.character(fishclustercomplete$Common.Name)
 
+fb <- fishbase
+
+head(fishinfo$Scientific.Name)
+str(fishinfo$Scientific.Name)
+#it's a character vector. Good.
+sciname <- paste(fb$genus, fb$species)
+head(sciname)
+index <- fishinfo$Scientific.Name %in% sciname
+head(index)
+fishcorrect <- fishinfo[index,]
+dim(fishcorrect)
+dim(fishinfo)
+#185 species left.
