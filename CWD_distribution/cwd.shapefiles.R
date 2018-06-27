@@ -247,6 +247,6 @@ ggplot(data = p8b, aes(x = cond))+
 
 
 ### More recent shapefile
-hab2010 <- readOGR(dsn = "2010_armycorps_shapefile/", layer = "aqa_2010_lvl3_011918")
+hab2010 <- readOGR(dsn = "aquahab/2010_armycorps_shapefile/", layer = "aqa_2010_lvl3_011918")
 glimpse(hab2010)
 #could try subsetting this and setting the bounding box according to min/max utm values from pool8
