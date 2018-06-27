@@ -84,7 +84,7 @@ pool8.barcodes <- as.data.frame(pool8 %>%
                                   group_by(barcode) %>% 
                                   summarize_all(firstel))
 
-#save(pool8.barcodes, file = "pool8.barcodes.Rda")
+#save(pool8.barcodes, file = "data/pool8.barcodes.Rda")
 for (i in 1:ncol(pool8.barcodes)) {
   print(colnames(pool8.barcodes)[i]) 
   print(summary(pool8.barcodes[,i]))
@@ -123,6 +123,6 @@ newdat_lonlat <- as.data.frame(spTransform(newdat_sp, CRS("+proj=longlat +datum=
 names(newdat_lonlat) <- c("lon", "lat")
 #join to the original data frame
 newdat <- cbind(newdat, newdat_lonlat)
-#save(newdat, file = "newdat.Rda")
+#save(newdat, file = "data/newdat.Rda")
 
 
