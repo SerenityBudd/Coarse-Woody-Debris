@@ -106,35 +106,37 @@ nacount(fishinfo)
 fishinfo <- select(fishinfo, -c(Animal, Wilcox.Ucrit, Freshwater.Marine, Maximum.LTRMP.Length, Substock:Trophy))
 
 # selects only the columns that are numeric
-fishcluster <- select(fishinfo, c(Fishcode, Exploit.Rank:Wilcox.Pass.Dams, Conservation.Status:Trophic.Guild, Water.Column.Preference:Egg.Bouyancy,Maximum.Fecundity:Mean.Incubation,Larval.Growth:Ubiquity))
+#fishcluster <- select(fishinfo, c(Fishcode, Exploit.Rank:Wilcox.Pass.Dams, Conservation.Status:Trophic.Guild, Water.Column.Preference:Egg.Bouyancy,Maximum.Fecundity:Mean.Incubation,Larval.Growth:Ubiquity))
 
 # selects the columns that are important to cluster analysis
 # method from paper
-fishcluster1 <- fishinfo[,c("Common.Name", "Maximum.Literature.Length", "Length.at.Maturity", "Maximum.Age", "Age.at.Maturity", "Mean.Fecundity", "Mean.Ovum.Diameter", "Parental.Care")]
+#fishcluster1 <- fishinfo[,c("Common.Name", "Maximum.Literature.Length", "Length.at.Maturity", "Maximum.Age", "Age.at.Maturity", "Mean.Fecundity", "Mean.Ovum.Diameter", "Parental.Care")]
 
 # removing repeat variables
-fishcluster2 <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff))
+#fishcluster2 <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff))
 
 # remove variables with relatively more NAs
-fishcluster3 <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff,Egg.Bouyancy,Mean.Ovum.Diameter,Mean.Incubation,Larval.Growth))
+#fishcluster3 <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff,Egg.Bouyancy,Mean.Ovum.Diameter,Mean.Incubation,Larval.Growth))
 
 # quickly see summaries for the new df fishcluster
-for (i in 1:ncol(fishcluster)) {
+#for (i in 1:ncol(fishcluster)) {
   print(colnames(fishcluster)[i]) 
   print(summary(fishcluster[,i]))
 }
 
 # count NA's
-nacount(fishcluster)
+#nacount(fishcluster)
 
-fishcluster4 <- select(fishinfo, c(Common.Name, Swim.Factor, Shape.Factor,Maximum.Literature.Length, Trophic.Guild, Length.at.Maturity, Maximum.Age, Age.at.Maturity, Mean.Fecundity, Mean.Ovum.Diameter, Parental.Care, R.Guild1:F.Guild3))
+#fishcluster4 <- select(fishinfo, c(Common.Name, Swim.Factor, Shape.Factor,Maximum.Literature.Length, Trophic.Guild, Length.at.Maturity, Maximum.Age, Age.at.Maturity, Mean.Fecundity, Mean.Ovum.Diameter, Parental.Care, R.Guild1:F.Guild3))
 
 # make a dataframe of fishcluster with all the NAs removed, *** NOTE which "fishcluster" is used
-fishclustercomplete <- fishcluster4[complete.cases(fishcluster4),]
+#fishclustercomplete <- fishcluster4[complete.cases(fishcluster4),]
 #save(fishclustercomplete, file = "fishclustercomplete.Rda")
-fishclustercomplete$Common.Name <- as.character(fishclustercomplete$Common.Name)
+#fishclustercomplete$Common.Name <- as.character(fishclustercomplete$Common.Name)
 
 #Update fish names to current taxonomy (based on Google searches) and correct spelling errors.
+fishinfo$Scientific.Name <- as.character(fishinfo$Scientific.Name)
+
 fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
                            "Lampetra appendix"] <- "Lethenteron appendix"
 fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
@@ -178,16 +180,6 @@ fishinfo$Scientific.Name[fishinfo$Scientific.Name ==
 fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
                            "Notropis buccatus"] <- "Ericymba buccata"
 
-
-
-for (i in 1:length(fishinfo$Scientific.Name)) {
-  print(fishinfo$Scientific.Name)
-}
-species()
-
-fishinfo$Scientific.Name <- as.character(fishinfo$Scientific.Name)
-warnings()
-
 fb <- fishbase
 head(fishinfo$Scientific.Name)
 str(fishinfo$Scientific.Name)
@@ -210,3 +202,14 @@ length(unique(morpho$sciname))
 
 badfish <- fishinfo[!index,]
 unique(badfish$Scientific.Name)
+
+str(morpho)
+
+morpho_new <- dplyr::select(morpho, sciname:CA)
+
+morpho_grouped <- morpho_new %>%
+  group_by(sciname) %>%
+  summarise_all(funs(mean(., na.rm=TRUE)))
+
+morpho_grouped_complete <- morpho_grouped[complete.cases(morpho_grouped),]
+dim(morpho_grouped_complete)
