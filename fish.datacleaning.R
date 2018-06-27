@@ -131,7 +131,7 @@ fishinfo <- select(fishinfo, -c(Animal, Wilcox.Ucrit, Freshwater.Marine, Maximum
 
 # make a dataframe of fishcluster with all the NAs removed, *** NOTE which "fishcluster" is used
 #fishclustercomplete <- fishcluster4[complete.cases(fishcluster4),]
-#save(fishclustercomplete, file = "fishclustercomplete.Rda")
+#save(fishclustercomplete, file = "data/fishclustercomplete.Rda")
 #fishclustercomplete$Common.Name <- as.character(fishclustercomplete$Common.Name)
 
 #Update fish names to current taxonomy (based on Google searches) and correct spelling errors.
