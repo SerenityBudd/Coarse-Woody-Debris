@@ -1,5 +1,7 @@
 source("libraries.R")
 
+load("data/fishinfo.Rda")
+
 # use cluster analysis on the fish data 
 load("data/fishclustercomplete.Rda")
 #########################################################
@@ -67,7 +69,7 @@ fish.k2.clust <- lapply(1:2, function(nc) fishclustercomplete$sciname[fish.k2$cl
 fish.k2.clust   
 
 # plot the scatterplot matrix
-#pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,fish.k2$cluster))
+pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,fish.k2$cluster))
 
 # Cluster Plot against first 2 principal components
 clusplot(fish.scaled, fish.k2$cluster, color=TRUE, shade=TRUE, 
@@ -90,7 +92,7 @@ clus3 <- fishclustercomplete[as.data.frame(c(fish.k3.clust[3]))[,1],]
 
 
 # plot the scatterplot matrix
-#pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,fish.k3$cluster))
+pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,fish.k3$cluster))
 
 # Cluster Plot against first 2 principal components
 clusplot(fish.scaled, fish.k3$cluster, color=TRUE, shade=TRUE, 
@@ -117,14 +119,14 @@ plot(fish.complete.link, labels=fishclustercomplete$sciname)
 
 # looking at 2 groups
 cut.2 <- cutree(fish.complete.link, k=2)
-#pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.2))
+pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.2))
 
 fish.2.clust <- lapply(1:2, function(nc) fishclustercomplete$sciname[cut.2==nc])  
 fish.2.clust
 
 # looking at 3 groups
 cut.3 <- cutree(fish.complete.link, k=3)
-#pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.3))
+pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.3))
 
 fish.3.clust <- lapply(1:3, function(nc) fishclustercomplete$sciname[cut.3==nc])  
 fish.3.clust
@@ -150,37 +152,3 @@ plot(fish.pc$scores[,1], fish.pc$scores[,2], ylim=range(fish.pc$scores[,1]),
      xlab="PC 1", ylab="PC 2", type ='n', lwd=2)
 text(fish.pc$scores[,1], fish.pc$scores[,2], labels=fishclustercomplete$sciname, cex=0.7, lwd=2,
      col=my.color.vector)
-
-# the fish that were outliers were #72 - LKSG and #89 - PDFH
-
-
-
-
-
-
-
-#########################################################
-
-# PLOT THINGS
-
-load("data/pool8.barcodes.Rda")
-#pool8.barcodes$snag <- as.numeric(pool8.barcodes$snag)
-pool8.b <- pool8.barcodes[,c("fishcode", "snag")]
-# order pool8.b by fishcode
-pool8.b <- pool8.b[order(pool8.b$fishcode),] 
-# remove rows with missing fishcodes
-pool8.b <- pool8.b[-c(1:204),]
-# make the table a dataframe so we can work with it
-pool8.bb <- as.data.frame(table(pool8.b))
-
-pool8.bb <- data.frame(pool8.bb[2:58, c("fishcode", "Freq")], 
-                       pool8.bb[60:116, "Freq"])
-colnames(pool8.bb) <- c("Fishcode", "nosnag", "snag")
-
-pool8.fishtraits <- inner_join(pool8.bb, fishinfo, by = "Fishcode")
-
-#plot snag/(snag + nosnag) by fishcode
-ggplot(data = filter(pool8.fishtraits,!is.na(snag) & !is.na(nosnag)), 
-       aes(x = Fishcode, y = snag/(snag+nosnag), color = snag/(snag+nosnag))) +
-  geom_point() +
-  theme(axis.text.x = element_text(size = 5, angle=60)) 
