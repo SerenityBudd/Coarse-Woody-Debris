@@ -134,7 +134,6 @@ fishclustercomplete <- fishcluster4[complete.cases(fishcluster4),]
 #save(fishclustercomplete, file = "fishclustercomplete.Rda")
 fishclustercomplete$Common.Name <- as.character(fishclustercomplete$Common.Name)
 
-
 for (i in 1:length(fishinfo$Scientific.Name)) {
   print(fishinfo$Scientific.Name)
 }
@@ -143,4 +142,22 @@ species()
 fishinfo$Scientific.Name <- as.character(fishinfo$Scientific.Name)
 warnings()
 
+fb <- fishbase
 
+head(fishinfo$Scientific.Name)
+str(fishinfo$Scientific.Name)
+legnth(fishinfo$Scientific.Name)
+#it's a character vector. Good.
+sciname <- paste(fb$Genus, fb$Species)
+head(sciname)
+index <- fishinfo$Scientific.Name %in% sciname
+head(index)
+fishcorrect <- fishinfo[index,]
+dim(fishcorrect)
+dim(fishinfo)
+#185 species left.
+
+morpho <- morphometrics(species_list = fishcorrect$Scientific.Name)
+#44 warnings
+length(unique(morpho$sciname))
+#end up with 163 species
