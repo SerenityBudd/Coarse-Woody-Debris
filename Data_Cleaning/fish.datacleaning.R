@@ -1,5 +1,7 @@
 source("libraries.R")
 
+fishdat <- read.csv("data/ltrm_fish_data.csv")
+
 # import data on fish, sort the dataframes by fishcode
 fishdist <- read.csv("data/Table_Distribution.csv")[,-c(2:5)]
 fishdist <- fishdist[order(fishdist$Fishcode),] 
@@ -33,11 +35,6 @@ str(fishtraits)
 str(fishreproduction) 
 str(fishgrowth) 
 str(fishdist)
-
-# notice that the first col of every dataframe is the same
-identical(fishdist$Fishcode, fishgrowth$Fishcode, 
-          Species$Fishcode, fishmisc$Fishcode, 
-          fishreproduction$Fishcode, fishtraits$Fishcode)
 
 # combine the important dataframes into fishinfo
 fishinfo <- left_join(left_join(Species, fishmisc, by = "Fishcode"), fishtraits, by = "Fishcode")
@@ -80,139 +77,55 @@ nos <- fishinfo[fishinfo$LTRMP == "N","Fishcode"]
 summary(fishdat[fishdat$fishcode %in% nos,"fishcode"])
 
 # remove the rows of fishcodes that are not in the fish info data
-summary(fishdat[fishdat$fishcode %in% ltrmf,"fishcode"])
+ltrmfishdat <- filter(fishdat, fishcode %in% inters)
 
-ltrmfishdat <- filter(fishdat, !fishcode %in% ltrmf)
+#Update fish names to current taxonomy (based on Google searches) and correct spelling errors
 
-# explore the fishinfo data
-for (i in 1:ncol(fishinfo)) {
-  print(colnames(fishinfo)[i]) 
-  print(summary(fishinfo[,i]))
-}
-
-#Quicky determine how many NA's are in each column of the data frame. 
-nacount <- function(x){
-  na.df <- data.frame(name = names(x), nas = NA)
-  for(i in 1:ncol(x)){
-    na.df$nas[i] <- sum(is.na(x[,i]))
-  }
-  return(na.df)
-}
-
-# count NA's
-nacount(fishinfo)
-
-# remove the columns with too many NAs
-fishinfo <- select(fishinfo, -c(Animal, Wilcox.Ucrit, Freshwater.Marine, Maximum.LTRMP.Length, Substock:Trophy))
-
-# selects only the columns that are numeric
-#fishcluster <- select(fishinfo, c(Fishcode, Exploit.Rank:Wilcox.Pass.Dams, Conservation.Status:Trophic.Guild, Water.Column.Preference:Egg.Bouyancy,Maximum.Fecundity:Mean.Incubation,Larval.Growth:Ubiquity))
-
-# selects the columns that are important to cluster analysis
-# method from paper
-#fishcluster1 <- fishinfo[,c("Common.Name", "Maximum.Literature.Length", "Length.at.Maturity", "Maximum.Age", "Age.at.Maturity", "Mean.Fecundity", "Mean.Ovum.Diameter", "Parental.Care")]
-
-# removing repeat variables
-#fishcluster2 <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff))
-
-# remove variables with relatively more NAs
-#fishcluster3 <- select(fishcluster, -c(Range.Ovum.Diameter,Adult.Trophic.Level, Maximum.Fecundity, Juvenile.Cutoff,Egg.Bouyancy,Mean.Ovum.Diameter,Mean.Incubation,Larval.Growth))
-
-# quickly see summaries for the new df fishcluster
-#for (i in 1:ncol(fishcluster)) {
-  print(colnames(fishcluster)[i]) 
-  print(summary(fishcluster[,i]))
-}
-
-# count NA's
-#nacount(fishcluster)
-
-#fishcluster4 <- select(fishinfo, c(Common.Name, Swim.Factor, Shape.Factor,Maximum.Literature.Length, Trophic.Guild, Length.at.Maturity, Maximum.Age, Age.at.Maturity, Mean.Fecundity, Mean.Ovum.Diameter, Parental.Care, R.Guild1:F.Guild3))
-
-# make a dataframe of fishcluster with all the NAs removed, *** NOTE which "fishcluster" is used
-#fishclustercomplete <- fishcluster4[complete.cases(fishcluster4),]
-#save(fishclustercomplete, file = "data/fishclustercomplete.Rda")
-#fishclustercomplete$Common.Name <- as.character(fishclustercomplete$Common.Name)
-
-#Update fish names to current taxonomy (based on Google searches) and correct spelling errors.
 fishinfo$Scientific.Name <- as.character(fishinfo$Scientific.Name)
 
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current <- fishinfo$Scientific.Name
+
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Lampetra appendix"] <- "Lethenteron appendix"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Lepisosteus spatula"] <- "Atractosteus spatula"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Notropis amblops"] <- "Hybopsis amblops"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                         "Hypopthalmichthys nobilis"] <- "Hypophthalmichthys nobilis"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Notropis hubbsi"] <- "Pteronotropis hubbsi"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Ammocrypta asprella"] <- "Crystallaria asprella"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Etheostoma proelaire"] <- "Etheostoma proeliare"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Myoxocephalus thompsoni"] <- "Myoxocephalus thompsonii"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Cottus bairdi"] <- "Cottus bairdii"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Phoxinus eos"] <- "Chrosomus eos"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Notropis amnis"] <- "Hybopsis amnis"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Notropis fumeus"] <- "Lythrurus fumeus"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Chologaster agassizi"] <- "Forbesichthys agassizii"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Percina uranidie"] <- "Percina uranidea"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Sander canadense"] <- "Sander canadensis"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Phoxinus erythrogaster"] <- "Chrosomus erythrogaster"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                       "Hypopthalmichthys molitrix"] <- "Hypophthalmichthys molitrix"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Sander vitreum"] <- "Sander vitreus"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Catostomus commersoni"] <- "Catostomus commersonii"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Moxostoma duquesnei"] <- "Moxostoma duquesnii"
-fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+fishinfo$Scientific.Name.Current[fishinfo$Scientific.Name.Current == 
                            "Notropis buccatus"] <- "Ericymba buccata"
 
-fb <- fishbase
-head(fishinfo$Scientific.Name)
-str(fishinfo$Scientific.Name)
-length(fishinfo$Scientific.Name)
-#it's a character vector. Good.
-sciname <- paste(fb$Genus, fb$Species)
-head(sciname)
-index <- fishinfo$Scientific.Name %in% sciname
-head(index)
-fishcorrect <- fishinfo[index,]
-dim(fishinfo)
-dim(fishcorrect)
-#206 species left
-
-morpho <- morphometrics(species_list = fishcorrect$Scientific.Name)
-#50 or more
-length(unique(morpho$sciname))
-
-#end up with 179 species
-
-badfish <- fishinfo[!index,]
-unique(badfish$Scientific.Name)
-
-str(morpho)
-
-morpho_new <- dplyr::select(morpho, sciname:CA)
-
-morpho_grouped <- morpho_new %>%
-  group_by(sciname) %>%
-  summarise_all(funs(mean(., na.rm=TRUE)))
-
-morpho_grouped_complete <- morpho_grouped[complete.cases(morpho_grouped),]
-dim(morpho_grouped_complete)
-
-fishclustercomplete <- morpho_grouped_complete
-#save(fishclustercomplete, file = "fishclustercomplete.Rda")
+save(fishinfo, file = "data/fishinfo.Rda")
