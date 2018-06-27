@@ -291,7 +291,7 @@ load("newdat.Rda")
 source("libraries.R")
 source("color_schemes.R")
 
-# Number of Sampling Points by Stratum
+# Bar Chart of Number of Sampling Points by Stratum
 newdat %>% filter(!is.na(snag)) %>% filter(!is.na(stratum_name)) %>% ggplot(aes(x = stratum_name))+
   geom_bar(aes(fill = stratum_name))+
   scale_fill_manual(name = "Aquatic Habitat Stratum", 
@@ -361,7 +361,7 @@ ggplot(data = stratum.year, aes(x = year, y = totpoints, color = stratum_name))+
 
 #Proportion of CWD by Stratum and Year
 ggplot(data = stratum.year, aes(x = year, y = propCWD, color = stratum_name))+
-  geom_line(size = 1.5)+
+  geom_smooth(size = 1.5, se = F)+
   scale_color_manual(name = "Aquatic Habitat Stratum", 
                      values = strataColors_distinct)+
   ggtitle("Proportion of Points with CWD by Year")+
