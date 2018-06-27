@@ -146,7 +146,7 @@ fb <- fishbase
 
 head(fishinfo$Scientific.Name)
 str(fishinfo$Scientific.Name)
-legnth(fishinfo$Scientific.Name)
+length(fishinfo$Scientific.Name)
 #it's a character vector. Good.
 sciname <- paste(fb$Genus, fb$Species)
 head(sciname)
@@ -161,3 +161,39 @@ morpho <- morphometrics(species_list = fishcorrect$Scientific.Name)
 #44 warnings
 length(unique(morpho$sciname))
 #end up with 163 species
+
+str(morpho)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+morpho_new <- dplyr::select(morpho, sciname:CA)
+
+morpho_grouped <- morpho_new %>%
+  group_by(sciname) %>%
+  summarise_all(funs(mean(., na.rm=TRUE)))
+
+morpho_grouped_complete <- morpho_grouped[complete.cases(morpho_grouped),]
+dim(morpho_grouped_complete)
+
+
+
+
+
