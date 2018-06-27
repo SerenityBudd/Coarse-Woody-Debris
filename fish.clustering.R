@@ -31,7 +31,7 @@ lines(1:10, sil_width)
 pam_fit <- pam(gower_dist, diss = TRUE, k = 2)
 
 pam_results <- fishclustercomplete %>%
-  dplyr::select(-Common.Name) %>%
+  dplyr::select(-sciname) %>%
   mutate(cluster = pam_fit$clustering) %>%
   group_by(cluster) %>%
   do(the_summary = summary(.))
@@ -46,7 +46,7 @@ tsne_data <- tsne_obj$Y %>%
   data.frame() %>%
   setNames(c("X", "Y")) %>%
   mutate(cluster = factor(pam_fit$clustering),
-         name = fishclustercomplete$Common.Name)
+         name = fishclustercomplete$sciname)
 
 ggplot(aes(x = X, y = Y), data = tsne_data) +
   geom_point(aes(color = cluster))
@@ -55,7 +55,7 @@ ggplot(aes(x = X, y = Y), data = tsne_data) +
 #########################################################
 
 # using Partitioning Methods
-#fishclustercomplete <- filter(fishclustercomplete, !Common.Name %in% c("Lake sturgeon","Paddlefish"))
+#fishclustercomplete <- filter(fishclustercomplete, !sciname %in% c("Lake sturgeon","Paddlefish"))
 fish.scaled <- scale(fishclustercomplete[,-1])
 
 # partitioning into 2 groups
@@ -63,7 +63,7 @@ fish.k2 <- kmeans(fish.scaled, centers=2, iter.max=100, nstart=25)
 fish.k2
 
 # these are the 2 groups
-fish.k2.clust <- lapply(1:2, function(nc) fishclustercomplete$Common.Name[fish.k2$cluster==nc])  
+fish.k2.clust <- lapply(1:2, function(nc) fishclustercomplete$sciname[fish.k2$cluster==nc])  
 fish.k2.clust   
 
 # plot the scatterplot matrix
@@ -80,7 +80,7 @@ fish.k3 <- kmeans(fish.scaled, centers=3, iter.max=100, nstart=25)
 fish.k3
 
 # these are the 3 groups
-fish.k3.clust <- lapply(1:3, function(nc) fishclustercomplete$Common.Name[fish.k3$cluster==nc])  
+fish.k3.clust <- lapply(1:3, function(nc) fishclustercomplete$sciname[fish.k3$cluster==nc])  
 fish.k3.clust   
 
 # 
@@ -113,20 +113,20 @@ fish.dist <- dist(scale(fishclustercomplete[,-1]))
 
 # complete linkage
 fish.complete.link <- hclust(fish.dist, method='complete')
-plot(fish.complete.link, labels=fishclustercomplete$Common.Name)
+plot(fish.complete.link, labels=fishclustercomplete$sciname)
 
 # looking at 2 groups
 cut.2 <- cutree(fish.complete.link, k=2)
 #pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.2))
 
-fish.2.clust <- lapply(1:2, function(nc) fishclustercomplete$Common.Name[cut.2==nc])  
+fish.2.clust <- lapply(1:2, function(nc) fishclustercomplete$sciname[cut.2==nc])  
 fish.2.clust
 
 # looking at 3 groups
 cut.3 <- cutree(fish.complete.link, k=3)
 #pairs(fishclustercomplete[,-1], panel=function(x,y) text(x,y,cut.3))
 
-fish.3.clust <- lapply(1:3, function(nc) fishclustercomplete$Common.Name[cut.3==nc])  
+fish.3.clust <- lapply(1:3, function(nc) fishclustercomplete$sciname[cut.3==nc])  
 fish.3.clust
 
 # making a clusplot
@@ -148,7 +148,7 @@ my.color.vector[cut.3==3] <- "orange"
 # Plotting the PC scores:
 plot(fish.pc$scores[,1], fish.pc$scores[,2], ylim=range(fish.pc$scores[,1]), 
      xlab="PC 1", ylab="PC 2", type ='n', lwd=2)
-text(fish.pc$scores[,1], fish.pc$scores[,2], labels=fishclustercomplete$Common.Name, cex=0.7, lwd=2,
+text(fish.pc$scores[,1], fish.pc$scores[,2], labels=fishclustercomplete$sciname, cex=0.7, lwd=2,
      col=my.color.vector)
 
 # the fish that were outliers were #72 - LKSG and #89 - PDFH
