@@ -1,22 +1,22 @@
 source("libraries.R")
 
 # import data on fish, sort the dataframes by fishcode
-fishdist <- read.csv("Table_Distribution.csv")[,-c(2:5)]
+fishdist <- read.csv("data/Table_Distribution.csv")[,-c(2:5)]
 fishdist <- fishdist[order(fishdist$Fishcode),] 
 
-fishgrowth <- read.csv("Table_Growth.csv")
+fishgrowth <- read.csv("data/Table_Growth.csv")
 fishgrowth <- fishgrowth[order(fishgrowth$Fishcode),]
 
-Species <- read.csv("Table_LTRMP_Species_List.csv")
+Species <- read.csv("data/Table_LTRMP_Species_List.csv")
 Species <- Species[order(Species$Fishcode),] 
 
-fishmisc <- read.csv("Table_Miscellaneous.csv")
+fishmisc <- read.csv("data/Table_Miscellaneous.csv")
 fishmisc <- fishmisc[order(fishmisc$Fishcode),] 
 
-fishreproduction <- read.csv("Table_Reproduction.csv")
+fishreproduction <- read.csv("data/Table_Reproduction.csv")
 fishreproduction <- fishreproduction[order(fishreproduction$Fishcode),] 
 
-fishtraits <- read.csv("Table_Preference_and_Guild.csv")
+fishtraits <- read.csv("data/Table_Preference_and_Guild.csv")
 fishtraits <- fishtraits[order(fishtraits$Fishcode),] 
 
 # explore the date using dim and str
@@ -134,7 +134,6 @@ fishclustercomplete <- fishcluster4[complete.cases(fishcluster4),]
 #save(fishclustercomplete, file = "fishclustercomplete.Rda")
 fishclustercomplete$Common.Name <- as.character(fishclustercomplete$Common.Name)
 
-<<<<<<< HEAD
 #Update fish names to current taxonomy (based on Google searches) and correct spelling errors.
 fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
                            "Lampetra appendix"] <- "Lethenteron appendix"
@@ -211,19 +210,3 @@ length(unique(morpho$sciname))
 
 badfish <- fishinfo[!index,]
 unique(badfish$Scientific.Name)
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
-#end up with 163 species
->>>>>>> 93be116ee77e97dad2836e5f45f00fc294eec033
