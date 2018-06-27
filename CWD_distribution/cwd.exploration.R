@@ -1,5 +1,5 @@
 source("libraries.R")
-load("pool8.barcodes.Rda")
+load("data/pool8.barcodes.Rda")
 
 #exploratory graphs
 with(pool8.barcodes[pool8.barcodes$stageht < 40,], plot(stageht~depth, col = rgb(0,0,0,0.3), pch = 20))
