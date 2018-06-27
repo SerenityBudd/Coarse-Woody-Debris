@@ -135,22 +135,83 @@ fishclustercomplete <- fishcluster4[complete.cases(fishcluster4),]
 #save(fishclustercomplete, file = "fishclustercomplete.Rda")
 fishclustercomplete$Common.Name <- as.character(fishclustercomplete$Common.Name)
 
-fb <- fishbase
+#Update fish names to current taxonomy (based on Google searches) and correct spelling errors.
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Lampetra appendix"] <- "Lethenteron appendix"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Lepisosteus spatula"] <- "Atractosteus spatula"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Notropis amblops"] <- "Hybopsis amblops"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                        "Hypopthalmichthys nobilis"] <- "Hypophthalmichthys nobilis"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Notropis hubbsi"] <- "Pteronotropis hubbsi"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Ammocrypta asprella"] <- "Crystallaria asprella"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Etheostoma proelaire"] <- "Etheostoma proeliare"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Myoxocephalus thompsoni"] <- "Myoxocephalus thompsonii"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Cottus bairdi"] <- "Cottus bairdii"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Phoxinus eos"] <- "Chrosomus eos"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Notropis amnis"] <- "Hybopsis amnis"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Notropis fumeus"] <- "Lythrurus fumeus"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Chologaster agassizi"] <- "Forbesichthys agassizii"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Percina uranidie"] <- "Percina uranidea"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Sander canadense"] <- "Sander canadensis"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Phoxinus erythrogaster"] <- "Chrosomus erythrogaster"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                      "Hypopthalmichthys molitrix"] <- "Hypophthalmichthys molitrix"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Sander vitreum"] <- "Sander vitreus"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Catostomus commersoni"] <- "Catostomus commersonii"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Moxostoma duquesnei"] <- "Moxostoma duquesnii"
+fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
+                           "Notropis buccatus"] <- "Ericymba buccata"
 
+
+library(rfishbase)
+fb <- fishbase
 head(fishinfo$Scientific.Name)
 str(fishinfo$Scientific.Name)
-legnth(fishinfo$Scientific.Name)
+length(fishinfo$Scientific.Name)
 #it's a character vector. Good.
 sciname <- paste(fb$Genus, fb$Species)
 head(sciname)
 index <- fishinfo$Scientific.Name %in% sciname
 head(index)
 fishcorrect <- fishinfo[index,]
-dim(fishcorrect)
 dim(fishinfo)
-#185 species left.
+dim(fishcorrect)
+#206 species left
 
 morpho <- morphometrics(species_list = fishcorrect$Scientific.Name)
-#44 warnings
+#50 or more
 length(unique(morpho$sciname))
-#end up with 163 species
+#end up with 179 species
+
+badfish <- fishinfo[!index,]
+unique(badfish$Scientific.Name)
+
+
+
+
+
+
+
+
+
+
+
+
+
