@@ -7,8 +7,8 @@ fishdist <- fishdist[order(fishdist$Fishcode),]
 fishgrowth <- read.csv("Table_Growth.csv")
 fishgrowth <- fishgrowth[order(fishgrowth$Fishcode),]
 
-species <- read.csv("Table_LTRMP_Species_List.csv")
-species <- species[order(species$Fishcode),] 
+Species <- read.csv("Table_LTRMP_Species_List.csv")
+Species <- Species[order(Species$Fishcode),] 
 
 fishmisc <- read.csv("Table_Miscellaneous.csv")
 fishmisc <- fishmisc[order(fishmisc$Fishcode),] 
@@ -22,12 +22,12 @@ fishtraits <- fishtraits[order(fishtraits$Fishcode),]
 # explore the date using dim and str
 dim(fishdist)
 dim(fishgrowth)
-dim(species)
+dim(Species)
 dim(fishmisc)
 dim(fishreproduction)
 dim(fishtraits)
 
-str(species) 
+str(Species) 
 str(fishmisc) 
 str(fishtraits) 
 str(fishreproduction) 
@@ -36,15 +36,14 @@ str(fishdist)
 
 # notice that the first col of every dataframe is the same
 identical(fishdist$Fishcode, fishgrowth$Fishcode, 
-          species$Fishcode, fishmisc$Fishcode, 
+          Species$Fishcode, fishmisc$Fishcode, 
           fishreproduction$Fishcode, fishtraits$Fishcode)
 
 # combine the important dataframes into fishinfo
-fishinfo <- left_join(left_join(species, fishmisc, by = "Fishcode"), fishtraits, by = "Fishcode")
+fishinfo <- left_join(left_join(Species, fishmisc, by = "Fishcode"), fishtraits, by = "Fishcode")
 fishinfo <- left_join(fishinfo, fishreproduction, by = "Fishcode")
 fishinfo <- left_join(fishinfo, fishgrowth, by = "Fishcode")
 fishinfo <- left_join(fishinfo, fishdist, by = "Fishcode")
-
 
 dim(fishinfo)
 str(fishinfo)
@@ -135,6 +134,7 @@ fishclustercomplete <- fishcluster4[complete.cases(fishcluster4),]
 #save(fishclustercomplete, file = "fishclustercomplete.Rda")
 fishclustercomplete$Common.Name <- as.character(fishclustercomplete$Common.Name)
 
+<<<<<<< HEAD
 #Update fish names to current taxonomy (based on Google searches) and correct spelling errors.
 fishinfo$Scientific.Name[fishinfo$Scientific.Name == 
                            "Lampetra appendix"] <- "Lethenteron appendix"
@@ -180,7 +180,15 @@ fishinfo$Scientific.Name[fishinfo$Scientific.Name ==
                            "Notropis buccatus"] <- "Ericymba buccata"
 
 
-library(rfishbase)
+
+for (i in 1:length(fishinfo$Scientific.Name)) {
+  print(fishinfo$Scientific.Name)
+}
+species()
+
+fishinfo$Scientific.Name <- as.character(fishinfo$Scientific.Name)
+warnings()
+
 fb <- fishbase
 head(fishinfo$Scientific.Name)
 str(fishinfo$Scientific.Name)
@@ -198,6 +206,7 @@ dim(fishcorrect)
 morpho <- morphometrics(species_list = fishcorrect$Scientific.Name)
 #50 or more
 length(unique(morpho$sciname))
+
 #end up with 179 species
 
 badfish <- fishinfo[!index,]
@@ -215,3 +224,6 @@ unique(badfish$Scientific.Name)
 
 
 
+=======
+#end up with 163 species
+>>>>>>> 93be116ee77e97dad2836e5f45f00fc294eec033
