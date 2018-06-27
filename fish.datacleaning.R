@@ -213,11 +213,6 @@ morpho_grouped <- morpho_new %>%
 
 morpho_grouped_complete <- morpho_grouped[complete.cases(morpho_grouped),]
 dim(morpho_grouped_complete)
-<<<<<<< HEAD
 
 fishclustercomplete <- morpho_grouped_complete
 #save(fishclustercomplete, file = "fishclustercomplete.Rda")
-
-
-=======
->>>>>>> 46b31c28ed4eb7aeac566bb2dad3762b7f5412b9
