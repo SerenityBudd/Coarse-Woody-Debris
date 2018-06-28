@@ -122,6 +122,9 @@ new.ef <- cbind(new.ef, new.ef_lonlat)
 #save(new.ef, file = "data/new.ef.Rda")
 
 
+
+
+
 head(new.ef)
 head(pool8.barcodes)
 sum(new.ef$barcode %in% pool8.barcodes$barcode)/nrow(new.ef)
