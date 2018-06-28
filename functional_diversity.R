@@ -3,15 +3,15 @@ source("libraries.R")
 # load in the data
 load("data/fishinfo.Rda")
 load("data/ltrmfishdat.Rda")
-
-head(ltrmfishdat)
+load("data/strata.Rda")
 
 # create a pool8 df using all of the fish in both fishinfo and fishdat
 pool8.fish <- ltrmfishdat %>%
   filter(pool == "08") %>% droplevels()
+pool8.fish <- left_join(pool8.fish, strata, by = "barcode")
 
 # create a working dataframe with the cols we need
-funcdiv <- select(pool8.fish, c(fishcode, barcode, snag, catch))
+funcdiv <- select(pool8.fish, c(fishcode, barcode, snag, stratum_name, stratum.y, catch))
 
 # remove rows where catch was <1
 funcdiv <- filter(funcdiv, catch >=1)
