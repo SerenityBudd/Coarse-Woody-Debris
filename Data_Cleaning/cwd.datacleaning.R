@@ -122,3 +122,12 @@ new.ef <- cbind(new.ef, new.ef_lonlat)
 #save(new.ef, file = "data/new.ef.Rda")
 
 
+head(new.ef)
+head(pool8.barcodes)
+sum(new.ef$barcode %in% pool8.barcodes$barcode)/nrow(new.ef)
+identical(sort(unique(pool8.barcodes$barcode)), sort(unique(new.ef$barcode)))
+  # we have all of the same barcodes. Good. 
+strata <- new.ef[,c("barcode", "stratum_name", "stratum")]
+pool8.barcodes <- left_join(pool8.barcodes, strata, by = "barcode")
+
+
