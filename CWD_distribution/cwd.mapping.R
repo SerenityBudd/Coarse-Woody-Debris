@@ -215,17 +215,4 @@ secchim <- ggmap(m)+
  # guides(color = guide_legend(override.aes = list(size=10)))
 secchim
 
-#load data
-load("data/newdat.Rda")
-#Establish color scales
-source("color_schemes.R")
 
-#Map electrofishing points by stratum type
-ggplot(data = newdat, aes(x = lon, y = lat, color = stratum_name))+
-  geom_point(size = 0.7)+
-  coord_fixed(1.2)+
-  scale_color_manual(name = "Aquatic Habitat Stratum", 
-                     values = strataColors_distinct)+
-  guides(color = guide_legend(override.aes = list(size=6)))+
-  theme(text = element_text(size=18))+
-  ggtitle("Sampling Points by Aquatic Habitat Stratum")

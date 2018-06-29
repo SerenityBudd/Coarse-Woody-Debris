@@ -119,7 +119,21 @@ new.ef_lonlat <- as.data.frame(spTransform(new.ef_sp, CRS("+proj=longlat +datum=
 names(new.ef_lonlat) <- c("lon", "lat")
 #join to the original data frame
 new.ef <- cbind(new.ef, new.ef_lonlat)
+
+#split nearest landcover into fewer categories
+new.ef$landcover_lumped <- NA
+new.ef$landcover_lumped[new.ef$landcover_short %in% c("Lowland forest", "Salix community", "Upland forest", "Floodplain forest", "Populus community")] <- "Forest"
+new.ef$landcover_lumped[new.ef$landcover_short %in% c("Deep marsh annual", "Shallow marsh perennial", "Deep marsh perennial", "Rooted floating aquatics", "Submersed aquatic vegetation")] <- "Aquatic veg"
+new.ef$landcover_lumped[new.ef$landcover_short %in% c("Developed", "Roadside", "Levee")] <- "Developed"
+new.ef$landcover_lumped[new.ef$landcover_short %in% c("Grassland", "Wet meadow shrub", "Wet meadow")] <- "Grassland or meadow"
+new.ef$landcover_lumped[new.ef$landcover_short %in% c("Sand")] <- "Sand"
+new.ef$landcover_lumped <- factor(new.ef$landcover_lumped)
+levels(new.ef$landcover_lumped)
+sum(is.na(new.ef$landcover_lumped))
+table(new.ef$landcover_lumped)
 #save(new.ef, file = "data/new.ef.Rda")
+
+
 
 
 head(new.ef)
