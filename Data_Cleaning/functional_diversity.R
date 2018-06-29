@@ -36,7 +36,6 @@ fishinfo2$Trophic.Guild <- factor(fishinfo2$Trophic.Guild,
                     labels = c("Heribivore", "Omnivore", "General Invertivore", 
                                "Benthic Invertivore", "Piscivore", "Planktivore"))
 head(fishinfo2)
-levels(fishinfo2$Trophic.Guild)
 
 #for (i in 1:ncol(fishinfo2)) {
 #  print(colnames(fishinfo2)[i]) 
