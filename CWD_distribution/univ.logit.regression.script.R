@@ -1,5 +1,5 @@
 makelogit <- function(df, var, cwdfactor, cwd, varname){
-  bp <- df %>% ggplot(aes_string(x = cwdfactor,
+  box_plot <- df %>% ggplot(aes_string(x = cwdfactor,
                           y = var,
                           fill = cwdfactor))+
     geom_boxplot()+
@@ -11,7 +11,7 @@ makelogit <- function(df, var, cwdfactor, cwd, varname){
     theme_bw()+
     theme(text = element_text(size=18))
   
-  dp <- df %>% ggplot(aes_string(x = var,
+  density_plot <- df %>% ggplot(aes_string(x = var,
                           color = cwdfactor))+
     geom_line(stat = "density", size = 2)+
     scale_color_manual(name = "Coarse Woody Debris",
@@ -21,11 +21,17 @@ makelogit <- function(df, var, cwdfactor, cwd, varname){
     ggtitle(paste("Distribution of", varname))+
     ylab("Density")
   
-  return(list(bp, dp))
+  model <- glm(cwd ~ var, data = df, family = "binomial")
+  #have to get the quotation marks off here
+  #use the eval function
+  model_summary <- summary(model)
+  
+  p_value <- coef(summary(model))[,'Pr(>|z|)'][2]
+  
+  return(list(box_plot, density_plot, model))
 }
 
-mod_pct_terr <- glm(snag~pct_terr, data = new.ef, family = "binomial")
-summary(mod_pct_terr)
+
 #ooh wow look at that coefficient and that p-value!!
 
 #generate data to plot model with line
