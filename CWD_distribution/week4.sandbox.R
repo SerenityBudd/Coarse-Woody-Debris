@@ -15,11 +15,13 @@ load("data/pool8.barcodes.Rda")
   ggtitle("Sampling Points by Aquatic Habitat Stratum")+
   scale_x_continuous(limits = c(-91.35, -91.15))
 )
+#***#add outline of pool 8 
 
   #By year
   (mbs_y <- mbs + 
       facet_wrap(~year)
   )
+#***#add outline of pool 8 
 
 # Bar Chart of Number of Sampling Points by Stratum
 nss <- new.ef %>% filter(!is.na(snag)) %>% filter(!is.na(stratum_name)) %>% ggplot(aes(x = stratum_name))+
@@ -29,13 +31,13 @@ nss <- new.ef %>% filter(!is.na(snag)) %>% filter(!is.na(stratum_name)) %>% ggpl
                     values = strataColors_distinct)+
   ylab("Number of Sampling Events")+
   xlab("Aquatic Habitat Stratum")+
-  ggtitle("Aquatic Habitat Strata by CWD Presence")+
+  ggtitle("Number of Points Sampled in each Aquatic Habitat Stratum")+
   theme(axis.text.x = element_blank())
 nss + theme(text = element_text(size=20))
 
   #by snag
   (nss_s <- nss+
-    facet_wrap(~snag)+
+    facet_wrap(~snagyn)+
     theme(text = element_text(size=20))
   )
 
@@ -43,24 +45,27 @@ nss + theme(text = element_text(size=20))
   (nss_y <- nss+
     facet_wrap(~year)
   )
-
-# Points by year
-by_year <- data.frame(year = sort(unique(new.ef$year)),
-                      CWDpoints = NA,
-                      totpoints = NA,
-                      propCWD = NA)
-  # CWDpoints
-  for(i in 1:nrow(by_year)){
-    by_year$CWDpoints[i] <- sum(new.ef$snag[new.ef$year == by_year$year[i]])
-  }
-  # total points
-  for(i in 1:nrow(by_year)){
-    by_year$totpoints[i] <- nrow(new.ef[new.ef$year == by_year$year[i],])
-  }
-  # CWD proportion
-  by_year$propCWD <- round(by_year$CWDpoints / by_year$totpoints, 2)
-  # view table
-  by_year
+  
+  #Table by year
+  (by_year <- as.data.frame(new.ef %>% 
+                                   group_by(year) %>% 
+                                   summarize(totpoints = n(), 
+                                             CWDpoints = sum(snag),
+                                             noCWDpoints = n() - sum(snag),
+                                             propCWD = round(sum(snag/n()), 4))
+  )
+  )
+  
+  #Table by stratum and year
+  (stratum.year <- as.data.frame(new.ef %>% 
+                                   group_by(year, stratum_name) %>% 
+                                   summarize(totpoints = n(), 
+                                             CWDpoints = sum(snag),
+                                             noCWDpoints = n() - sum(snag),
+                                             propCWD = round(sum(snag/n()), 4))
+  )
+  )
+  
 
 #Proportion of points with CWD by year
 ggplot(data = by_year, aes(x = year, y = propCWD)) +
@@ -71,25 +76,34 @@ ggplot(data = by_year, aes(x = year, y = propCWD)) +
   ylab("Proportion of Sites with CWD")+
   theme(text = element_text(size=20))
 
+#Number of points sampled by year
+ggplot(data = by_year, aes(x = year, y = totpoints)) +
+  geom_line(size = 1.5)+
+  geom_point(size = 3, col = "red")+
+  ggtitle("Number of Points by Sampling Year")+
+  xlab("Year of Sampling") +
+  ylab("Number of Points Sampled")+
+  theme(text = element_text(size=20))
+
 #CWD points and total points by year
 ggplot(data = by_year, aes(x = year))+
   geom_line(aes(y = totpoints), size = 1.5)+
-  geom_line(aes(y = CWDpoints), size = 1.5, col = "red")+
-  ggtitle("# CWD Points and # Points Sampled by Year")
+  geom_line(aes(y = CWDpoints), size = 1.5, color = "red")+
+  ggtitle("# CWD Points and # Points Sampled by Year")+
+  xlab("Year")+
+  ylab("Number of Points")+
+  theme(text = element_text(size=20))
 #not sure how to make a legend for this one
 
 #CWD points by total points sampled
-with(by_year, plot(CWDpoints~totpoints, pch = 1, col = "darkred", main = "CWD Points vs. Total Points Sampled"))
-
-#Table by stratum and year
-(stratum.year <- as.data.frame(new.ef %>% 
-                                group_by(year, stratum_name) %>% 
-                                summarize(totpoints = n(), 
-                                          CWDpoints = sum(snag), 
-                                          propCWD = round(sum(snag/n()), 4))
-  )
-)
-
+ggplot(data = by_year, aes(x = totpoints, y = CWDpoints))+
+  geom_point(size = 3, pch = 8)+
+  ggtitle("CWD Points vs. Total Points Sampled")+
+  theme_bw()+
+  theme(text = element_text(size=20))+
+  xlab("# Points Sampled (by year)")+
+  ylab("# Points with CWD")
+  
 #Number of points by stratum and year
 (npsy <- ggplot(data = stratum.year, aes(x = year, y = totpoints, color = stratum_name))+
   geom_line(size = 1.5)+
@@ -174,15 +188,16 @@ with(by_year, plot(CWDpoints~totpoints, pch = 1, col = "darkred", main = "CWD Po
     
   
 # Stratum and Landcover Type
+  library(reshape2)
 table_all <- as.data.frame.matrix(with(new.ef, 
-                                       table(stratum_name, landcover_abbr)))
+                                       table(stratum_name, landcover_short)))
 table_prop_all <- table_all/nrow(new.ef)
 table_prop_all$stratum <- row.names(table_prop_all)
 row.names(table_prop_all) <- NULL
 ma <- melt(table_prop_all, id.vars = "stratum")
 
 table_cwd <- as.data.frame.matrix(with(new.ef %>% filter(snag == 1), 
-                                       table(stratum_name, landcover_abbr)))
+                                       table(stratum_name, landcover_short)))
 table_prop_cwd <- table_cwd/nrow(new.ef %>% filter(snag == 1))
 table_prop_cwd$stratum <- row.names(table_prop_cwd)
 row.names(table_prop_cwd) <- NULL
@@ -190,27 +205,105 @@ mc <- melt(table_prop_cwd, id.vars = "stratum")
 
 ggplot(data = ma, aes(variable, stratum))+
   geom_tile(aes(fill = value))+
-  scale_fill_gradient("Legend label", low = "lightblue", high = "black") +
+  scale_fill_gradient("Proportion of all \n points \n", low = "lightblue", high = "black") +
   theme_bw()+
   ggtitle("Proportion plot for all points")+
   xlab("Nearest Land Cover Type")+
-  ylab("Aquatic Stratum")
+  ylab("Aquatic Stratum")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        text = element_text(size = 16))
 
 ggplot(data = mc, aes(variable, stratum))+
   geom_tile(aes(fill = value))+
-  scale_fill_gradient("Legend label", low = "lightblue", high = "black") +
+  scale_fill_gradient("Proportion of all \n CWD points \n", low = "lightblue", high = "black") +
   theme_bw()+
   ggtitle("Proportion plot for CWD points")+
   xlab("Nearest Land Cover Type")+
-  ylab("Aquatic Stratum")
+  ylab("Aquatic Stratum")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        text = element_text(size = 16))
 
 # Distance to nearest landcover, by snag presence
 ggplot(data = new.ef %>% filter(dist_landcover > 0), 
        aes(x = dist_landcover, 
            color = snagyn))+
-  geom_line(stat = "density", size = 1.5)+
-  scale_color_discrete(name = "Coarse Woody Debris")+
+  geom_line(stat = "density", size = 2)+
+  scale_color_manual(name = "Coarse Woody Debris", 
+                       values = c("black", "red"))+
   guides(color = guide_legend(override.aes = list(size=6)))+
   theme(text = element_text(size=18))+
-  ggtitle("Distribution of Distance to Nearest Landcover")
-  
+  ggtitle("Distribution of Distance to Nearest Landcover")+
+  xlab("Distance to Nearest Landcover")+
+  ylab("Density")
+
+# Percent aquatic veg
+ggplot(data = new.ef, 
+       aes(x = pct_aqveg, 
+           color = snagyn))+
+  geom_line(stat = "density", size = 2)+
+  scale_color_manual(name = "Coarse Woody Debris", 
+                     values = c("black", "red"))+
+  guides(color = guide_legend(override.aes = list(size=6)))+
+  theme(text = element_text(size=18))+
+  ggtitle("Distribution of Percent Aquatic Veg.")+
+  xlab("Percent Aquatic Vegetation")+
+  ylab("Density")
+
+# Percent open water
+ggplot(data = new.ef,
+       aes(x = pct_opwat, 
+           color = snagyn))+
+  geom_line(stat = "density", size = 2)+
+  scale_color_manual(name = "Coarse Woody Debris", 
+                     values = c("black", "red"))+
+  guides(color = guide_legend(override.aes = list(size=6)))+
+  theme(text = element_text(size=18))+
+  ggtitle("Distribution of Percent Open Water")+
+  xlab("Percent Open Water")+
+  ylab("Density")
+
+# Want to do two-sample Kolmogorov-Smirnov tests to test for equality of distributions
+d1 <- density(new.ef[new.ef$snag == 1,]$pct_opwat)
+d0 <- density(new.ef[new.ef$snag == 0,]$pct_opwat)
+
+ks.test(d1$y, d0$y, alternative = "two.sided")
+
+# Chi-squared tests
+# H0: snag presence is independent of aquatic habitat type
+# Ha: snag presence is not independent of aquatic habitat type.
+t <- table(new.ef$snagyn, new.ef$stratum)
+chisq.test(t)  
+# p < 0.001, X-squared = 310.28, df = 6
+# Reject the null that the two variables are independent. Conclude that snag presence is not independent of aquatic habitat type. 
+
+# H0: snag presence is independent of landcover type
+# Ha: snag presence is not independent of landcover type.
+lc <- table(new.ef$snagyn, new.ef$landcover_abbr)
+chisq.test(lc)
+# p < 0.001, X-squared = 57.468, df = 16
+# Reject the null that the two variables are independent. Conclude that snag presence is not independent of nearest landcover type. 
+
+# What if we split landcover into fewer classifications? Go back to the data cleaning document for this. 
+temp <- droplevels(new.ef %>% 
+                     filter(landcover_lumped != "Aquatic veg", 
+                            landcover_lumped != "Sand")
+)
+lcl <- table(temp$snagyn, temp$landcover_lumped)
+chisq.test(lcl)
+
+#if you reduce nearest landcover classifications down to forest, developed, and grassland/meadow, there is no longer a detectable difference in the distribution for CWD vs. not
+
+#how broad/narrow do we want these categories to be?
+#plot number of points, faceted by CWD presence.
+temp %>% filter(!is.na(snag)) %>% ggplot(aes(x = landcover_lumped))+
+  geom_bar(aes(fill = landcover_lumped))+
+  scale_fill_manual(name = "Nearest landcover type", 
+                    labels = levels(temp$landcover_lumped),
+                    values = lcColors_lumped)+
+  ylab("Number of Sampling Events")+
+  xlab("Nearest Landcover Type")+
+  ggtitle("Landcover types by CWD Presence")+
+  facet_wrap(~snagyn)+
+  theme(axis.text.x = element_blank())+ 
+  theme(text = element_text(size=20))
+
