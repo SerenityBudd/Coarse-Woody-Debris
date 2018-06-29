@@ -307,3 +307,21 @@ temp %>% filter(!is.na(snag)) %>% ggplot(aes(x = landcover_lumped))+
   theme(axis.text.x = element_blank())+ 
   theme(text = element_text(size=20))
 
+#Problems
+# Aquatic veg is one of the possible "nearest landcover" types. Weird.
+# Some areas are listed as having zero distance to the nearest landcover.
+# Are these the same areas?
+
+av_as_land <- new.ef[new.ef$landcover_lumped == "Aquatic veg",]
+hist(av_as_land$dist_landcover)
+#nope, some of these are still listed as being far away from land.
+
+onland <- new.ef[new.ef$dist_landcover == 0,]
+table(onland$landcover_lumped)
+#that isn't particularly helpful either.
+sum(onland$barcode %in% av_as_land$barcode)/nrow(onland)
+# 48% of the "onland" points also have aquatic vegetation as nearest landcover
+sum(av_as_land$barcode %in% onland$barcode)/nrow(av_as_land)
+# 64% of the "av_as_land" points are also listed as being on land.
+
+
