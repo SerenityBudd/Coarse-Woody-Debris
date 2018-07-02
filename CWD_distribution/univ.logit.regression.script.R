@@ -42,13 +42,13 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
   
   temp <- as.data.frame(seq(from = min(xb), 
                             to = max(xb), 
-                            by = (max(xb)-min(xb))/1000)
+                            by = (max(xb)-min(xb))/100)
   )
   names(temp) <- var_of_interest
   predictions <- predict.glm(model,
-                                       newdata = temp,
-                                       type = 'response',
-                                       se.fit = T)
+                            newdata = temp,
+                            type = 'response',
+                            se.fit = T)
   
   generated_data <- cbind(temp, predictions) #generate data to plot curve
   
@@ -58,7 +58,9 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
                 formula = y~x,
                 method.args = list(family = "binomial"),
                 size = 1.5,
-                color = "black")+
+                color = "black", 
+                se = TRUE,
+                level = 0.7)+
     labs(x = varname,
          y = "Probability of CWD presence",
          title = paste("Probability of CWD presence by", varname))+
@@ -78,27 +80,5 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
 }
 
 a <- makelogit(df_source = new.ef, var_of_interest = "pct_terr", cwdfactor = "snagyn", cwd = "snag", varname = "Percent Terrestrial Shoreline")
-
-  
-  
-  
-  
-  
-  
-#plot model
-generated_data %>% ggplot(aes(x = pct_terr, 
-                              y = fit)) + 
-  stat_smooth(method = glm, 
-              formula = y ~ x, 
-              method.args = list(family = "binomial"),
-              size = 1.5,
-              color = "black")+
-  labs(x="% Terrestrial shoreline perimeter", 
-       y="Probability of CWD presence", 
-       title="Probability of Coarse Woody Debris Presence")+
-  scale_y_continuous(limits = c(0,1))+
-  theme_bw()+
-  theme(text = element_text(size=20))
-
-
+a$logit_plot
 
