@@ -7,6 +7,7 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
                           fill = cwdfactor))+ 
     geom_boxplot()+
     xlab("Coarse Woody Debris Presence")+
+    ylab(varname)+
     coord_flip()+ #make horizontal
     ggtitle(paste("Boxplot of CWD by ", varname))+ #title based on variable
     scale_fill_manual(name = "CWD Presence",
@@ -22,7 +23,11 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
     guides(color = guide_legend(override.aes = list(size = 6)))+
     theme(text = element_text(size = 18))+
     ggtitle(paste("Distribution of", varname))+ #title by variable name
-    ylab("Density")
+    ylab("Density")+
+    xlab(varname)
+  
+  density_plot_stratum <- density_plot +
+    facet_wrap(~stratum)
   
   #make formula for model
   formula2 <- paste(cwd, "~", var_of_interest)
@@ -39,9 +44,9 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
   #define column to use
   xb <- df_source[,var_of_interest]
   
-  temp <- as.data.frame(seq(from = min(xb), 
-                            to = max(xb), 
-                            by = (max(xb)-min(xb))/100)
+  temp <- as.data.frame(seq(from = min(xb, na.rm = T), 
+                            to = max(xb, na.rm = T), 
+                            by = (max(xb, na.rm = T)-min(xb, na.rm = T))/100)
   )
   names(temp) <- var_of_interest
   predictions <- predict.glm(model,
@@ -61,7 +66,7 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
                 fill = rgb(0, 0, 0, 0.2))+
     geom_line(aes_string(y = fit_var), 
               col = "blue",
-              size = 1.5)+
+              size = 1)+
     labs(x = varname,
          y = "Probability of CWD presence",
          title = paste("Prob. of CWD by", varname))+
@@ -70,7 +75,8 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
     theme(text = element_text(size=20))
   
   return(list(boxplot = box_plot,
-              density_plot = density_plot, 
+              density_plot = density_plot,
+              density_plot_stratum = density_plot_stratum,
               model = model, 
               model_summary = model_summary, 
               p_value = p_value, 
