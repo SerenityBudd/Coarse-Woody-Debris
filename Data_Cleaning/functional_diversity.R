@@ -9,6 +9,9 @@ load("data/strata.Rda")
 pool8.fish <- ltrmfishdat %>%
   filter(pool == "08") %>% droplevels()
 pool8.fish <- left_join(pool8.fish, strata, by = "barcode")
+pool8.fish$snag <- factor(pool8.fish$snag,
+                          levels = c(0,1),
+                          labels = c("No", "Yes"))
 
 # create a working dataframe with the cols we need
 funcdiv <- select(pool8.fish, c(fishcode, barcode, snag, stratum_name, stratum.y, catch))
@@ -27,6 +30,11 @@ head(funcdiv2)
 
 # select the colums that we will use for our regression 
 fishinfo2 <- select(fishinfo, c(Fishcode, Common.Name, Scientific.Name.Current, Trophic.Guild, R.Guild1:F.Guild3, Parental.Care))
+fishinfo2$Parental.Care <- factor(fishinfo2$Parental.Care)
+fishinfo2$Trophic.Guild <- factor(fishinfo2$Trophic.Guild,
+                    levels = c(1,2,3,4,5,6),
+                    labels = c("Heribivore", "Omnivore", "General Invertivore", 
+                               "Benthic Invertivore", "Piscivore", "Planktivore"))
 head(fishinfo2)
 
 #for (i in 1:ncol(fishinfo2)) {
@@ -40,7 +48,7 @@ fishinfo2$Fishcode <- as.character(fishinfo2$Fishcode)
 
 # merge the df 
 funcdiv3 <- left_join(funcdiv2, fishinfo2, by = "Fishcode")
+#save(funcdiv3, file = "data/funcdiv3.Rda")
 
 str(funcdiv3)
 head(funcdiv3)
-View(funcdiv3)
