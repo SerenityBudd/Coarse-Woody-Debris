@@ -1,46 +1,90 @@
-makelogit <- function(df, var, cwdfactor, cwd, varname){
-  box_plot <- df %>% ggplot(aes_string(x = cwdfactor,
-                          y = var,
-                          fill = cwdfactor))+
+load("data/new.ef.Rda")
+load("data/pool8.barcodes.Rda")
+source("libraries.R")
+
+makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
+  box_plot <- df_source %>% ggplot(aes_string(x = cwdfactor, #make boxplot
+                          y = var_of_interest,
+                          fill = cwdfactor))+ 
     geom_boxplot()+
     xlab("Coarse Woody Debris Presence")+
-    coord_flip()+
-    ggtitle(paste("Boxplot of CWD by ", varname))+
+    coord_flip()+ #make horizontal
+    ggtitle(paste("Boxplot of CWD by ", varname))+ #title based on variable
     scale_fill_manual(name = "CWD Presence",
-                      values = c("darkgray", "red"))+
+                      values = c("darkgray", "red"))+ #color by CWD presence
     theme_bw()+
-    theme(text = element_text(size=18))
+    theme(text = element_text(size=18)) #larger text
   
-  density_plot <- df %>% ggplot(aes_string(x = var,
+  density_plot <- df_source %>% ggplot(aes_string(x = var_of_interest, #make density plot
                           color = cwdfactor))+
     geom_line(stat = "density", size = 2)+
     scale_color_manual(name = "Coarse Woody Debris",
-                       values = c("black", "red"))+
+                       values = c("black", "red"))+ #color by CWD presence
     guides(color = guide_legend(override.aes = list(size = 6)))+
     theme(text = element_text(size = 18))+
-    ggtitle(paste("Distribution of", varname))+
+    ggtitle(paste("Distribution of", varname))+ #title by variable name
     ylab("Density")
   
-  model <- glm(cwd ~ var, data = df, family = "binomial")
-  #have to get the quotation marks off here
-  #use the eval function
+  #make formula for model
+  formula2 <- paste(cwd, "~", var_of_interest)
+  
+  #make logistic model with this formula
+  model <- glm(formula = formula2, data = df_source, family = "binomial")
+
+  #get model summary
   model_summary <- summary(model)
   
-  p_value <- coef(summary(model))[,'Pr(>|z|)'][2]
+  #extract the p value
+  p_value <- paste("p =", coef(summary(model))[,'Pr(>|z|)'][2])
   
-  return(list(box_plot, density_plot, model))
+  #define column to use
+  xb <- df_source[,var_of_interest]
+  
+  temp <- as.data.frame(seq(from = min(xb), 
+                            to = max(xb), 
+                            by = (max(xb)-min(xb))/1000)
+  )
+  names(temp) <- var_of_interest
+  predictions <- predict.glm(model,
+                                       newdata = temp,
+                                       type = 'response',
+                                       se.fit = T)
+  
+  generated_data <- cbind(temp, predictions) #generate data to plot curve
+  
+  fit_var <- "fit" #define fit variable
+  logit_plot <- generated_data %>% ggplot(aes_string(x = var_of_interest, y = fit_var))+
+    stat_smooth(method = glm,
+                formula = y~x,
+                method.args = list(family = "binomial"),
+                size = 1.5,
+                color = "black")+
+    labs(x = varname,
+         y = "Probability of CWD presence",
+         title = paste("Probability of CWD presence by", varname))+
+    scale_y_continuous(limits = c(0,1))+
+    theme_bw()+
+    theme(text = element_text(size=20))
+  
+  return(list(boxplot = box_plot,
+              density_plot = density_plot, 
+              model = model, 
+              model_summary = model_summary, 
+              p_value = p_value, 
+              predictions = predictions, 
+              temp = temp, 
+              generated_data = generated_data,
+              logit_plot = logit_plot))
 }
 
+a <- makelogit(df_source = new.ef, var_of_interest = "pct_terr", cwdfactor = "snagyn", cwd = "snag", varname = "Percent Terrestrial Shoreline")
 
-#ooh wow look at that coefficient and that p-value!!
-
-#generate data to plot model with line
-pct_terr <- data.frame(pct_terr = seq(from = 0, to = 100, by = 1))
-predictions <- as.data.frame(predict(mod_pct_terr, 
-                                     newdata = pct_terr, 
-                                     type = 'response', 
-                                     se.fit = T))
-generated_data <- cbind(pct_terr, predictions)
+  
+  
+  
+  
+  
+  
 #plot model
 generated_data %>% ggplot(aes(x = pct_terr, 
                               y = fit)) + 
@@ -55,3 +99,6 @@ generated_data %>% ggplot(aes(x = pct_terr,
   scale_y_continuous(limits = c(0,1))+
   theme_bw()+
   theme(text = element_text(size=20))
+
+
+
