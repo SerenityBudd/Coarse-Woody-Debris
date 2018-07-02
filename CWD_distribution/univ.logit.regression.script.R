@@ -1,6 +1,5 @@
-load("data/new.ef.Rda")
-load("data/pool8.barcodes.Rda")
-source("libraries.R")
+library(dplyr)
+library(ggplot2)
 
 makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
   box_plot <- df_source %>% ggplot(aes_string(x = cwdfactor, #make boxplot
@@ -53,17 +52,19 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
   generated_data <- cbind(temp, predictions) #generate data to plot curve
   
   fit_var <- "fit" #define fit variable
-  logit_plot <- generated_data %>% ggplot(aes_string(x = var_of_interest, y = fit_var))+
-    stat_smooth(method = glm,
-                formula = y~x,
-                method.args = list(family = "binomial"),
-                size = 1.5,
-                color = "black", 
-                se = TRUE,
-                level = 0.7)+
+  #make logit plot
+  logit_plot <- generated_data %>% 
+    ggplot(aes_string(x = var_of_interest, 
+                      y = fit_var))+
+    geom_ribbon(aes(ymin = fit - se.fit, 
+                    ymax = fit + se.fit), 
+                fill = rgb(0, 0, 0, 0.2))+
+    geom_line(aes_string(y = fit_var), 
+              col = "blue",
+              size = 1.5)+
     labs(x = varname,
          y = "Probability of CWD presence",
-         title = paste("Probability of CWD presence by", varname))+
+         title = paste("Prob. of CWD by", varname))+
     scale_y_continuous(limits = c(0,1))+
     theme_bw()+
     theme(text = element_text(size=20))
@@ -78,7 +79,3 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
               generated_data = generated_data,
               logit_plot = logit_plot))
 }
-
-a <- makelogit(df_source = new.ef, var_of_interest = "pct_terr", cwdfactor = "snagyn", cwd = "snag", varname = "Percent Terrestrial Shoreline")
-a$logit_plot
-
