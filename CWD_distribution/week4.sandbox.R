@@ -366,7 +366,7 @@ ggplot(data = new.ef,
                 col = "blue")+
       labs(x="% Terrestrial shoreline perimeter", 
            y="Probability of CWD presence", 
-           title="Probability of Coarse Woody Debris Presence") +
+           title=paste("CWD by Percent Terrestrial Shoreline")) +
       scale_y_continuous(limits = c(0,1))+
       theme_bw()+
       theme(text = element_text(size=20))
