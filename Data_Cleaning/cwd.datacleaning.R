@@ -90,31 +90,35 @@ for (i in 1:ncol(pool8.barcodes)) {
   print(summary(pool8.barcodes[,i]))
 }
 
-#########
+############################
 #See Molly's email 6/22/18 at 2pm for descriptions of variables. Also see the metadata file: https://www.sciencebase.gov/catalog/file/get/5a708ef0e4b06e28e9cae58f?f=__disk__26%2F00%2F43%2F260043b3d8895c99f3be0a19f9f6816214bd35e6&transform=1&allowOpen=true
 source("libraries.R")
 
 new.ef <- read.csv("data/p8_lwd_electro_jj(electrofishingdata).txt")
 #See document "HNA II Aquatic Areas appendix A" in drive folder for description of the variables.  
 #name variables more descriptively
-names(new.ef)[25:27] <- c("landcover_abbr", "landcover_short", "landcover_desc")
-names(new.ef)[29] <- "dist_landcover"
-names(new.ef)[31] <- "dist_aquahab"
-names(new.ef)[34:35] <- c("aqua_code", "aqua_desc")
-new.ef$snagyn <- ifelse(new.ef$snag == 0, "no", "yes")
-names(new.ef)[49] <- "shoreline_density_index"
-names(new.ef)[67] <- "pct_prm_wetf"
-names(new.ef)[68] <- "pct_terr_shore_wetf"
-names(new.ef)[55] <- "len_prm_lotic"
-names(new.ef)[56] <- "pct_prm_lotic"
-names(new.ef)[57] <- "num_lotic_outl"
-names(new.ef)[58] <- "len_prm_lentic"
-names(new.ef)[59] <- "pct_prm_lentic"
-names(new.ef)[60] <- "num_lentic_outl"
-names(new.ef)[65] <- "pct_aq"
-names(new.ef)[72] <- "scour_wd"
-names(new.ef)[77] <- "pct_terr_shore_rev"
-names(new.ef)[78] <- "pct_prm_rev"
+
+names(new.ef)[25:27] <- c("landcover_abbr", # CLASS_31
+                          "landcover_short", # CLASS_31_N
+                          "landcover_desc")  # CLASS_31_D
+names(new.ef)[29] <- "dist_landcover" # NEARDIST_T
+names(new.ef)[31] <- "dist_aquahab" # NEAR_DIST
+names(new.ef)[34:35] <- c("aqua_code", # AQUA_CODE
+                          "aqua_desc") # AQUA_DESC
+new.ef$snagyn <- ifelse(new.ef$snag == 0, "no", "yes") # new column based on `snag`
+names(new.ef)[49] <- "shoreline_density_index" # sdi
+names(new.ef)[67] <- "pct_prm_wetf" # pct1wetf
+names(new.ef)[68] <- "pct_terr_shore_wetf" # pct2wetf
+names(new.ef)[55] <- "len_prm_lotic" # len_outl
+names(new.ef)[56] <- "pct_prm_lotic" # pct_outl
+names(new.ef)[57] <- "num_lotic_outl" # num_outl
+names(new.ef)[58] <- "len_prm_lentic" # len_oute
+names(new.ef)[59] <- "pct_prm_lentic" # pct_oute
+names(new.ef)[60] <- "num_lentic_outl" # num_oute
+names(new.ef)[65] <- "pct_aq" # pct_chan
+names(new.ef)[72] <- "scour_wd" # sco_wd
+names(new.ef)[77] <- "pct_terr_shore_rev" # pct_rev
+names(new.ef)[78] <- "pct_prm_rev" # pct_rev2
 
 #create column with stratum names
 new.ef$stratum_name[new.ef$stratum == "SCB"] <- "Side Channel Border"
