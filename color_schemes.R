@@ -45,6 +45,6 @@ names(strataColors_distinct) <- strata_names
 strataColors_codes <- c("chartreuse3", "blue", "dodgerblue2", "red", "darkred", "orange", "magenta")
 names(strataColors_codes) <- strata_codes
 
-# More distinct colors for aquatic habitat strata
+# More distinct colors for landcover types
 lcColors_lumped <- c("cyan2", "maroon2", "forestgreen", "lawngreen", "navajowhite2")
 names(lcColors_lumped) <- c("Aquatic veg", "Developed", "Forest", "Grassland or meadow", "Sand")
