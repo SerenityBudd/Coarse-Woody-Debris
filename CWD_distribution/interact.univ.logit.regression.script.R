@@ -3,13 +3,11 @@ library(dplyr)
 library(ggplot2)
 source("color_schemes.R")
 
-load("data/new.ef.Rda")
-
 makelogit.interact <- function(df_source, var_of_interest, cwdfactor, cwd, varname, stratum){
   #make density plot
   density_plot_stratum <- df_source %>% ggplot(aes_string(x = var_of_interest,
                                                   color = cwdfactor))+
-    geom_line(stat = "density", size = 2)+
+    geom_line(stat = "density", size = 1.5)+
     scale_color_manual(name = "Coarse Woody Debris",
                        values = c("black", "red"))+ #color by CWD presence
     guides(color = guide_legend(override.aes = list(size = 6)))+
@@ -17,7 +15,12 @@ makelogit.interact <- function(df_source, var_of_interest, cwdfactor, cwd, varna
     ggtitle(paste("Distribution of", varname))+ #title by variable name
     ylab("Density")+
     xlab(varname)+
-    facet_wrap(~stratum)
+    facet_wrap(~stratum)+
+    theme_bw()+
+    theme(legend.position = c(0.83, 0.25))
+    #theme(strip.background =element_rect(fill="red"))
+      #This last line makes all the facet headings red. 
+      #Is there a way to change the individual facet headings to different colors?
   
   #make formula for model
   formula3 <- paste0(cwd, "~", var_of_interest, "+", var_of_interest, "*", stratum)
@@ -52,24 +55,25 @@ makelogit.interact <- function(df_source, var_of_interest, cwdfactor, cwd, varna
   logit_plot <- results %>% 
     ggplot(aes_string(x = var_of_interest, 
                       y = fit_var,
-                      color = stratum))+
-    #geom_ribbon(aes(ymin = fit - se.fit, 
-                    #ymax = fit + se.fit), 
-                #fill = rgb(0, 0, 0, 0.2))+
-    geom_line(size = 1)+
+                      group = stratum))+
+    geom_ribbon(aes(ymin = fit - se.fit, 
+                    ymax = fit + se.fit, fill = stratum),
+                alpha = 0.2)+
+    geom_line(size = 1.5, aes(color = stratum))+
     labs(x = varname,
          y = "Probability of CWD presence",
          title = paste("Prob. of CWD by", varname))+
     scale_y_continuous(limits = c(0,1))+
     theme_bw()+
-    theme(text = element_text(size=20))
+    scale_color_manual(name = strata_codes, 
+                       values = strataColors_codes)+
+    scale_fill_manual(name = strata_codes,
+                      values = strataColors_codes)+
+    theme(text = element_text(size=14))
   
-  return(list(densityplotstratum = density_plot_stratum,
+  return(list(densityplot_stratum = density_plot_stratum,
               model = model, 
               model_summary = model_summary,
-              generated_data = generated_data,
+              predictions = results,
               logit_plot = logit_plot))
 }
-
-a <- makelogit.interact(df_source = new.ef, var_of_interest = "pct_terr", cwdfactor = "snagyn", cwd = "snag", varname = "Percent Terrestrial Shoreline", stratum = "stratum")
-a$logit_plot
