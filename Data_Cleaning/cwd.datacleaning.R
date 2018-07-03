@@ -120,6 +120,17 @@ names(new.ef)[72] <- "scour_wd" # sco_wd
 names(new.ef)[77] <- "pct_terr_shore_rev" # pct_rev
 names(new.ef)[78] <- "pct_prm_rev" # pct_rev2
 
+#create reverse of area_gt* columns
+#how much of the polygon is less than or equal to a certain depth? (cm)
+new.ef$area_le50 <- new.ef$Area - new.ef$area_gt50
+new.ef$area_le100 <- new.ef$Area - new.ef$area_gt100
+new.ef$area_le200 <- new.ef$Area - new.ef$area_gt200
+new.ef$area_le300 <- new.ef$Area - new.ef$area_gt300
+new.ef$pct_area_le100 <- new.ef$area_le100/new.ef$Area
+new.ef$pct_area_le50 <- new.ef$area_le50/new.ef$Area
+new.ef$pct_area_le200 <- new.ef$area_le200/new.ef$Area
+new.ef$pct_area_le300 <- new.ef$area_le300/new.ef$Area
+
 #create column with stratum names
 new.ef$stratum_name[new.ef$stratum == "SCB"] <- "Side Channel Border"
 new.ef$stratum_name[new.ef$stratum == "MCB-U"] <- "Main Channel Border--Unstructured"
