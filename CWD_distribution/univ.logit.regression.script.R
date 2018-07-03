@@ -72,7 +72,7 @@ makelogit <- function(df_source, var_of_interest, cwdfactor, cwd, varname){
          title = paste("Prob. of CWD by", varname))+
     scale_y_continuous(limits = c(0,1))+
     theme_bw()+
-    theme(text = element_text(size=20))
+    theme(text = element_text(size=16))
   
   return(list(boxplot = box_plot,
               density_plot = density_plot,
