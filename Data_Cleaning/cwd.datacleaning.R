@@ -170,7 +170,15 @@ new.ef <- as.data.frame(new.ef %>%
                           dplyr::mutate(propcwd = round(sum(snag/n()), 10))
 )
 
-save(new.ef, file = "data/new.ef.Rda")
+# Add some additional site-specific columns to new.ef
+  # Define %notin% operator
+  `%notin%` <- Negate(`%in%`) 
+  # Which columns in pool8.barcodes aren't also included in new.ef?
+  ind <- names(pool8.barcodes) %notin% names(new.ef)
+  names(pool8.barcodes)[ind]
+  #choose the relevant ones
+  new.ef <- cbind(new.ef, pool8.barcodes %>% select("secchi", "temp", "depth", "cond", "current", "do", "stageht", "riprap"))
+  save(new.ef, file = "data/new.ef.Rda")
 
 polychars <- new.ef %>% select(-c("FID", "site", "barcode", "fstation", "sitetype", "lcode", "gear", "period", "rep", "effdist", "effhr", "effmin", "utm_e", "utm_n", "gisgrid", "zone15e", "zone15n", "snag", "flooded", "date", "year", "FID_1", "snagyn", "lon", "lat", "landcover_abbr", "landcover_short", "landcover_desc", "landcover_lumped", "dist_landcover", "dist_aquahab", "NEAR_FID_T", "NEAR_FID", "FID_12"))
 polychars <- droplevels(unique(polychars))
@@ -211,5 +219,4 @@ strata <- new.ef[,c("barcode", "stratum_name", "stratum")]
 #save(strata, file = "data/strata.Rda")
 pool8.barcodes <- left_join(pool8.barcodes, strata, by = "barcode")
 #save(pool8.barcodes, file = "data/pool8.barcodes.Rda")
-
 
