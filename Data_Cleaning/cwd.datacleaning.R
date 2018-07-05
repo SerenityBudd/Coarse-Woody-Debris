@@ -164,11 +164,44 @@ levels(new.ef$landcover_lumped)
 sum(is.na(new.ef$landcover_lumped))
 table(new.ef$landcover_lumped)
 
+# Sort by polygon OBJECTID
+new.ef <- as.data.frame(new.ef %>% 
+                          group_by(OBJECTID) %>% 
+                          dplyr::mutate(propcwd = round(sum(snag/n()), 10))
+)
+
 save(new.ef, file = "data/new.ef.Rda")
 
+polychars <- new.ef %>% select(-c("FID", "site", "barcode", "fstation", "sitetype", "lcode", "gear", "period", "rep", "effdist", "effhr", "effmin", "utm_e", "utm_n", "gisgrid", "zone15e", "zone15n", "snag", "flooded", "date", "year", "FID_1", "snagyn", "lon", "lat", "landcover_abbr", "landcover_short", "landcover_desc", "landcover_lumped", "dist_landcover", "dist_aquahab", "NEAR_FID_T", "NEAR_FID", "FID_12"))
+polychars <- droplevels(unique(polychars))
 
 
+nu <- function(x){
+  if(length(unique(x)) == 1){
+    return(NA)
+  }
+  else{
+    return(length(unique(x)))
+  }
+}
 
+numunique <- polychars %>% group_by(OBJECTID) %>% summarize_all(nu) %>% as.data.frame()
+head(numunique)
+
+locate.nas(numunique)
+#stratum is on a different level from OBJECTID
+
+#Table by year
+(by_year <- as.data.frame(new.ef %>% 
+                            group_by(year) %>% 
+                            summarize(totpoints = n(), 
+                                      CWDpoints = sum(snag),
+                                      noCWDpoints = n() - sum(snag),
+                                      propCWD = round(sum(snag/n()), 4))
+)
+)
+
+#get stratum information from new.ef into pool8.barcodes
 head(new.ef)
 head(pool8.barcodes)
 sum(new.ef$barcode %in% pool8.barcodes$barcode)/nrow(new.ef)
