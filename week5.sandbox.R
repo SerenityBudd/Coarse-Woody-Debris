@@ -2,6 +2,8 @@
 source("libraries.R")
 source("color_schemes.R")
 load("data/new.ef.Rda")
+source("locate.nas.R")
+source("firstel.R")
 
 #Separate out the quantitative predictors and make a scatterplot matrix
 pp <- new.ef[,c("dist_landcover", "Area", "Perimeter", #1-3
@@ -10,8 +12,8 @@ pp <- new.ef[,c("dist_landcover", "Area", "Perimeter", #1-3
                 "pct_terr", "pct_aq", "pct_prm_wetf", #10-13
                 "pct_terr_shore_wetf", "wdl_p_m2", "pct_terr_shore_rev", #14-16
                 "pct_prm_rev", "sinuosity", "pct_area_le50", #17-19
-                "pct_area_le100", #20
-                "snag", "snagyn", "stratum")] #21-23
+                "pct_area_le100", "depth", "current", #20-22
+                "snag", "snagyn", "stratum")] #23-25
 
     #none of these should have negative values
     #change negative values to NA's
@@ -22,7 +24,7 @@ pp <- new.ef[,c("dist_landcover", "Area", "Perimeter", #1-3
 #example scatterplot matrix
     pairs(pp[,1:7])
     #can run Spearman correlation with NA's, but a lot of correlations still fail to calculate.
-    c <- cor(pp[,1:19], method = "spearman")
+    c <- cor(pp[,1:22], method = "spearman", use = "complete.obs")
     cp <- corrplot(c, method = "circle", type = "upper", diag = F)
     
 #prepare to run univariate logistic regression on a few of these variables
@@ -33,7 +35,7 @@ pp <- new.ef[,c("dist_landcover", "Area", "Perimeter", #1-3
                    "% Poly. Perim. adj. to Terrestrial Areas", "% Poly Perim. adj. to Aquatic Areas", "% Poly. Perim. adj. to Wet Forest",
                    "% Terrestrial Shoreline adj. to Wet Forest", "Wing Dam Length per m^2 area", "% Terrestrial Shoreline w/ Revetment",
                    "% Poly. Perim. w/ Revetment", "Polygon Sinuosity", "% Poly. Area <= 50cm Depth",
-                   "% Poly. Area <= 100cm Depth")
+                   "% Poly. Area <= 100cm Depth", "Depth", "Current")
 
 source("CWD_distribution/univ.logit.regression.script.R")
 outputlist <- vector("list", length(vars)) 
@@ -177,8 +179,7 @@ table(pp$stratum)
 #MDS simpler for plotting 
   
   #Can't do PCA with NA values: Let's investigate where we have NA's.
-  navec <- rep(NA, ncol(pp))
-  source("locate.nas.R")
+  navec <- rep (NA, ncol(pp))
   locate.nas(pp)
   #We have NA's in the following columns:
   # `avg_depth` : don't know why. No zeroes
@@ -269,6 +270,9 @@ ppa_pca <- princomp(ppa[,1:11], cor = T)
     
 ###################################################################   
 # Now let's do some analyses breaking the data down by polygon instead of by sampling site.
-
-    
+model1 <- lm(propcwd~pct_terr, data = new.ef)
+source("firstel.R")
+    bypoly <- as.data.frame(new.ef %>% 
+                              group_by(OBJECTID) %>%
+                              summarize_all(firstel))
     
