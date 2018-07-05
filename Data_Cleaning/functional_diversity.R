@@ -48,7 +48,10 @@ fishinfo2$Fishcode <- as.character(fishinfo2$Fishcode)
 
 # merge the df 
 funcdiv3 <- left_join(funcdiv2, fishinfo2, by = "Fishcode")
+levels(funcdiv3$Trophic.Guild)[levels(funcdiv3$Trophic.Guild)=="Heribivore"] <- "Herbivore"
 #save(funcdiv3, file = "data/funcdiv3.Rda")
 
 str(funcdiv3)
 head(funcdiv3)
+
+
