@@ -171,8 +171,104 @@ table(pp$stratum)
              dpi = 600)
     }
   
-  
 ### PCA on the variables (or some other ordination method)
-  pca <- princomp(pp[,1:19])
-        
+#MDS for rotating, visualizing axes better
+#PCA is a special case of MDS
+#MDS simpler for plotting 
+  
+  #Can't do PCA with NA values: Let's investigate where we have NA's.
+  navec <- rep(NA, ncol(pp))
+  source("locate.nas.R")
+  locate.nas(pp)
+  #We have NA's in the following columns:
+  # `avg_depth` : don't know why. No zeroes
+  # `pct_prm_lotic`: metric not calc. for channel border polygons.
+  # `wdl_p_m2`: calc. for lotic only
+  # `pct_terr_shore_rev`: calc. for lotic only
+  # `pct_prm_rev`: calc. for lotic only
+  # `sinuosity`: calc. for lotic only
+  # `pct_aqveg`: no idea why we have 6 NA's here. 
+  
+  #for now, let's leave out those variables.
+  
+ppa <- pp %>% select(-c("avg_depth", "pct_aqveg", "pct_prm_lotic", "wdl_p_m2", "pct_terr_shore_rev", "pct_prm_rev", "sinuosity"))
+
+pairs(ppa[,1:12])
+c <- cor(ppa[,1:12])
+corrplot(c, method = "color", type = "lower", diag = F)
+#let's also leave out pct_aq (since it's the inverse of pct_terr). 
+ppa <- ppa %>% select(-c("pct_aq"))
+c2 <- cor(ppa[,1:11])
+corrplot(c2, method = "color", type = "lower", diag = F)
+#this is a bit better. Still see a few highly correlated variables. 
+  
+# Run PCA
+ppa_pca <- princomp(ppa[,1:11], cor = T)
+  summary(ppa_pca)
+  ppa_pca$loadings
+  
+  # How many PC's should we keep?
+  (ppa_pca$sdev)^2  #shows eigenvalues. This suggests we should keep 4 principal components.
+
+  #scree plot
+  plot(1:(length(ppa_pca$sdev)),  
+       (ppa_pca$sdev)^2, type='b', 
+       main="Scree Plot",
+       xlab="Number of Components", 
+       ylab="Eigenvalue Size")
+      #pretty inconclusive scree plot.
       
+  # Plotting the PC scores for the sample data in the space of the first two principal components:
+  scores <- as.data.frame(ppa_pca$scores)
+  scores$snagyn <- ppa$snagyn
+  scores$stratum <- ppa$stratum
+  
+  #Score plot of components 2 and 3, showing separation by aquatic stratum
+  ggplot(data = scores, aes(x = Comp.2, 
+                            y = Comp.3, 
+                            color = stratum))+
+    geom_point()+
+    scale_color_manual(name = "Stratum", 
+                       values = strataColors_codes)+
+    ggtitle("PCA Score Plot of Sampling Sites")
+  
+  #Score plot of components 2 and 3, showing separation by CWD presence
+  ggplot(data = scores, aes(x = Comp.1, 
+                            y = Comp.3, 
+                            color = snagyn))+
+    geom_point()+
+    scale_color_manual(name = "CWD", 
+                       values = c("black", "red"))+
+    ggtitle("PCA Score Plot of Sampling Sites")
+
+
+# What if we run PCA separately for each aquatic habitat type?
+  pca_scb <- princomp(ppa[ppa$stratum == "SCB",1:11], cor = T)
+  summary(pca_scb)
+  pca_scb$loadings
+  
+  pca_bwcs <- princomp(ppa[ppa$stratum == "BWC-S",1:11], cor = T)
+  summary(pca_bwcs)
+  pca_bwcs$loadings
+  
+  pca_imps <- princomp(ppa[ppa$stratum == "IMP-S",1:11], cor = T)
+  summary(pca_imps)
+  pca_imps$loadings
+    pca_imps_scores <- as.data.frame(pca_imps$scores)
+    pca_imps_scores$snagyn <- ppa[ppa$stratum == "IMP-S",]$snagyn
+  #this one looks a little more promising
+    #Score plot of components 2 and 3, showing separation by CWD presence
+    ggplot(data = pca_imps_scores, aes(x = Comp.2, 
+                              y = Comp.3, 
+                              color = snagyn))+
+      geom_point()+
+      scale_color_manual(name = "CWD", 
+                         values = c("black", "red"))+
+      ggtitle("PCA Score Plot of Sampling Sites")
+
+    
+###################################################################   
+# Now let's do some analyses breaking the data down by polygon instead of by sampling site.
+
+    
+    
