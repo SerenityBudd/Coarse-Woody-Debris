@@ -1,4 +1,5 @@
 source("libraries.R")
+source("ownfunctions.R")
 
 fishdat <- read.csv("data/ltrm_fish_data.csv")
 head(fishdat)
@@ -172,7 +173,7 @@ new.ef <- as.data.frame(new.ef %>%
 
 # Add some additional site-specific columns to new.ef
   # Define %notin% operator
-  `%notin%` <- Negate(`%in%`) 
+  source("ownfunctions.R")
   # Which columns in pool8.barcodes aren't also included in new.ef?
   ind <- names(pool8.barcodes) %notin% names(new.ef)
   names(pool8.barcodes)[ind]
