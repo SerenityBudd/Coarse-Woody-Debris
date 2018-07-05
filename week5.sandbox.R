@@ -2,8 +2,7 @@
 source("libraries.R")
 source("color_schemes.R")
 load("data/new.ef.Rda")
-source("locate.nas.R")
-source("firstel.R")
+source("ownfunctions.R")
 
 #Separate out the quantitative predictors and make a scatterplot matrix
 pp <- new.ef[,c("dist_landcover", "Area", "Perimeter", #1-3
@@ -271,7 +270,7 @@ ppa_pca <- princomp(ppa[,1:11], cor = T)
 ###################################################################   
 # Now let's do some analyses breaking the data down by polygon instead of by sampling site.
 model1 <- lm(propcwd~pct_terr, data = new.ef)
-source("firstel.R")
+source("ownfunctions.R")
     bypoly <- as.data.frame(new.ef %>% 
                               group_by(OBJECTID) %>%
                               summarize_all(firstel))
