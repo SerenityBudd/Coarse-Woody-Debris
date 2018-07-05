@@ -324,4 +324,51 @@ sum(onland$barcode %in% av_as_land$barcode)/nrow(onland)
 sum(av_as_land$barcode %in% onland$barcode)/nrow(av_as_land)
 # 64% of the "av_as_land" points are also listed as being on land.
 
+#Beginning to explore connectivity metrics
+# Is there more CWD if more of the perimeter borders on terrestrial areas?
+new.ef %>% ggplot(aes(x = snagyn, 
+                      y = pct_terr, 
+                      fill = snagyn))+
+  geom_boxplot()+
+  coord_flip()
 
+#density plot
+ggplot(data = new.ef, 
+       aes(x = pct_terr, 
+           color = snagyn))+
+  geom_line(stat = "density", size = 2)+
+  scale_color_manual(name = "Coarse Woody Debris", 
+                     values = c("black", "red"))+
+  guides(color = guide_legend(override.aes = list(size=6)))+
+  theme(text = element_text(size=18))+
+  ggtitle("Distribution of Pct Terrestrial Shoreline")+
+  xlab("Pct Terrestrial Shoreline")+
+  ylab("Density")
+# this looks promising!
+
+  mod_pct_terr <- glm(snag~pct_terr, data = new.ef, family = "binomial")
+  summary(mod_pct_terr)
+  #ooh wow look at that coefficient and that p-value!!
+
+    #generate data to plot model with line
+    pct_terr <- data.frame(pct_terr = seq(from = 0, to = 100, by = .1))
+    predictions <- as.data.frame(predict(mod_pct_terr, 
+                                         newdata = pct_terr, 
+                                         type = 'response', 
+                                         se.fit = T))
+    generated_data <- cbind(pct_terr, predictions)
+    #plot model
+    generated_data %>% ggplot(aes(x = pct_terr, 
+                                  y = fit)) + 
+      geom_ribbon(aes(ymin = fit-se.fit, ymax = fit+se.fit, 
+                      x = pct_terr), fill = rgb(0, 0, 0, 0.2))+
+      geom_line(aes(y = fit), 
+                col = "blue")+
+      labs(x="% Terrestrial shoreline perimeter", 
+           y="Probability of CWD presence", 
+           title=paste("CWD by Percent Terrestrial Shoreline")) +
+      scale_y_continuous(limits = c(0,1))+
+      theme_bw()+
+      theme(text = element_text(size=20))
+
+    
