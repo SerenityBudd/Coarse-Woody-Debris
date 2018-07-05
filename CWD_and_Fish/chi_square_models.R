@@ -33,7 +33,7 @@ summary(R.Guild1.tbl)
 par(mfrow = c(1,1))
 corrplot(test.R.G.1$residuals, is.cor = FALSE)
 # the residuals show the specific trend, help us interpret the association
-
+levels(R.Guild1.rm$R.Guild1)
 
 ##################################################
 # chi square test for R.Guild2
@@ -63,6 +63,7 @@ summary(R.Guild2.tbl)
 par(mfrow = c(1,1))
 corrplot(test.R.G.2$residuals, is.cor = FALSE)
 # the residuals show the specific trend, help us interpret the association
+levels(R.Guild2.rm$R.Guild2)
 
 
 ##################################################
@@ -93,6 +94,7 @@ summary(R.Guild3.tbl)
 par(mfrow = c(1,1))
 corrplot(test.R.G.3$residuals, is.cor = FALSE)
 # the residuals show the specific trend, help us interpret the association
+levels(R.Guild3.rm$R.Guild3)
 
 
 ##################################################
@@ -146,6 +148,7 @@ summary(F.Guild1.tbl)
 par(mfrow = c(1,1))
 corrplot(test.F.G.1$residuals, is.cor = FALSE)
 # the residuals show the specific trend, help us interpret the association
+levels(F.Guild1.rm$F.Guild1)
 
 
 ##################################################
@@ -173,6 +176,7 @@ summary(F.Guild1.tbl)
 par(mfrow = c(1,1))
 corrplot(test.F.G.2$residuals, is.cor = FALSE)
 # the residuals show the specific trend, help us interpret the association
+levels(F.Guild2.rm$F.Guild2)
 
 
 ##################################################
@@ -213,6 +217,8 @@ summary(Trophic.Guild.Tbl)
 par(mfrow = c(1,1))
 corrplot(test.F.G.3$residuals, is.cor = FALSE)
 # the residuals show the specific trend, help us interpret the association
+levels(F.Guild3.rm$F.Guild3)
+
 
 ##################################################
 # chi square test for Parental Care
