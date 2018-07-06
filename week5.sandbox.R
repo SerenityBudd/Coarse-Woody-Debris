@@ -20,6 +20,11 @@ pp <- new.ef[,c("dist_landcover", "Area", "Perimeter", #1-3
       pp[,i][pp[,i] < 0] <- NA
     }
     
+    #pct_prm_rev and pct_terr_shore_rev should not have any values greater than 100
+    pp$pct_prm_rev[pp$pct_prm_rev > 100] <- NA
+    pp$pct_terr_shore_rev[pp$pct_terr_shore_rev > 100] <- NA
+#save(pp, file = "data/pp.Rda")
+    
 #example scatterplot matrix
     pairs(pp[,1:7])
     #can run Spearman correlation with NA's, but a lot of correlations still fail to calculate.
