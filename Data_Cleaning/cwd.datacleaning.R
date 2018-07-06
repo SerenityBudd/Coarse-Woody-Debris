@@ -1,4 +1,5 @@
 source("libraries.R")
+source("ownfunctions.R")
 
 fishdat <- read.csv("data/ltrm_fish_data.csv")
 head(fishdat)
@@ -136,7 +137,7 @@ new.ef$stratum_name[new.ef$stratum == "SCB"] <- "Side Channel Border"
 new.ef$stratum_name[new.ef$stratum == "MCB-U"] <- "Main Channel Border--Unstructured"
 new.ef$stratum_name[new.ef$stratum == "MCB-W"] <- "Main Channel Border--Wing Dam Area"
 new.ef$stratum_name[new.ef$stratum == "TWZ"] <- "Tailwater Zone"
-new.ef$stratum_name[new.ef$lstratum == "BWC-S"] <- "Backwater, Contiguous Shoreline"
+new.ef$stratum_name[new.ef$stratum == "BWC-S"] <- "Backwater, Contiguous Shoreline"
 new.ef$stratum_name[new.ef$stratum == "IMP-O"] <- "Impounded--Offshore"
 new.ef$stratum_name[new.ef$stratum == "IMP-S"] <- "Impounded--Shoreline"
 new.ef$stratum_name <- factor(new.ef$stratum_name)
@@ -164,11 +165,64 @@ levels(new.ef$landcover_lumped)
 sum(is.na(new.ef$landcover_lumped))
 table(new.ef$landcover_lumped)
 
-save(new.ef, file = "data/new.ef.Rda")
+# Add a column for lotic/lentic
+#Variables that are only for lotic areas:
+  # sinuosity (1170 rows >= 0, no NA's, no rows equal to zero)
+  # wdl_p_m2 (1202 rows >= 0)
+  # pct_terr_shore_rev (1202 rows >= 0, 41 rows greater than 100%)
+  # pct_prm_rev (1202 rows >= 0, 15 rows greater than 100%)
+#Variables that are only for lentic areas: 
+  # `sill`
+  # `econ`
+  # neither of these are in our dataset (should they be?)
 
 
+# Sort by polygon OBJECTID
+new.ef <- as.data.frame(new.ef %>% 
+                          group_by(OBJECTID) %>% 
+                          dplyr::mutate(propcwd = round(sum(snag/n()), 10))
+)
+
+# Add some additional site-specific columns to new.ef
+  # Define %notin% operator
+  source("ownfunctions.R")
+  # Which columns in pool8.barcodes aren't also included in new.ef?
+  ind <- names(pool8.barcodes) %notin% names(new.ef)
+  names(pool8.barcodes)[ind]
+  #choose the relevant ones
+  new.ef <- cbind(new.ef, pool8.barcodes %>% select("secchi", "temp", "depth", "cond", "current", "do", "stageht", "riprap"))
+  save(new.ef, file = "data/new.ef.Rda")
+
+polychars <- new.ef %>% select(-c("FID", "site", "barcode", "fstation", "sitetype", "lcode", "gear", "period", "rep", "effdist", "effhr", "effmin", "utm_e", "utm_n", "gisgrid", "zone15e", "zone15n", "snag", "flooded", "date", "year", "FID_1", "snagyn", "lon", "lat", "landcover_abbr", "landcover_short", "landcover_desc", "landcover_lumped", "dist_landcover", "dist_aquahab", "NEAR_FID_T", "NEAR_FID", "FID_12"))
+polychars <- droplevels(unique(polychars))
 
 
+nu <- function(x){
+  if(length(unique(x)) == 1){
+    return(NA)
+  }
+  else{
+    return(length(unique(x)))
+  }
+}
+
+numunique <- polychars %>% group_by(OBJECTID) %>% summarize_all(nu) %>% as.data.frame()
+head(numunique)
+
+locate.nas(numunique)
+#stratum is on a different level from OBJECTID
+
+#Table by year
+(by_year <- as.data.frame(new.ef %>% 
+                            group_by(year) %>% 
+                            summarize(totpoints = n(), 
+                                      CWDpoints = sum(snag),
+                                      noCWDpoints = n() - sum(snag),
+                                      propCWD = round(sum(snag/n()), 4))
+)
+)
+
+#get stratum information from new.ef into pool8.barcodes
 head(new.ef)
 head(pool8.barcodes)
 sum(new.ef$barcode %in% pool8.barcodes$barcode)/nrow(new.ef)
@@ -177,6 +231,7 @@ identical(sort(unique(pool8.barcodes$barcode)), sort(unique(new.ef$barcode)))
 strata <- new.ef[,c("barcode", "stratum_name", "stratum")]
 #save(strata, file = "data/strata.Rda")
 pool8.barcodes <- left_join(pool8.barcodes, strata, by = "barcode")
+pool8.barcodes$snagyn <- ifelse(pool8.barcodes$snag == 1, "yes", "no")
+pool8.barcodes$snagyn <- factor(as.character(pool8.barcodes$snagyn))
 #save(pool8.barcodes, file = "data/pool8.barcodes.Rda")
-
 
