@@ -137,7 +137,7 @@ new.ef$stratum_name[new.ef$stratum == "SCB"] <- "Side Channel Border"
 new.ef$stratum_name[new.ef$stratum == "MCB-U"] <- "Main Channel Border--Unstructured"
 new.ef$stratum_name[new.ef$stratum == "MCB-W"] <- "Main Channel Border--Wing Dam Area"
 new.ef$stratum_name[new.ef$stratum == "TWZ"] <- "Tailwater Zone"
-new.ef$stratum_name[new.ef$lstratum == "BWC-S"] <- "Backwater, Contiguous Shoreline"
+new.ef$stratum_name[new.ef$stratum == "BWC-S"] <- "Backwater, Contiguous Shoreline"
 new.ef$stratum_name[new.ef$stratum == "IMP-O"] <- "Impounded--Offshore"
 new.ef$stratum_name[new.ef$stratum == "IMP-S"] <- "Impounded--Shoreline"
 new.ef$stratum_name <- factor(new.ef$stratum_name)
@@ -164,6 +164,18 @@ new.ef$landcover_lumped <- factor(new.ef$landcover_lumped)
 levels(new.ef$landcover_lumped)
 sum(is.na(new.ef$landcover_lumped))
 table(new.ef$landcover_lumped)
+
+# Add a column for lotic/lentic
+#Variables that are only for lotic areas:
+  # sinuosity (1170 rows >= 0, no NA's, no rows equal to zero)
+  # wdl_p_m2 (1202 rows >= 0)
+  # pct_terr_shore_rev (1202 rows >= 0, 41 rows greater than 100%)
+  # pct_prm_rev (1202 rows >= 0, 15 rows greater than 100%)
+#Variables that are only for lentic areas: 
+  # `sill`
+  # `econ`
+  # neither of these are in our dataset (should they be?)
+
 
 # Sort by polygon OBJECTID
 new.ef <- as.data.frame(new.ef %>% 
@@ -219,5 +231,7 @@ identical(sort(unique(pool8.barcodes$barcode)), sort(unique(new.ef$barcode)))
 strata <- new.ef[,c("barcode", "stratum_name", "stratum")]
 #save(strata, file = "data/strata.Rda")
 pool8.barcodes <- left_join(pool8.barcodes, strata, by = "barcode")
+pool8.barcodes$snagyn <- ifelse(pool8.barcodes$snag == 1, "yes", "no")
+pool8.barcodes$snagyn <- factor(as.character(pool8.barcodes$snagyn))
 #save(pool8.barcodes, file = "data/pool8.barcodes.Rda")
 
