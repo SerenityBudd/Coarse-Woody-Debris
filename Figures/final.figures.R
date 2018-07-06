@@ -17,10 +17,10 @@ load("data/pool8.barcodes.Rda")
       ylab("Latitude")+ 
       scale_x_continuous(limits = c(-91.4, -91.1))+ #limit the x scale
       geom_point(data = pool8.barcodes[pool8.barcodes$snag %in% c(0,1),], #point parameters
-                 aes(x = lon, y = lat, color = snag, pch = snag), 
+                 aes(x = lon, y = lat, color = snagyn, pch = snagyn), 
                  size = .7, 
                  alpha = 0.8)+
-      scale_color_manual(values=c("#600000", "#ff0000"))+ #point colors: light and dark red
+      scale_color_manual(values=c("black", "#ff0000"))+ #point colors: dark and light red
       guides(color = guide_legend(title = "Coarse\nWoody\nDebris", #legend title for colors
                                   override.aes = list(size=8)),
              pch = guide_legend(title = "Coarse\nWoody\nDebris", #legend title for points
@@ -31,7 +31,7 @@ load("data/pool8.barcodes.Rda")
   pool8.snagmap
   
   #save figure
-  #ggsave(filename = "pool8.snagmap.ff.png", plot = pool8.snagmap, dpi = 1000)
+  #ggsave(filename = "pool8.snagmap.ff.png", plot = pool8.snagmap, dpi = 600)
 
 # 2
 #############################################################################
