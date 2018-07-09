@@ -1,0 +1,46 @@
+source("libraries.R")
+load("data/funcdiv3.Rda")
+
+
+#######################################################
+## DATA CLEANING
+
+## create a dataframe specifying the number of fish per species per barcode
+##     barcode Fishcode Num_Fish_per_Species
+##    -1201327   RVRH           6
+xxx <- funcdiv3 %>% group_by(barcode) %>% count(Fishcode)
+colnames(xxx)[3] <- "Num_Fish_per_Species"
+
+
+## create a dataframe specifying the number of unique species per barcode
+##     barcode  Num_Species
+##    -1201327       9
+yyy <- xxx %>% group_by(barcode) %>% count(barcode)
+colnames(yyy)[2] <- "Num_Species"
+
+
+## create a dataframe specifying the total number of fish per barcode
+##     barcode  Num_Fish
+##    -1201327     22
+zzz <- xxx %>% group_by(barcode) %>% count(barcode, wt = Num_Fish_per_Species)
+colnames(zzz)[2] <- "Num_Fish"
+
+
+#######################################################
+## T TESTS
+
+## create a richness dataframe to do a t test on, combinging snag and yyy
+dt.richness.t <- left_join(yyy, select(funcdiv3, c(barcode, snag)), by = "barcode") %>% distinct
+
+
+## there is a signigficant diff in richness between sites with and without CWD
+with(dt.richness.t, t.test(Num_Species~snag, alternative = "less")) 
+
+
+## create an abundance dataframe to do a t test on, combining snag and zzz
+dt.abund.t <- left_join(zzz, select(funcdiv3, c(barcode, snag)), by = "barcode") %>% distinct
+
+
+## there is a signigficant diff in abundance between sites with and without CWD
+with(dt.abund.t, t.test(Num_Fish~snag, alternative = "less"))
+

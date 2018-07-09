@@ -33,9 +33,10 @@ fishinfo2 <- select(fishinfo, c(Fishcode, Common.Name, Scientific.Name.Current, 
 fishinfo2$Parental.Care <- factor(fishinfo2$Parental.Care)
 fishinfo2$Trophic.Guild <- factor(fishinfo2$Trophic.Guild,
                     levels = c(1,2,3,4,5,6),
-                    labels = c("Heribivore", "Omnivore", "General Invertivore", 
+                    labels = c("Herbivore", "Omnivore", "General Invertivore", 
                                "Benthic Invertivore", "Piscivore", "Planktivore"))
 head(fishinfo2)
+#save(fishinfo2, file = "data/fishinfo2.Rda")
 
 #for (i in 1:ncol(fishinfo2)) {
 #  print(colnames(fishinfo2)[i]) 
@@ -48,7 +49,6 @@ fishinfo2$Fishcode <- as.character(fishinfo2$Fishcode)
 
 # merge the df 
 funcdiv3 <- left_join(funcdiv2, fishinfo2, by = "Fishcode")
-levels(funcdiv3$Trophic.Guild)[levels(funcdiv3$Trophic.Guild)=="Heribivore"] <- "Herbivore"
 #save(funcdiv3, file = "data/funcdiv3.Rda")
 
 str(funcdiv3)
