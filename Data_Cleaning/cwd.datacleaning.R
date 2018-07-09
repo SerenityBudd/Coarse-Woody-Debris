@@ -262,13 +262,14 @@ for(i in 18:ncol(sites_aa)){
   sites_aa[,i][sites_aa[,i] < -5000] <- NA
 }
 return(sites_aa)
-} #end further cleaning function
-
-#apply further cleaning function to sites_aa and sites_aa_5m
+}
 sites_aa <- furthercleaning(sites_aa)
 sites_aa_5m <- furthercleaning(sites_aa_5m)
-save(sites_aa, file = "data/sites_aa.Rda")
-save(sites_aa_5m, file = "data/sites_aa_5m.Rda")
+#end function
+
+#save(sites_aa, file = "data/sites_aa.Rda")
+#save(sites_aa_5m, file = "data/sites_aa_5m.Rda")
+
 
 ##########################################
 #get stratum information from new.ef into pool8.barcodes
