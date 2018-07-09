@@ -95,11 +95,13 @@ for (i in 1:ncol(pool8.barcodes)) {
 #New reprojected electrofishing and fyke net dataset from Molly.
 source("ownfunctions.R")
 source("libraries.R")
-fish_data_EF <- read.csv("data/DataSets_7_7/ltrm_fish_data_EF.csv")
+#fish_data_EF <- read.csv("data/DataSets_7_7/ltrm_fish_data_EF.csv")
+#save(fish_data_EF, file = "data/fish_data_EF.Rda")
+load("data/fish_data_EF.Rda")
 aqa_2010_lvl3 <- read.csv("data/DataSets_7_7/AttributeTables/aqa_2010_lvl3_011918.txt")
 lc_2010 <- read.csv("data/DataSets_7_7/AttributeTables/lc_2010.txt")
-sites_aquaareas <- read.csv("data/DataSets_7_7/AttributeTables/sites_aquaareas.txt")
-sites_aquaareas_5m <- read.csv("data/DataSets_7_7/AttributeTables/sites_aquaareas5m.txt")
+sites_aa <- read.csv("data/DataSets_7_7/AttributeTables/sites_aquaareas.txt")
+sites_aa_5m <- read.csv("data/DataSets_7_7/AttributeTables/sites_aquaareas5m.txt")
 sites_forest <- read.csv("data/DataSets_7_7/AttributeTables/sites_forest.txt")
 sites_p4p8p13 <- read.csv("data/DataSets_7_7/AttributeTables/sites_p4p8p13.txt")
 sites_terrestrial <- read.csv("data/DataSets_7_7/AttributeTables/sites_terrestrial.txt")
@@ -115,152 +117,162 @@ sites_p4p8p13$pool <- pools
 table(sites_p4p8p13$pool)
 #good. 
 
-# Also join barcodes for sites_aquaareas and sites_aquaareas_5m
-sites_aquaareas$barcode <- barcodes
-sites_aquaareas$pool <- pools
-sites_aquaareas_5m$barcode <- barcodes
-sites_aquaareas_5m$pool <- pools
+# Also join barcodes for sites_aa and sites_aa_5m
+sites_aa$barcode <- barcodes
+sites_aa$pool <- pools
+sites_aa_5m$barcode <- barcodes
+sites_aa_5m$pool <- pools
 #reorder the columns so that barcode is first
-sites_aquaareas <- sites_aquaareas[,c(1:4, 71, 5:70)]
-sites_aquaareas_5m <- sites_aquaareas_5m[,c(1:4, 71, 5:70)]
+sites_aa <- sites_aa[,c(1:4, 71, 5:70)]
+sites_aa_5m <- sites_aa_5m[,c(1:4, 71, 5:70)]
 
 # "Observations with value of 0 in all the columns from aqa_2010_lvl3_011918.shp do not intersect with the aquatic areas layer"
 # I'd like these to have values of NA, not 0. 
 # Figure out which variables come from the aqa_2010_lvl2 file
-badrows_0 <- sites_aquaareas %>% filter(Perimeter == 0, Area == 0, avg_fetch ==0)
-badrows_5 <- sites_aquaareas_5m  %>% filter(Perimeter == 0, Area == 0, avg_fetch ==0)
+badrows_0 <- sites_aa %>% filter(Perimeter == 0, Area == 0, avg_fetch ==0)
+badrows_5 <- sites_aa_5m  %>% filter(Perimeter == 0, Area == 0, avg_fetch ==0)
 dim(badrows_0)
 dim(badrows_5)
 #nice. we see a reduction in the number of bad rows once points are buffered by 5m, just like we expected. 
 
 # Remove the bad rows
-sites_aquaareas <- sites_aquaareas %>% filter(Field1 %notin% badrows_0$Field1)
-sites_aquaareas_5m <- sites_aquaareas_5m %>% filter(Field1 %notin% badrows_5$Field1)
-dim(sites_aquaareas)
-dim(sites_aquaareas_5m)
+sites_aa <- sites_aa %>% filter(Field1 %notin% badrows_0$Field1)
+sites_aa_5m <- sites_aa_5m %>% filter(Field1 %notin% badrows_5$Field1)
+dim(sites_aa)
+dim(sites_aa_5m)
 
 # Add columns for distance to terrestrial areas
-rows_0 <- sites_aquaareas$Field1
-rows_5 <- sites_aquaareas_5m$Field1
-sites_aquaareas$NEAR_TERR_FID <- sites_terrestrial$NEAR_FID[sites_terrestrial$Field1 %in% rows_0]
-sites_aquaareas$NEAR_TERR_DIST <- sites_terrestrial$NEAR_DIST[sites_terrestrial$Field1 %in% rows_0]
+rows_0 <- sites_aa$Field1
+rows_5 <- sites_aa_5m$Field1
+sites_aa$NEAR_TERR_FID <- sites_terrestrial$NEAR_FID[sites_terrestrial$Field1 %in% rows_0]
+sites_aa$NEAR_TERR_DIST <- sites_terrestrial$NEAR_DIST[sites_terrestrial$Field1 %in% rows_0]
 
-sites_aquaareas_5m$NEAR_TERR_FID <- sites_terrestrial$NEAR_FID[sites_terrestrial$Field1 %in% rows_5]
-sites_aquaareas_5m$NEAR_TERR_DIST <- sites_terrestrial$NEAR_DIST[sites_terrestrial$Field1 %in% rows_5]
+sites_aa_5m$NEAR_TERR_FID <- sites_terrestrial$NEAR_FID[sites_terrestrial$Field1 %in% rows_5]
+sites_aa_5m$NEAR_TERR_DIST <- sites_terrestrial$NEAR_DIST[sites_terrestrial$Field1 %in% rows_5]
 
 # We're going to pull columns from `lc_2010`, not from `terrestrial`, because the FID's don't match up in `terrestrial`.
 # Which columns do we want to pull in? Need info on what these columns mean.
 columns_terr <- lc_2010[, c("FID", "CLASS_31", "CLASS_31_N","CLASS_15_N", "CLASS_7_N", "HEIGHT_N")]
-sites_aquaareas <- left_join(sites_aquaareas, columns_terr, by = c("NEAR_TERR_FID" = "FID"))
-sites_aquaareas_5m <- left_join(sites_aquaareas_5m, columns_terr, by = c("NEAR_TERR_FID" = "FID"))
+sites_aa <- left_join(sites_aa, columns_terr, by = c("NEAR_TERR_FID" = "FID"))
+sites_aa_5m <- left_join(sites_aa_5m, columns_terr, by = c("NEAR_TERR_FID" = "FID"))
 #change names to indicate that these columns refer to the landcover type of the nearest terrestrial area.
-names(sites_aquaareas)[names(sites_aquaareas) == 'CLASS_31'] <- 'NEAR_TERR_CLASS_31'
-names(sites_aquaareas)[names(sites_aquaareas) == 'CLASS_31_N'] <- 'NEAR_TERR_CLASS_31_N'
-names(sites_aquaareas)[names(sites_aquaareas) == 'CLASS_15_N'] <- 'NEAR_TERR_CLASS_15_N'
-names(sites_aquaareas)[names(sites_aquaareas) == 'CLASS_7_N'] <- 'NEAR_TERR_CLASS_7_N'
-names(sites_aquaareas)[names(sites_aquaareas) == 'HEIGHT_N'] <- 'NEAR_TERR_HEIGHT_N'
+names(sites_aa)[names(sites_aa) == 'CLASS_31'] <- 'NEAR_TERR_CLASS_31'
+names(sites_aa)[names(sites_aa) == 'CLASS_31_N'] <- 'NEAR_TERR_CLASS_31_N'
+names(sites_aa)[names(sites_aa) == 'CLASS_15_N'] <- 'NEAR_TERR_CLASS_15_N'
+names(sites_aa)[names(sites_aa) == 'CLASS_7_N'] <- 'NEAR_TERR_CLASS_7_N'
+names(sites_aa)[names(sites_aa) == 'HEIGHT_N'] <- 'NEAR_TERR_HEIGHT_N'
 
-names(sites_aquaareas_5m)[names(sites_aquaareas_5m) == 'CLASS_31'] <- 'NEAR_TERR_CLASS_31'
-names(sites_aquaareas_5m)[names(sites_aquaareas_5m) == 'CLASS_31_N'] <- 'NEAR_TERR_CLASS_31_N'
-names(sites_aquaareas_5m)[names(sites_aquaareas_5m) == 'CLASS_15_N'] <- 'NEAR_TERR_CLASS_15_N'
-names(sites_aquaareas_5m)[names(sites_aquaareas_5m) == 'CLASS_7_N'] <- 'NEAR_TERR_CLASS_7_N'
-names(sites_aquaareas_5m)[names(sites_aquaareas_5m) == 'HEIGHT_N'] <- 'NEAR_TERR_HEIGHT_N'
+names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_31'] <- 'NEAR_TERR_CLASS_31'
+names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_31_N'] <- 'NEAR_TERR_CLASS_31_N'
+names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_15_N'] <- 'NEAR_TERR_CLASS_15_N'
+names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_7_N'] <- 'NEAR_TERR_CLASS_7_N'
+names(sites_aa_5m)[names(sites_aa_5m) == 'HEIGHT_N'] <- 'NEAR_TERR_HEIGHT_N'
 
 # Add columns for distance to nearest forested area
 columns_forest <- terrestrial_forests[, c("FID", "CLASS_31", "CLASS_31_N", "CLASS_15_N", "CLASS_7_N", "HEIGHT_N")]
-sites_aquaareas$NEAR_FOREST_FID <- sites_forest$NEAR_FID[sites_forest$Field1 %in% rows_0]
-sites_aquaareas$NEAR_FOREST_DIST <- sites_forest$NEAR_DIST[sites_forest$Field1 %in% rows_0]
+sites_aa$NEAR_FOREST_FID <- sites_forest$NEAR_FID[sites_forest$Field1 %in% rows_0]
+sites_aa$NEAR_FOREST_DIST <- sites_forest$NEAR_DIST[sites_forest$Field1 %in% rows_0]
 
-sites_aquaareas_5m$NEAR_FOREST_FID <- sites_forest$NEAR_FID[sites_forest$Field1 %in% rows_5]
-sites_aquaareas_5m$NEAR_FOREST_DIST <- sites_forest$NEAR_DIST[sites_forest$Field1 %in% rows_5]
+sites_aa_5m$NEAR_FOREST_FID <- sites_forest$NEAR_FID[sites_forest$Field1 %in% rows_5]
+sites_aa_5m$NEAR_FOREST_DIST <- sites_forest$NEAR_DIST[sites_forest$Field1 %in% rows_5]
 
 #join the attribute columns for the nearest *forested* area
-sites_aquaareas <- left_join(sites_aquaareas, columns, by = c("NEAR_FOREST_FID" = "FID"))
-sites_aquaareas_5m <- left_join(sites_aquaareas_5m, columns, by = c("NEAR_FOREST_FID" = "FID"))
+sites_aa <- left_join(sites_aa, columns_forest, by = c("NEAR_FOREST_FID" = "FID"))
+sites_aa_5m <- left_join(sites_aa_5m, columns_forest, by = c("NEAR_FOREST_FID" = "FID"))
 #change names to indicate that these columns refer to the landcover type of the nearest terrestrial area.
-names(sites_aquaareas)[names(sites_aquaareas) == 'CLASS_31'] <- 'NEAR_FOREST_CLASS_31'
-names(sites_aquaareas)[names(sites_aquaareas) == 'CLASS_31_N'] <- 'NEAR_FOREST_CLASS_31_N'
-names(sites_aquaareas)[names(sites_aquaareas) == 'CLASS_15_N'] <- 'NEAR_FOREST_CLASS_15_N'
-names(sites_aquaareas)[names(sites_aquaareas) == 'CLASS_7_N'] <- 'NEAR_FOREST_CLASS_7_N'
-names(sites_aquaareas)[names(sites_aquaareas) == 'HEIGHT_N'] <- 'NEAR_FOREST_HEIGHT_N'
+names(sites_aa)[names(sites_aa) == 'CLASS_31'] <- 'NEAR_FOREST_CLASS_31'
+names(sites_aa)[names(sites_aa) == 'CLASS_31_N'] <- 'NEAR_FOREST_CLASS_31_N'
+names(sites_aa)[names(sites_aa) == 'CLASS_15_N'] <- 'NEAR_FOREST_CLASS_15_N'
+names(sites_aa)[names(sites_aa) == 'CLASS_7_N'] <- 'NEAR_FOREST_CLASS_7_N'
+names(sites_aa)[names(sites_aa) == 'HEIGHT_N'] <- 'NEAR_FOREST_HEIGHT_N'
 
-names(sites_aquaareas_5m)[names(sites_aquaareas_5m) == 'CLASS_31'] <- 'NEAR_FOREST_CLASS_31'
-names(sites_aquaareas_5m)[names(sites_aquaareas_5m) == 'CLASS_31_N'] <- 'NEAR_FOREST_CLASS_31_N'
-names(sites_aquaareas_5m)[names(sites_aquaareas_5m) == 'CLASS_15_N'] <- 'NEAR_FOREST_CLASS_15_N'
-names(sites_aquaareas_5m)[names(sites_aquaareas_5m) == 'CLASS_7_N'] <- 'NEAR_FOREST_CLASS_7_N'
-names(sites_aquaareas_5m)[names(sites_aquaareas_5m) == 'HEIGHT_N'] <- 'NEAR_FOREST_HEIGHT_N'
+names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_31'] <- 'NEAR_FOREST_CLASS_31'
+names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_31_N'] <- 'NEAR_FOREST_CLASS_31_N'
+names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_15_N'] <- 'NEAR_FOREST_CLASS_15_N'
+names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_7_N'] <- 'NEAR_FOREST_CLASS_7_N'
+names(sites_aa_5m)[names(sites_aa_5m) == 'HEIGHT_N'] <- 'NEAR_FOREST_HEIGHT_N'
 
 # Any NA's?
-locate.nas(sites_aquaareas)
-locate.nas(sites_aquaareas_5m)
+locate.nas(sites_aa)
+locate.nas(sites_aa_5m)
 #looks good except for the large number of NA's for pool number. Not sure why this is. 
 
 # What are the levels of terrestrial habitat types?
-table(droplevels(sites_aquaareas$NEAR_TERR_CLASS_31_N)) #looks good, no water
-table(droplevels(sites_aquaareas_5m$NEAR_TERR_CLASS_31_N)) #likewise. 
+table(droplevels(sites_aa$NEAR_TERR_CLASS_31_N)) #looks good, no water
+table(droplevels(sites_aa_5m$NEAR_TERR_CLASS_31_N)) #likewise. 
 
 # Append point-level data to each data frame
 pointcols <- c("depth", "current", "gear", "stageht", "substrt", "wingdyke")
 pointcols_plus <- c(pointcols, "barcode")
-sites_aquaareas <- left_join(sites_aquaareas, fish_data_EF[, pointcols_plus], by = "barcode")
-sites_aquaareas_5m <- left_join(sites_aquaareas_5m, fish_data_EF[, pointcols_plus], by = "barcode")
+sites_aa <- left_join(sites_aa, fish_data_EF[, pointcols_plus], by = "barcode")
+sites_aa_5m <- left_join(sites_aa_5m, fish_data_EF[, pointcols_plus], by = "barcode")
+
 for(i in 1:length(pointcols)){
-  colnames(sites_aquaareas)[colnames(sites_aquaareas) == pointcols[i]] <- paste0(pointcols[i], "-p")
-  colnames(sites_aquaareas_5m)[colnames(sites_aquaareas_5m) == pointcols[i]] <- paste0(pointcols[i], "-p")
+  colnames(sites_aa)[colnames(sites_aa) == pointcols[i]] <- paste0(pointcols[i], "-p")
+  colnames(sites_aa_5m)[colnames(sites_aa_5m) == pointcols[i]] <- paste0(pointcols[i], "-p")
 }
 
+#make the rest of the cleaning into a function so it can be applied to sites_aa_5m as well as sites_aa. 
+furthercleaning <- function(sites_aa){
 #create a "snagyn" column
-sites_aquaareas$snagyn <- ifelse(sites_aquaareas$snag == 0, "no", "yes") # new column based on `snag`
+sites_aa$snagyn <- ifelse(sites_aa$snag == 0, "no", "yes") # new column based on `snag`
 
 #change some of the column names
-names(sites_aquaareas)[49] <- "shoreline_density_index" # sdi
-names(sites_aquaareas)[67] <- "pct_prm_wetf" # pct1wetf
-names(sites_aquaareas)[68] <- "pct_terr_shore_wetf" # pct2wetf
-names(sites_aquaareas)[55] <- "len_prm_lotic" # len_outl
-names(sites_aquaareas)[56] <- "pct_prm_lotic" # pct_outl
-names(sites_aquaareas)[57] <- "num_lotic_outl" # num_outl
-names(sites_aquaareas)[58] <- "len_prm_lentic" # len_oute
-names(sites_aquaareas)[59] <- "pct_prm_lentic" # pct_oute
-names(sites_aquaareas)[60] <- "num_lentic_outl" # num_oute
-names(sites_aquaareas)[65] <- "pct_aq" # pct_chan
-names(sites_aquaareas)[72] <- "scour_wd" # sco_wd
-names(sites_aquaareas)[77] <- "pct_terr_shore_rev" # pct_rev
-names(sites_aquaareas)[78] <- "pct_prm_rev" # pct_rev2
+names(sites_aa)[49] <- "shoreline_density_index" # sdi
+names(sites_aa)[67] <- "pct_prm_wetf" # pct1wetf
+names(sites_aa)[68] <- "pct_terr_shore_wetf" # pct2wetf
+names(sites_aa)[55] <- "len_prm_lotic" # len_outl
+names(sites_aa)[56] <- "pct_prm_lotic" # pct_outl
+names(sites_aa)[57] <- "num_lotic_outl" # num_outl
+names(sites_aa)[58] <- "len_prm_lentic" # len_oute
+names(sites_aa)[59] <- "pct_prm_lentic" # pct_oute
+names(sites_aa)[60] <- "num_lentic_outl" # num_oute
+names(sites_aa)[65] <- "pct_aq" # pct_chan
+names(sites_aa)[72] <- "scour_wd" # sco_wd
+names(sites_aa)[77] <- "pct_terr_shore_rev" # pct_rev
+names(sites_aa)[78] <- "pct_prm_rev" # pct_rev2
 
 #create reverse of area_gt* columns
 #how much of the polygon is less than or equal to a certain depth? (cm)
-sites_aquaareas$area_le50 <- sites_aquaareas$Area - sites_aquaareas$area_gt50
-sites_aquaareas$area_le100 <- sites_aquaareas$Area - sites_aquaareas$area_gt100
-sites_aquaareas$area_le200 <- sites_aquaareas$Area - sites_aquaareas$area_gt200
-sites_aquaareas$area_le300 <- sites_aquaareas$Area - sites_aquaareas$area_gt300
-sites_aquaareas$pct_area_le100 <- sites_aquaareas$area_le100/sites_aquaareas$Area
-sites_aquaareas$pct_area_le50 <- sites_aquaareas$area_le50/sites_aquaareas$Area
-sites_aquaareas$pct_area_le200 <- sites_aquaareas$area_le200/sites_aquaareas$Area
-sites_aquaareas$pct_area_le300 <- sites_aquaareas$area_le300/sites_aquaareas$Area
+sites_aa$area_le50 <- sites_aa$Area - sites_aa$area_gt50
+sites_aa$area_le100 <- sites_aa$Area - sites_aa$area_gt100
+sites_aa$area_le200 <- sites_aa$Area - sites_aa$area_gt200
+sites_aa$area_le300 <- sites_aa$Area - sites_aa$area_gt300
+sites_aa$pct_area_le100 <- sites_aa$area_le100/sites_aa$Area
+sites_aa$pct_area_le50 <- sites_aa$area_le50/sites_aa$Area
+sites_aa$pct_area_le200 <- sites_aa$area_le200/sites_aa$Area
+sites_aa$pct_area_le300 <- sites_aa$area_le300/sites_aa$Area
 
 #create column with stratum names
-sites_aquaareas$stratum_name[sites_aquaareas$stratum == "SCB"] <- "Side Channel Border"
-sites_aquaareas$stratum_name[sites_aquaareas$stratum == "MCB-U"] <- "Main Channel Border--Unstructured"
-sites_aquaareas$stratum_name[sites_aquaareas$stratum == "MCB-W"] <- "Main Channel Border--Wing Dam Area"
-sites_aquaareas$stratum_name[sites_aquaareas$stratum == "TWZ"] <- "Tailwater Zone"
-sites_aquaareas$stratum_name[sites_aquaareas$stratum == "BWC-S"] <- "Backwater, Contiguous Shoreline"
-sites_aquaareas$stratum_name[sites_aquaareas$stratum == "IMP-O"] <- "Impounded--Offshore"
-sites_aquaareas$stratum_name[sites_aquaareas$stratum == "IMP-S"] <- "Impounded--Shoreline"
-sites_aquaareas$stratum_name <- factor(sites_aquaareas$stratum_name)
+sites_aa$stratum_name[sites_aa$stratum == "SCB"] <- "Side Channel Border"
+sites_aa$stratum_name[sites_aa$stratum == "MCB-U"] <- "Main Channel Border--Unstructured"
+sites_aa$stratum_name[sites_aa$stratum == "MCB-W"] <- "Main Channel Border--Wing Dam Area"
+sites_aa$stratum_name[sites_aa$stratum == "TWZ"] <- "Tailwater Zone"
+sites_aa$stratum_name[sites_aa$stratum == "BWC-S"] <- "Backwater, Contiguous Shoreline"
+sites_aa$stratum_name[sites_aa$stratum == "IMP-O"] <- "Impounded--Offshore"
+sites_aa$stratum_name[sites_aa$stratum == "IMP-S"] <- "Impounded--Shoreline"
+sites_aa$stratum_name <- factor(sites_aa$stratum_name)
 
 #remove weird slightly negative values of sinuosity
-sites_aquaareas$sinuosity[sites_aquaareas$sinuosity == -9999] <- NA
-sites_aquaareas$sinuosity[sites_aquaareas$sinuosity<0 & sites_aquaareas$sinuosity > -9999] <- 0
+sites_aa$sinuosity[sites_aa$sinuosity == -9999] <- NA
+sites_aa$sinuosity[sites_aa$sinuosity<0 & sites_aa$sinuosity > -9999] <- 0
 
 #Make any -99's into NA's. Start at 4 to avoid the barcodes.
-for(i in 18:ncol(sites_aquaareas)){
-  sites_aquaareas[,i][sites_aquaareas[,i] < -5000] <- NA
+for(i in 18:ncol(sites_aa)){
+  sites_aa[,i][sites_aa[,i] < -5000] <- NA
 }
+return(sites_aa)
+} #end further cleaning function
 
-#save(sites_aquaareas, file = "data/sites_aquaareas.Rda")
+#apply further cleaning function to sites_aa and sites_aa_5m
+sites_aa <- furthercleaning(sites_aa)
+sites_aa_5m <- furthercleaning(sites_aa_5m)
+save(sites_aa, file = "data/sites_aa.Rda")
+save(sites_aa_5m, file = "data/sites_aa_5m.Rda")
 
-
+##########################################
 #get stratum information from new.ef into pool8.barcodes
+load("data/new.ef.Rda")
 head(new.ef)
 head(pool8.barcodes)
 sum(new.ef$barcode %in% pool8.barcodes$barcode)/nrow(new.ef)
