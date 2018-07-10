@@ -202,14 +202,17 @@ table(droplevels(sites_aa$NEAR_TERR_CLASS_31_N)) #looks good, no water
 table(droplevels(sites_aa_5m$NEAR_TERR_CLASS_31_N)) #likewise. 
 
 # Append point-level data to each data frame
-pointcols <- c("depth", "current", "gear", "stageht", "substrt", "wingdyke")
-pointcols_plus <- c(pointcols, "barcode")
-sites_aa <- left_join(sites_aa, fish_data_EF[, pointcols_plus], by = "barcode")
-sites_aa_5m <- left_join(sites_aa_5m, fish_data_EF[, pointcols_plus], by = "barcode")
+tojoin_0 <- fish_data_EF %>% select(depth, current, gear, stageht, substrt, wingdyke, riprap, barcode) %>%
+  unique() %>% filter(barcode %in% sites_aa$barcode)
+tojoin_5 <- fish_data_EF %>% select(depth, current, gear, stageht, substrt, wingdyke, riprap,  barcode) %>%
+  unique() %>% filter(barcode %in% sites_aa_5m$barcode)
+sites_aa <- left_join(sites_aa, tojoin_0, by = "barcode")
+sites_aa_5m <- left_join(sites_aa_5m, tojoin_5, by = "barcode")
 
+pointcols <- c("depth", "current", "gear", "stageht", "substrt", "riprap", "wingdyke")
 for(i in 1:length(pointcols)){
-  colnames(sites_aa)[colnames(sites_aa) == pointcols[i]] <- paste0(pointcols[i], "-p")
-  colnames(sites_aa_5m)[colnames(sites_aa_5m) == pointcols[i]] <- paste0(pointcols[i], "-p")
+  colnames(sites_aa)[colnames(sites_aa) == pointcols[i]] <- paste0(pointcols[i], ".p")
+  colnames(sites_aa_5m)[colnames(sites_aa_5m) == pointcols[i]] <- paste0(pointcols[i], ".p")
 }
 
 #make the rest of the cleaning into a function so it can be applied to sites_aa_5m as well as sites_aa. 
@@ -218,19 +221,19 @@ furthercleaning <- function(sites_aa){
 sites_aa$snagyn <- ifelse(sites_aa$snag == 0, "no", "yes") # new column based on `snag`
 
 #change some of the column names
-names(sites_aa)[49] <- "shoreline_density_index" # sdi
-names(sites_aa)[67] <- "pct_prm_wetf" # pct1wetf
-names(sites_aa)[68] <- "pct_terr_shore_wetf" # pct2wetf
-names(sites_aa)[55] <- "len_prm_lotic" # len_outl
-names(sites_aa)[56] <- "pct_prm_lotic" # pct_outl
-names(sites_aa)[57] <- "num_lotic_outl" # num_outl
-names(sites_aa)[58] <- "len_prm_lentic" # len_oute
-names(sites_aa)[59] <- "pct_prm_lentic" # pct_oute
-names(sites_aa)[60] <- "num_lentic_outl" # num_oute
-names(sites_aa)[65] <- "pct_aq" # pct_chan
-names(sites_aa)[72] <- "scour_wd" # sco_wd
-names(sites_aa)[77] <- "pct_terr_shore_rev" # pct_rev
-names(sites_aa)[78] <- "pct_prm_rev" # pct_rev2
+names(sites_aa)[names(sites_aa) == "sdi"] <- "shoreline_density_index" # sdi
+names(sites_aa)[names(sites_aa) == "pct1wetf"] <- "pct_prm_wetf" # pct1wetf
+names(sites_aa)[names(sites_aa) == "pct2wetf"] <- "pct_terr_shore_wetf" # pct2wetf
+names(sites_aa)[names(sites_aa) == "len_outl"] <- "len_prm_lotic" # len_outl
+names(sites_aa)[names(sites_aa) == "pct_outl"] <- "pct_prm_lotic" # pct_outl
+names(sites_aa)[names(sites_aa) == "num_outl"] <- "num_lotic_outl" # num_outl
+names(sites_aa)[names(sites_aa) == "len_oute"] <- "len_prm_lentic" # len_oute
+names(sites_aa)[names(sites_aa) == "pct_oute"] <- "pct_prm_lentic" # pct_oute
+names(sites_aa)[names(sites_aa) == "num_oute"] <- "num_lentic_outl" # num_oute
+names(sites_aa)[names(sites_aa) == "pct_chan"] <- "pct_aq" # pct_chan
+names(sites_aa)[names(sites_aa) == "sco_wd"] <- "scour_wd" # sco_wd
+names(sites_aa)[names(sites_aa) == "pct_rev"] <- "pct_terr_shore_rev" # pct_rev
+names(sites_aa)[names(sites_aa) == "pct_rev2"] <- "pct_prm_rev" # pct_rev2
 
 #create reverse of area_gt* columns
 #how much of the polygon is less than or equal to a certain depth? (cm)
@@ -267,6 +270,25 @@ sites_aa <- furthercleaning(sites_aa)
 sites_aa_5m <- furthercleaning(sites_aa_5m)
 #end function
 
+#pct_prm_rev and pct_terr_shore_rev should not have any values greater than 100
+#
+fixrevetment <- function(sites_aa){
+  sites_aa$pct_prm_rev[sites_aa$pct_prm_rev > 100] <- 100
+  sites_aa$pct_terr_shore_rev[sites_aa$pct_terr_shore_rev > 100] <- 100
+  #set NA's to 0
+  sites_aa$pct_prm_rev[is.na(sites_aa$pct_prm_rev)] <- 0
+  sites_aa$pct_terr_shore_rev[is.na(sites_aa$pct_terr_shore_rev)] <- 0
+  return(sites_aa)
+}
+sites_aa <- fixrevetment(sites_aa)
+sites_aa_5m <- fixrevetment(sites_aa_5m)
+
+#remove acres and hectares columns
+sites_aa$Acres <- NULL
+sites_aa$Hectares <- NULL
+sites_aa_5m$Acres <- NULL
+sites_aa_5m$Hectares <- NULL
+
   #there are a concerning number of NA's in the `pool` column that shouldn't be there. Luckily, the `uniq_id` column tells us which pool these are from. 
 addpools <- function(sites_aa){
   pools <- as.numeric(substr(x = as.character(sites_aa$uniq_id), 
@@ -278,8 +300,8 @@ addpools <- function(sites_aa){
 sites_aa <- addpools(sites_aa)
 sites_aa_5m <- addpools(sites_aa_5m)
 
-#save(sites_aa, file = "data/sites_aa.Rda")
-#save(sites_aa_5m, file = "data/sites_aa_5m.Rda")
+save(sites_aa, file = "data/sites_aa.Rda")
+save(sites_aa_5m, file = "data/sites_aa_5m.Rda")
 
 # Save subsets by pool
     # Pool 4
@@ -293,20 +315,12 @@ sites_aa_5m <- addpools(sites_aa_5m)
     p13_5 <- sites_aa_5m %>% filter(pool == 13)
 subsets <- list(p4_0, p4_5, p8_0, p8_5, p13_0, p13_5)
 names(subsets) <- c("p4_0", "p4_5", "p8_0", "p8_5", "p13_0", "p13_5")
- #how do I save all of these?
 
-##########################################
-#get stratum information from new.ef into pool8.barcodes
-load("data/new.ef.Rda")
-head(new.ef)
-head(pool8.barcodes)
-sum(new.ef$barcode %in% pool8.barcodes$barcode)/nrow(new.ef)
-identical(sort(unique(pool8.barcodes$barcode)), sort(unique(new.ef$barcode)))
-  # we have all of the same barcodes. Good. 
-strata <- new.ef[,c("barcode", "stratum_name", "stratum")]
-#save(strata, file = "data/strata.Rda")
-pool8.barcodes <- left_join(pool8.barcodes, strata, by = "barcode")
-pool8.barcodes$snagyn <- ifelse(pool8.barcodes$snag == 1, "yes", "no")
-pool8.barcodes$snagyn <- factor(as.character(pool8.barcodes$snagyn))
-#save(pool8.barcodes, file = "data/pool8.barcodes.Rda")
+for(i in 1:length(subsets)){
+  df <- subsets[[i]]
+  save(df, file = paste("data/", names(subsets)[i], ".Rda", sep = ""))
+}
+
+
+
 
