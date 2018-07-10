@@ -1,5 +1,4 @@
 source("libraries.R")
-library(vegan)
 load("data/funcdiv3.Rda")
 
 ################################################
@@ -118,3 +117,6 @@ plot(prestondistr(bbb[k,]))
 
 radfit(x = bbb[k,])
 plot(radfit(x = bbb[k,]))
+
+
+###############################################
