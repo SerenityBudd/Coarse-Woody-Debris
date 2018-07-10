@@ -14,7 +14,7 @@ pool8.fish$snag <- factor(pool8.fish$snag,
                           labels = c("No", "Yes"))
 
 # create a working dataframe with the cols we need
-funcdiv <- select(pool8.fish, c(fishcode, barcode, snag, stratum_name, stratum.y, length, weight, grp_wdth, gear, effsec, catch))
+funcdiv <- select(pool8.fish, c(fishcode, barcode, snag, stratum_name, stratum.y, length, weight, grp_wdth, gear, effmin, effsec, catch))
 
 # remove rows where catch was <1
 funcdiv <- filter(funcdiv, catch >=1)

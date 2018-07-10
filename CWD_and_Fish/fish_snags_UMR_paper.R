@@ -14,7 +14,7 @@ tbl <- funcdiv3 %>%
   filter(gear %in% "D") %>%
   ## select the relevant columns
   select(c(Common.Name, barcode, snag, 
-           stratum_name, effsec, Trophic.Guild)) %>%
+           stratum_name, effmin, effsec, Trophic.Guild)) %>%
   droplevels()
 ## shorten the name to make easier to read
 levels(tbl$stratum_name) <- c("Backwater", "Main Channel Border")
