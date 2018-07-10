@@ -202,17 +202,17 @@ table(droplevels(sites_aa$NEAR_TERR_CLASS_31_N)) #looks good, no water
 table(droplevels(sites_aa_5m$NEAR_TERR_CLASS_31_N)) #likewise. 
 
 # Append point-level data to each data frame
-tojoin_0 <- fish_data_EF %>% select(depth, current, gear, stageht, substrt, wingdyke, barcode) %>%
+tojoin_0 <- fish_data_EF %>% select(depth, current, gear, stageht, substrt, wingdyke, riprap, barcode) %>%
   unique() %>% filter(barcode %in% sites_aa$barcode)
-tojoin_5 <- fish_data_EF %>% select(depth, current, gear, stageht, substrt, wingdyke, barcode) %>%
+tojoin_5 <- fish_data_EF %>% select(depth, current, gear, stageht, substrt, wingdyke, riprap,  barcode) %>%
   unique() %>% filter(barcode %in% sites_aa_5m$barcode)
 sites_aa <- left_join(sites_aa, tojoin_0, by = "barcode")
 sites_aa_5m <- left_join(sites_aa_5m, tojoin_5, by = "barcode")
 
-pointcols <- c("depth", "current", "gear", "stageht", "substrt", "wingdyke")
+pointcols <- c("depth", "current", "gear", "stageht", "substrt", "riprap", "wingdyke")
 for(i in 1:length(pointcols)){
-  colnames(sites_aa)[colnames(sites_aa) == pointcols[i]] <- paste0(pointcols[i], "-p")
-  colnames(sites_aa_5m)[colnames(sites_aa_5m) == pointcols[i]] <- paste0(pointcols[i], "-p")
+  colnames(sites_aa)[colnames(sites_aa) == pointcols[i]] <- paste0(pointcols[i], ".p")
+  colnames(sites_aa_5m)[colnames(sites_aa_5m) == pointcols[i]] <- paste0(pointcols[i], ".p")
 }
 
 #make the rest of the cleaning into a function so it can be applied to sites_aa_5m as well as sites_aa. 
@@ -271,8 +271,23 @@ sites_aa_5m <- furthercleaning(sites_aa_5m)
 #end function
 
 #pct_prm_rev and pct_terr_shore_rev should not have any values greater than 100
-sites_aa$pct_prm_rev[sites_aa$pct_prm_rev > 100] <- 100
-pp$pct_terr_shore_rev[pp$pct_terr_shore_rev > 100] <- 100
+#
+fixrevetment <- function(sites_aa){
+  sites_aa$pct_prm_rev[sites_aa$pct_prm_rev > 100] <- 100
+  sites_aa$pct_terr_shore_rev[sites_aa$pct_terr_shore_rev > 100] <- 100
+  #set NA's to 0
+  sites_aa$pct_prm_rev[is.na(sites_aa$pct_prm_rev)] <- 0
+  sites_aa$pct_terr_shore_rev[is.na(sites_aa$pct_terr_shore_rev)] <- 0
+  return(sites_aa)
+}
+sites_aa <- fixrevetment(sites_aa)
+sites_aa_5m <- fixrevetment(sites_aa_5m)
+
+#remove acres and hectares columns
+sites_aa$Acres <- NULL
+sites_aa$Hectares <- NULL
+sites_aa_5m$Acres <- NULL
+sites_aa_5m$Hectares <- NULL
 
   #there are a concerning number of NA's in the `pool` column that shouldn't be there. Luckily, the `uniq_id` column tells us which pool these are from. 
 addpools <- function(sites_aa){
@@ -285,8 +300,8 @@ addpools <- function(sites_aa){
 sites_aa <- addpools(sites_aa)
 sites_aa_5m <- addpools(sites_aa_5m)
 
-#save(sites_aa, file = "data/sites_aa.Rda")
-#save(sites_aa_5m, file = "data/sites_aa_5m.Rda")
+save(sites_aa, file = "data/sites_aa.Rda")
+save(sites_aa_5m, file = "data/sites_aa_5m.Rda")
 
 # Save subsets by pool
     # Pool 4
@@ -305,20 +320,7 @@ for(i in 1:length(subsets)){
   df <- subsets[[i]]
   save(df, file = paste("data/", names(subsets)[i], ".Rda", sep = ""))
 }
- #how do I save all of these?
 
-##########################################
-#get stratum information from new.ef into pool8.barcodes
-load("data/new.ef.Rda")
-head(new.ef)
-head(pool8.barcodes)
-sum(new.ef$barcode %in% pool8.barcodes$barcode)/nrow(new.ef)
-identical(sort(unique(pool8.barcodes$barcode)), sort(unique(new.ef$barcode)))
-  # we have all of the same barcodes. Good. 
-strata <- new.ef[,c("barcode", "stratum_name", "stratum")]
-#save(strata, file = "data/strata.Rda")
-pool8.barcodes <- left_join(pool8.barcodes, strata, by = "barcode")
-pool8.barcodes$snagyn <- ifelse(pool8.barcodes$snag == 1, "yes", "no")
-pool8.barcodes$snagyn <- factor(as.character(pool8.barcodes$snagyn))
-#save(pool8.barcodes, file = "data/pool8.barcodes.Rda")
+
+
 
