@@ -23,3 +23,5 @@ library(tidyr)
 library(vegan)
 library(rpart)
 library(xtable)
+library(rpart.plot)
+>>>>>>> 25b05360b3db81fa528aa139f2273704bd6710c9
