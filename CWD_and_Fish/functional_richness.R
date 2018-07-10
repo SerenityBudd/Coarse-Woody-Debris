@@ -6,21 +6,21 @@ load("data/funcdiv3.Rda")
 ## DATA CLEANING -- Trophic.Guilds
 
 ## create a dataframe specifying the num of fish per trophic guild per barcode
-xxx1 <- funcdiv3 %>% group_by(barcode) %>% count(Trophic.Guild)
-colnames(xxx1)[3] <- "Num_Fish_per_Trophic_Guild"
-xxx1 <- xxx1[complete.cases(xxx1),]
+xxx.fd1 <- funcdiv3 %>% group_by(barcode) %>% count(Trophic.Guild)
+colnames(xxx.fd1)[3] <- "Num_Fish_per_Trophic_Guild"
+xxx.fd1 <- xxx.fd1[complete.cases(xxx.fd1),]
 
 
 ## create a dataframe specifying the number of unique trophic guilds per barcode
-yyy1 <- xxx1 %>% group_by(barcode) %>% count(barcode)
-colnames(yyy1)[2] <- "Num_Guilds"
+yyy.fd1 <- xxx.fd1 %>% group_by(barcode) %>% count(barcode)
+colnames(yyy.fd1)[2] <- "Num_Guilds"
 
 
 #######################################################
 ## T TESTS - Trophic Guilds
 
-## create a richness dataframe to do a t test on, combinging snag and yyy1
-fd.richness.t1 <- left_join(yyy1, select(funcdiv3, c(barcode, snag)), by = "barcode") %>% distinct
+## create a richness dataframe to do a t test on, combinging snag and yyy.fd
+fd.richness.t1 <- left_join(yyy.fd1, select(funcdiv3, c(barcode, snag)), by = "barcode") %>% distinct
 
 
 ## there is a signigficant diff in richness between sites with and without CWD
@@ -31,23 +31,23 @@ with(fd.richness.t1, t.test(Num_Guilds~snag, alternative = "less"))
 ## DATA CLEANING - R.Guild1
 
 ## create a dataframe specifying the number of fish per RGuild per barcode
-xxx2 <- funcdiv3 %>% group_by(barcode) %>% count(R.Guild1)
-colnames(xxx2)[3] <- "Num_Fish_per_RGuild1"
-xxx2 <- xxx2 %>% filter(!R.Guild1 == ""
+xxx.fd2 <- funcdiv3 %>% group_by(barcode) %>% count(R.Guild1)
+colnames(xxx.fd2)[3] <- "Num_Fish_per_RGuild1"
+xxx.fd2 <- xxx.fd2 %>% filter(!R.Guild1 == ""
                         & !R.Guild1 == "Catadromous"
                         & !R.Guild1 == "Bearer") %>% droplevels()
 
 
 ## create a dataframe specifying the number of unique RGuilds per barcode
-yyy2 <- xxx2 %>% group_by(barcode) %>% count(barcode)
-colnames(yyy2)[2] <- "Num_RGuilds"
+yyy.fd2 <- xxx.fd2 %>% group_by(barcode) %>% count(barcode)
+colnames(yyy.fd2)[2] <- "Num_RGuilds"
 
 
 #######################################################
 ## T TESTS
 
 ## create a richness dataframe to do a t test on, combinging snag and yyy
-fd.richness.t2 <- left_join(yyy2, select(funcdiv3, c(barcode, snag)), by = "barcode") %>% distinct
+fd.richness.t2 <- left_join(yyy.fd2, select(funcdiv3, c(barcode, snag)), by = "barcode") %>% distinct
 
 
 ## there is a not signigficant diff in richness between sites with and without CWD
