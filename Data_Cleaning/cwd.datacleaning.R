@@ -202,11 +202,14 @@ table(droplevels(sites_aa$NEAR_TERR_CLASS_31_N)) #looks good, no water
 table(droplevels(sites_aa_5m$NEAR_TERR_CLASS_31_N)) #likewise. 
 
 # Append point-level data to each data frame
-pointcols <- c("depth", "current", "gear", "stageht", "substrt", "wingdyke")
-pointcols_plus <- c(pointcols, "barcode")
-sites_aa <- left_join(sites_aa, fish_data_EF[, pointcols_plus], by = "barcode")
-sites_aa_5m <- left_join(sites_aa_5m, fish_data_EF[, pointcols_plus], by = "barcode")
+tojoin_0 <- fish_data_EF %>% select(depth, current, gear, stageht, substrt, wingdyke, barcode) %>%
+  unique() %>% filter(barcode %in% sites_aa$barcode)
+tojoin_5 <- fish_data_EF %>% select(depth, current, gear, stageht, substrt, wingdyke, barcode) %>%
+  unique() %>% filter(barcode %in% sites_aa_5m$barcode)
+sites_aa <- left_join(sites_aa, tojoin_0, by = "barcode")
+sites_aa_5m <- left_join(sites_aa_5m, tojoin_5, by = "barcode")
 
+pointcols <- c("depth", "current", "gear", "stageht", "substrt", "wingdyke")
 for(i in 1:length(pointcols)){
   colnames(sites_aa)[colnames(sites_aa) == pointcols[i]] <- paste0(pointcols[i], "-p")
   colnames(sites_aa_5m)[colnames(sites_aa_5m) == pointcols[i]] <- paste0(pointcols[i], "-p")
@@ -218,19 +221,19 @@ furthercleaning <- function(sites_aa){
 sites_aa$snagyn <- ifelse(sites_aa$snag == 0, "no", "yes") # new column based on `snag`
 
 #change some of the column names
-names(sites_aa)[49] <- "shoreline_density_index" # sdi
-names(sites_aa)[67] <- "pct_prm_wetf" # pct1wetf
-names(sites_aa)[68] <- "pct_terr_shore_wetf" # pct2wetf
-names(sites_aa)[55] <- "len_prm_lotic" # len_outl
-names(sites_aa)[56] <- "pct_prm_lotic" # pct_outl
-names(sites_aa)[57] <- "num_lotic_outl" # num_outl
-names(sites_aa)[58] <- "len_prm_lentic" # len_oute
-names(sites_aa)[59] <- "pct_prm_lentic" # pct_oute
-names(sites_aa)[60] <- "num_lentic_outl" # num_oute
-names(sites_aa)[65] <- "pct_aq" # pct_chan
-names(sites_aa)[72] <- "scour_wd" # sco_wd
-names(sites_aa)[77] <- "pct_terr_shore_rev" # pct_rev
-names(sites_aa)[78] <- "pct_prm_rev" # pct_rev2
+names(sites_aa)[names(sites_aa) == "sdi"] <- "shoreline_density_index" # sdi
+names(sites_aa)[names(sites_aa) == "pct1wetf"] <- "pct_prm_wetf" # pct1wetf
+names(sites_aa)[names(sites_aa) == "pct2wetf"] <- "pct_terr_shore_wetf" # pct2wetf
+names(sites_aa)[names(sites_aa) == "len_outl"] <- "len_prm_lotic" # len_outl
+names(sites_aa)[names(sites_aa) == "pct_outl"] <- "pct_prm_lotic" # pct_outl
+names(sites_aa)[names(sites_aa) == "num_outl"] <- "num_lotic_outl" # num_outl
+names(sites_aa)[names(sites_aa) == "len_oute"] <- "len_prm_lentic" # len_oute
+names(sites_aa)[names(sites_aa) == "pct_oute"] <- "pct_prm_lentic" # pct_oute
+names(sites_aa)[names(sites_aa) == "num_oute"] <- "num_lentic_outl" # num_oute
+names(sites_aa)[names(sites_aa) == "pct_chan"] <- "pct_aq" # pct_chan
+names(sites_aa)[names(sites_aa) == "sco_wd"] <- "scour_wd" # sco_wd
+names(sites_aa)[names(sites_aa) == "pct_rev"] <- "pct_terr_shore_rev" # pct_rev
+names(sites_aa)[names(sites_aa) == "pct_rev2"] <- "pct_prm_rev" # pct_rev2
 
 #create reverse of area_gt* columns
 #how much of the polygon is less than or equal to a certain depth? (cm)
@@ -267,6 +270,10 @@ sites_aa <- furthercleaning(sites_aa)
 sites_aa_5m <- furthercleaning(sites_aa_5m)
 #end function
 
+#pct_prm_rev and pct_terr_shore_rev should not have any values greater than 100
+sites_aa$pct_prm_rev[sites_aa$pct_prm_rev > 100] <- 100
+pp$pct_terr_shore_rev[pp$pct_terr_shore_rev > 100] <- 100
+
   #there are a concerning number of NA's in the `pool` column that shouldn't be there. Luckily, the `uniq_id` column tells us which pool these are from. 
 addpools <- function(sites_aa){
   pools <- as.numeric(substr(x = as.character(sites_aa$uniq_id), 
@@ -293,6 +300,10 @@ sites_aa_5m <- addpools(sites_aa_5m)
     p13_5 <- sites_aa_5m %>% filter(pool == 13)
 subsets <- list(p4_0, p4_5, p8_0, p8_5, p13_0, p13_5)
 names(subsets) <- c("p4_0", "p4_5", "p8_0", "p8_5", "p13_0", "p13_5")
+
+for(i in 1:length(subsets)){
+  save(subsets[[i]], file = paste("data/", names(subsets)[i], ".Rda", sep = ""))
+}
  #how do I save all of these?
 
 ##########################################
