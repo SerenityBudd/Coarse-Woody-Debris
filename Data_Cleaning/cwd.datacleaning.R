@@ -267,9 +267,33 @@ sites_aa <- furthercleaning(sites_aa)
 sites_aa_5m <- furthercleaning(sites_aa_5m)
 #end function
 
+  #there are a concerning number of NA's in the `pool` column that shouldn't be there. Luckily, the `uniq_id` column tells us which pool these are from. 
+addpools <- function(sites_aa){
+  pools <- as.numeric(substr(x = as.character(sites_aa$uniq_id), 
+                             start = 2, 
+                             stop = 3))
+  sites_aa$pool[is.na(sites_aa$pool)] <- pools[is.na(sites_aa$pool)]
+  return(sites_aa)
+}
+sites_aa <- addpools(sites_aa)
+sites_aa_5m <- addpools(sites_aa_5m)
+
 #save(sites_aa, file = "data/sites_aa.Rda")
 #save(sites_aa_5m, file = "data/sites_aa_5m.Rda")
 
+# Save subsets by pool
+    # Pool 4
+    p4_0 <- sites_aa %>% filter(pool == 4)
+    p4_5 <- sites_aa_5m %>% filter(pool == 4)
+    # Pool 8
+    p8_0 <- sites_aa %>% filter(pool == 8)
+    p8_5 <- sites_aa_5m %>% filter(pool == 8)
+    # Pool 13
+    p13_0 <- sites_aa %>% filter(pool == 13)
+    p13_5 <- sites_aa_5m %>% filter(pool == 13)
+subsets <- list(p4_0, p4_5, p8_0, p8_5, p13_0, p13_5)
+names(subsets) <- c("p4_0", "p4_5", "p8_0", "p8_5", "p13_0", "p13_5")
+ #how do I save all of these?
 
 ##########################################
 #get stratum information from new.ef into pool8.barcodes
