@@ -37,10 +37,11 @@ str(fishgrowth)
 str(fishdist)
 
 # combine the important dataframes into fishinfo
-fishinfo <- left_join(left_join(Species, fishmisc, by = "Fishcode"), fishtraits, by = "Fishcode")
-fishinfo <- left_join(fishinfo, fishreproduction, by = "Fishcode")
-fishinfo <- left_join(fishinfo, fishgrowth, by = "Fishcode")
-fishinfo <- left_join(fishinfo, fishdist, by = "Fishcode")
+fishinfo <- left_join(Species, fishmisc, by = "Fishcode") %>%
+  left_join(., fishtraits, by='Fishcode') %>%
+  left_join(., fishreproduction, by = "Fishcode") %>%
+  left_join(., fishgrowth, by = "Fishcode") %>%
+  left_join(., fishdist, by = "Fishcode")
 
 dim(fishinfo)
 str(fishinfo)
@@ -52,21 +53,6 @@ colnames(FishCodes) <- c("Fishcode")
 # the fishcodes in both the LTRM data and fish traits
 inters <- intersect(FishCodes[,1], fishinfo[,"Fishcode"])
 
-# the fishcodes in LTRM data not in fish traits
-ltrmf <- setdiff(FishCodes[,1], fishinfo[,"Fishcode"])
-
-# the fishcodes in the fishtraits not the LTRM data
-traitsf <- setdiff(fishinfo[,"Fishcode"], FishCodes[,1])
-
-# all the U- names are "unidentified fish type", hopefully keep some of these
-#        GET RID
-# UNID is generally unidentified
-# I am assuming WSSN is supposed to be WDSN
-# YOYF is age-0 fish
-# LRVL is larval
-# NFSH is no fish caught
-# SCBC could be SCBS NOT confident
-
 # remove the rows of fishcodes not in the ltrm data
 fishinfo <- filter(fishinfo, Fishcode %in% inters)
 identical(as.character(fishinfo[,1]), inters)
@@ -74,11 +60,11 @@ identical(as.character(fishinfo[,1]), inters)
 # the fish info data says the LTRM proj has not collected these
 nos <- fishinfo[fishinfo$LTRMP == "N","Fishcode"]
 # they have, so we will keep them
-summary(fishdat[fishdat$fishcode %in% nos,"fishcode"])
+fishdat[fishdat$fishcode %in% nos,"fishcode"]
 
 # remove the rows of fishcodes that are not in the fish info data
 ltrmfishdat <- filter(fishdat, fishcode %in% inters)
-save(ltrmfishdat, file = "data/ltrmfishdat.Rda")
+#save(ltrmfishdat, file = "data/ltrmfishdat.Rda")
 
 #Update fish names to current taxonomy (based on Google searches) and correct spelling errors
 
