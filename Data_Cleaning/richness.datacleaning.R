@@ -1,3 +1,8 @@
+source("libraries.R")
+
+# load in the data
+load("data/funcdiv3.Rda")
+
 ####################################################
 ## DATA CLEANING
 dt <- data.table(funcdiv3)
@@ -57,10 +62,10 @@ dt.fin <- left_join(dt.c, funcdiv.wrk, by = "barcode")
 
 ## make the final data table
 dt.final <- left_join(dt.fin, select(dt4, c(barcode, Trophic.Guild, N)), 
-                      by = c("barcode", "Trophic.Guild"))
-dt.final <- dt.final %>% replace_na(list(N = 0))
-dt.final <- dt.final %>% filter(!stratum_name == "Impounded--Offshore") %>% droplevels()
-
+                      by = c("barcode", "Trophic.Guild")) %>% 
+  replace_na(list(N = 0)) %>% 
+  filter(!stratum_name == "Impounded--Offshore") %>% 
+  droplevels()
 
 ## investigate the new dataset
 table(dt.final$snag, dt.final$Trophic.Guild)

@@ -18,7 +18,6 @@ funcdiv <- select(pool8.fish, c(fishcode, barcode, snag, stratum_name, stratum.y
 
 # remove rows where catch was <1
 funcdiv <- filter(funcdiv, catch >=1)
-filter(funcdiv, catch>1)
 
 # repeat all the rows "catch" number of times
 funcdiv2 <- funcdiv[rep(rownames(funcdiv), funcdiv$catch), ]
@@ -29,14 +28,34 @@ colnames(funcdiv2)[1] <- "Fishcode"
 head(funcdiv2)
 
 # select the colums that we will use for our regression 
-fishinfo2 <- select(fishinfo, c(Fishcode, Common.Name, Scientific.Name.Current, Trophic.Guild, R.Guild1:F.Guild3, Parental.Care))
-fishinfo2$Parental.Care <- factor(fishinfo2$Parental.Care)
+fishinfo2 <- select(fishinfo, c(Fishcode, Common.Name, Scientific.Name.Current, Swim.Factor:Turbidity.Tolerance, Trophic.Guild, R.Guild1:F.Guild3,Mean.Fecundity, Mean.Ovum.Diameter, Spawning.Duration,Spawning.Bouts,Age.at.Maturity:Maximum.Age))
 fishinfo2$Trophic.Guild <- factor(fishinfo2$Trophic.Guild,
                     levels = c(1,2,3,4,5,6),
                     labels = c("Herbivore", "Omnivore", "General Invertivore", 
                                "Benthic Invertivore", "Piscivore", "Planktivore"))
+fishinfo2$Current.Preference <- factor(fishinfo2$Current.Preference,
+                                       levels = c(1,2,3,4),
+                                       labels = c("Fast", "Moderate", "Slow-none", 
+                                                  "General"))
+fishinfo2$Substrate.Preference <- factor(fishinfo2$Substrate.Preference,
+                                       levels = c(1,2,3,4,5,6,7,8),
+                                       labels = c("Cobble", "Gravel", "Sand", 
+                                                  "Silt", "General",	"Vegetation", "Structure", "Pelagic"))
+fishinfo2$Spawning.Substrate <- factor(fishinfo2$Spawning.Substrate,
+                                         levels = c(1,2,3,4,5,6,7,8),
+                                         labels = c("Cobble", "Gravel", "Sand", 
+                                                    "Silt", "General",	"Vegetation", "Structure", "Pelagic"))
+fishinfo2$Turbidity.Tolerance <- factor(fishinfo2$Turbidity.Tolerance,
+                                       levels = c(1,2,3),
+                                       labels = c("High", "Medium", "Low"))
+fishinfo2$Silt.Tolerance <- factor(fishinfo2$Silt.Tolerance,
+                                        levels = c(1,2,3),
+                                        labels = c("High", "Medium", "Low"))
+
+str(fishinfo2)
 head(fishinfo2)
 #save(fishinfo2, file = "data/fishinfo2.Rda")
+
 
 #for (i in 1:ncol(fishinfo2)) {
 #  print(colnames(fishinfo2)[i]) 
@@ -53,5 +72,10 @@ funcdiv3 <- left_join(funcdiv2, fishinfo2, by = "Fishcode")
 
 str(funcdiv3)
 head(funcdiv3)
+
+#for (i in 1:ncol(funcdiv3)) {
+#  print(colnames(funcdiv3)[i]) 
+#  print(summary(funcdiv3[,i]))
+#}
 
 

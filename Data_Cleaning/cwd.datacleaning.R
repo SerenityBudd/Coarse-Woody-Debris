@@ -302,7 +302,8 @@ subsets <- list(p4_0, p4_5, p8_0, p8_5, p13_0, p13_5)
 names(subsets) <- c("p4_0", "p4_5", "p8_0", "p8_5", "p13_0", "p13_5")
 
 for(i in 1:length(subsets)){
-  save(subsets[[i]], file = paste("data/", names(subsets)[i], ".Rda", sep = ""))
+  df <- subsets[[i]]
+  save(df, file = paste("data/", names(subsets)[i], ".Rda", sep = ""))
 }
  #how do I save all of these?
 
