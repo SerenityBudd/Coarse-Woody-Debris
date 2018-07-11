@@ -63,7 +63,7 @@ nos <- fishinfo[fishinfo$LTRMP == "N","Fishcode"]
 fishdat[fishdat$fishcode %in% nos,"fishcode"]
 
 # remove the rows of fishcodes that are not in the fish info data
-ltrmfishdat <- filter(fishdat, fishcode %in% inters)
+ltrmfishdat <- filter(fishdat, fishcode %in% inters) 
 #save(ltrmfishdat, file = "data/ltrmfishdat.Rda")
 
 #Update fish names to current taxonomy (based on Google searches) and correct spelling errors
