@@ -1,18 +1,16 @@
 source("libraries.R")
-load("data/funcdiv3.Rda")
+load("data/funcdiv8.Rda")
+load("data/fishinfo2.Rda")
 
-head(funcdiv3)
+head(funcdiv8)
 
 ## make common name a character
-funcdiv3$Common.Name <- as.character(funcdiv3$Common.Name)
+funcdiv8$Common.Name <- as.character(funcdiv8$Common.Name)
 
-
-tbl <- funcdiv3 %>%
+tbl <- funcdiv8 %>%
   ## only sites in unstructured main channel and backwater
   filter(stratum_name %in% "Backwater, Contiguous Shoreline"
-         | stratum_name %in% "Main Channel Border--Unstructured") %>%
-  ## only in sites where they electroshocked for fish during the day
-  filter(gear %in% "D") %>%
+         | stratum_name %in% "Main Channel Border, Unstructured") %>%
   ## select the relevant columns
   select(c(Common.Name, barcode, snag, 
            stratum_name, effmin, Trophic.Guild)) %>%
@@ -57,11 +55,11 @@ for (i in 1:56) {
 }
 
 ## table of output from Chi-squared test for each fish species
-tbl2
-
+tbl2 <- right_join(select(fishinfo2, c(Common.Name, Trophic.Guild)),tbl2,  by = "Common.Name")
+tbl2 <- tbl2[order(tbl2$Trophic.Guild),] 
 
 ## modify the table for 'xtable'
-tbl3 <- tbl2[,-c(1,5)]
+tbl3 <- tbl2[,-c(1)]
 rownames(tbl3) <- tbl2$Common.Name
 
 
@@ -124,6 +122,15 @@ for (i in 50:98) {
 ## table of output from Chi-squared test for each fish species
 tbl4
 
+backyy <- tbl4[1:49,-c(1:2)]
+rownames(backyy) <- tbl4[1:49,2]
+## print out the table in LaTeX format 
+xtable(backyy)
+
+mainyy <- tbl4[50:98,-c(1:2)]
+rownames(mainyy) <- tbl4[50:98,2]
+## print out the table in LaTeX format 
+xtable(mainyy)
 
 ###################################################
 
