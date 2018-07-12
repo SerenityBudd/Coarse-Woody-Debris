@@ -158,21 +158,21 @@ columns_terr <- lc_2010[, c("FID", "CLASS_31", "CLASS_15_C", "CLASS_7_C","CLASS_
 sites_aa <- left_join(sites_aa, columns_terr, by = c("NEAR_TERR_FID" = "FID"))
 sites_aa_5m <- left_join(sites_aa_5m, columns_terr, by = c("NEAR_TERR_FID" = "FID"))
 #change names to indicate that these columns refer to the landcover type of the nearest terrestrial area.
-names(sites_aa)[names(sites_aa) == 'CLASS_31'] <- 'NEAR_TERR_CLASS_31'
-names(sites_aa)[names(sites_aa) == 'CLASS_15_C'] <- 'NEAR_TERR_CLASS_15'
-names(sites_aa)[names(sites_aa) == 'CLASS_7_C'] <- 'NEAR_TERR_CLASS_7'
-names(sites_aa)[names(sites_aa) == 'CLASS_31_N'] <- 'NEAR_TERR_CLASS_31_N'
-names(sites_aa)[names(sites_aa) == 'CLASS_15_N'] <- 'NEAR_TERR_CLASS_15_N'
-names(sites_aa)[names(sites_aa) == 'CLASS_7_N'] <- 'NEAR_TERR_CLASS_7_N'
-names(sites_aa)[names(sites_aa) == 'HEIGHT_N'] <- 'NEAR_TERR_HEIGHT_N'
+sites_aa <- sites_aa %>% dplyr::rename(NEAR_TERR_CLASS_31 = CLASS_31,
+                    NEAR_TERR_CLASS_15 = CLASS_15_C,
+                    NEAR_TERR_CLASS_7 = CLASS_7_C,
+                    NEAR_TERR_CLASS_31_N = CLASS_31_N,
+                    NEAR_TERR_CLASS_15_N = CLASS_15_N,
+                    NEAR_TERR_CLASS_7_N = CLASS_7_N,
+                    NEAR_TERR_HEIGHT_N = HEIGHT_N)
 
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_31'] <- 'NEAR_TERR_CLASS_31'
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_15_C'] <- 'NEAR_TERR_CLASS_15'
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_7_C'] <- 'NEAR_TERR_CLASS_7'
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_31_N'] <- 'NEAR_TERR_CLASS_31_N'
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_15_N'] <- 'NEAR_TERR_CLASS_15_N'
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_7_N'] <- 'NEAR_TERR_CLASS_7_N'
-names(sites_aa_5m)[names(sites_aa_5m) == 'HEIGHT_N'] <- 'NEAR_TERR_HEIGHT_N'
+sites_aa_5m <- sites_aa_5m %>% dplyr::rename(NEAR_TERR_CLASS_31 = CLASS_31,
+                                       NEAR_TERR_CLASS_15 = CLASS_15_C,
+                                       NEAR_TERR_CLASS_7 = CLASS_7_C,
+                                       NEAR_TERR_CLASS_31_N = CLASS_31_N,
+                                       NEAR_TERR_CLASS_15_N = CLASS_15_N,
+                                       NEAR_TERR_CLASS_7_N = CLASS_7_N,
+                                       NEAR_TERR_HEIGHT_N = HEIGHT_N)
 
 # Add columns for distance to nearest forested area
 columns_forest <- terrestrial_forests[, c("FID", "CLASS_31", "CLASS_15_C", "CLASS_7_C", "CLASS_31_N", "CLASS_15_N", "CLASS_7_N", "HEIGHT_N")]
@@ -186,21 +186,20 @@ sites_aa_5m$NEAR_FOREST_DIST <- sites_forest$NEAR_DIST[sites_forest$Field1 %in% 
 sites_aa <- left_join(sites_aa, columns_forest, by = c("NEAR_FOREST_FID" = "FID"))
 sites_aa_5m <- left_join(sites_aa_5m, columns_forest, by = c("NEAR_FOREST_FID" = "FID"))
 #change names to indicate that these columns refer to the landcover type of the nearest terrestrial area.
-names(sites_aa)[names(sites_aa) == 'CLASS_31'] <- 'NEAR_FOREST_CLASS_31'
-names(sites_aa)[names(sites_aa) == 'CLASS_15_C'] <- 'NEAR_FOREST_CLASS_15'
-names(sites_aa)[names(sites_aa) == 'CLASS_7_C'] <- 'NEAR_FOREST_CLASS_7'
-names(sites_aa)[names(sites_aa) == 'CLASS_31_N'] <- 'NEAR_FOREST_CLASS_31_N'
-names(sites_aa)[names(sites_aa) == 'CLASS_15_N'] <- 'NEAR_FOREST_CLASS_15_N'
-names(sites_aa)[names(sites_aa) == 'CLASS_7_N'] <- 'NEAR_FOREST_CLASS_7_N'
-names(sites_aa)[names(sites_aa) == 'HEIGHT_N'] <- 'NEAR_FOREST_HEIGHT_N'
-
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_31'] <- 'NEAR_FOREST_CLASS_31'
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_15_C'] <- 'NEAR_FOREST_CLASS_15'
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_7_C'] <- 'NEAR_FOREST_CLASS_7'
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_31_N'] <- 'NEAR_FOREST_CLASS_31_N'
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_15_N'] <- 'NEAR_FOREST_CLASS_15_N'
-names(sites_aa_5m)[names(sites_aa_5m) == 'CLASS_7_N'] <- 'NEAR_FOREST_CLASS_7_N'
-names(sites_aa_5m)[names(sites_aa_5m) == 'HEIGHT_N'] <- 'NEAR_FOREST_HEIGHT_N'
+sites_aa <- sites_aa %>% dplyr::rename(NEAR_FOREST_CLASS_31 = CLASS_31,
+                                       NEAR_FOREST_CLASS_15 = CLASS_15_C,
+                                       NEAR_FOREST_CLASS_7 = CLASS_7_C,
+                                       NEAR_FOREST_CLASS_31_N = CLASS_31_N,
+                                       NEAR_FOREST_CLASS_15_N = CLASS_15_N,
+                                       NEAR_FOREST_CLASS_7_N = CLASS_7_N,
+                                       NEAR_FOREST_HEIGHT_N = HEIGHT_N)
+sites_aa_5m <- sites_aa_5m %>% dplyr::rename(NEAR_FOREST_CLASS_31 = CLASS_31,
+                                       NEAR_FOREST_CLASS_15 = CLASS_15_C,
+                                       NEAR_FOREST_CLASS_7 = CLASS_7_C,
+                                       NEAR_FOREST_CLASS_31_N = CLASS_31_N,
+                                       NEAR_FOREST_CLASS_15_N = CLASS_15_N,
+                                       NEAR_FOREST_CLASS_7_N = CLASS_7_N,
+                                       NEAR_FOREST_HEIGHT_N = HEIGHT_N)
 
 # Any NA's?
 locate.nas(sites_aa)
@@ -212,14 +211,14 @@ table(droplevels(sites_aa$NEAR_TERR_CLASS_31_N)) #looks good, no water
 table(droplevels(sites_aa_5m$NEAR_TERR_CLASS_31_N)) #likewise. 
 
 # Append point-level data to each data frame
-tojoin_0 <- fish_data_EF %>% select(year, depth, current, gear, stageht, substrt, wingdyke, riprap, trib, barcode) %>%
+tojoin_0 <- fish_data_EF %>% select(year, sitetype, depth, current, gear, stageht, substrt, wingdyke, riprap, trib, barcode) %>%
   unique() %>% filter(barcode %in% sites_aa$barcode)
-tojoin_5 <- fish_data_EF %>% select(year, depth, current, gear, stageht, substrt, wingdyke, riprap, trib, barcode) %>%
+tojoin_5 <- fish_data_EF %>% select(year, sitetype, depth, current, gear, stageht, substrt, wingdyke, riprap, trib, barcode) %>%
   unique() %>% filter(barcode %in% sites_aa_5m$barcode)
 sites_aa <- left_join(sites_aa, tojoin_0, by = "barcode")
 sites_aa_5m <- left_join(sites_aa_5m, tojoin_5, by = "barcode")
 
-pointcols <- c("year", "depth", "current", "gear", "stageht", "substrt", "wingdyke", "riprap", "trib")
+pointcols <- c("year", "depth", "current", "gear", "stageht", "substrt", "wingdyke", "riprap", "trib", "NEAR_TERR_DIST", "NEAR_TERR_FID", "NEAR_TERR_CLASS_31", "NEAR_TERR_CLASS_15", "NEAR_TERR_CLASS_7", "NEAR_TERR_CLASS_31_N", "NEAR_TERR_CLASS_15_N", "NEAR_TERR_CLASS_7_N", "NEAR_TERR_HEIGHT_N", "NEAR_FOREST_DIST", "NEAR_FOREST_FID", "NEAR_FOREST_CLASS_31", "NEAR_FOREST_CLASS_15", "NEAR_FOREST_CLASS_7", "NEAR_FOREST_CLASS_31_N", "NEAR_FOREST_CLASS_15_N", "NEAR_FOREST_CLASS_7_N", "NEAR_FOREST_HEIGHT_N")
 for(i in 1:length(pointcols)){
   colnames(sites_aa)[colnames(sites_aa) == pointcols[i]] <- paste0(pointcols[i], ".p")
   colnames(sites_aa_5m)[colnames(sites_aa_5m) == pointcols[i]] <- paste0(pointcols[i], ".p")
@@ -311,7 +310,6 @@ sites_aa <- addpools(sites_aa)
 sites_aa_5m <- addpools(sites_aa_5m)
 
 ## Make sure all columns are in the right format and correct them if they aren't
-colformats <- function(sites_aa){
   sites_aa$pool <- factor(as.character(sites_aa$pool))
   sites_aa$year.p <- as.numeric(sites_aa$year.p)
   sites_aa$substrt.p <- factor(as.character(sites_aa$substrt.p))
@@ -319,10 +317,16 @@ colformats <- function(sites_aa){
   sites_aa$riprap.p <- factor(as.character(sites_aa$riprap.p))
   sites_aa$trib.p <- factor(as.character(sites_aa$trib.p))
   sites_aa$snagyn <- factor(sites_aa$snagyn)
-  return(sites_aa)
-}
-sites_aa <- colformats(sites_aa)
-sites_aa_5m <- colformats(sites_aa_5m)
+  sites_aa$sitetype <- factor(as.character(sites_aa$sitetype))
+  
+  sites_aa_5m$pool <- factor(as.character(sites_aa_5m$pool))
+  sites_aa_5m$year.p <- as.numeric(sites_aa_5m$year.p)
+  sites_aa_5m$substrt.p <- factor(as.character(sites_aa_5m$substrt.p))
+  sites_aa_5m$wingdyke.p <- factor(as.character(sites_aa_5m$wingdyke.p))
+  sites_aa_5m$riprap.p <- factor(as.character(sites_aa_5m$riprap.p))
+  sites_aa_5m$trib.p <- factor(as.character(sites_aa_5m$trib.p))
+  sites_aa_5m$snagyn <- factor(sites_aa_5m$snagyn)
+  sites_aa$sitetype <- factor(as.character(sites_aa$sitetype))
 
 save(sites_aa, file = "data/sites_aa.Rda")
 save(sites_aa_5m, file = "data/sites_aa_5m.Rda")
