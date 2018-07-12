@@ -96,7 +96,12 @@ funcdivOR <- funcdiv.all %>%
   filter(pool == "OR") %>% droplevels()
 #save(funcdivOR, file = "data/funcdivOR.Rda")
 
- 
+# create a dataframe for the top 3 pools
+funcdiv4.8.13 <- funcdiv.all %>%
+  filter(pool == "04" | pool == "08" | pool == "13") %>%
+  droplevels()
+#save(funcdiv4.8.13, file = "data/funcdiv4.8.13.Rda")
+
 #POOL/REACH
 #Alphanumeric code for the LTRMP study reach or pool number:
 #  04 = Pool 4, 26 = Pool 26

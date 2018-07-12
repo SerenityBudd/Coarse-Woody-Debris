@@ -1,13 +1,7 @@
 source("libraries.R")
 
 # load in the data
-load("data/funcdiv.all.Rda")
-
-
-# create a dataframe for the top 3 pools
-funcdiv4.8.13 <- funcdiv.all %>%
-  filter(pool == "04" | pool == "08" | pool == "13") %>%
-  droplevels()
+load("data/funcdiv4.8.13.Rda")
 
 
 #######################################################
