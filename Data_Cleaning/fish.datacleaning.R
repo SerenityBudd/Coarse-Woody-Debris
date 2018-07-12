@@ -64,6 +64,31 @@ fishdat[fishdat$fishcode %in% nos,"fishcode"]
 
 # remove the rows of fishcodes that are not in the fish info data
 ltrmfishdat <- filter(fishdat, fishcode %in% inters) 
+# make snag a factor
+ltrmfishdat$snag01 <- ltrmfishdat$snag
+ltrmfishdat$snag <- factor(ltrmfishdat$snag, levels = c(0,1),
+                           labels = c("No", "Yes"))
+# make a column for the stratum name
+ltrmfishdat$stratum_name <- ltrmfishdat$stratum
+levels(ltrmfishdat$stratum_name) <- c("Backwater, Contiguous Offshore","Backwater, Contiguous Shoreline","Main Channel Border, Wingdam, Partial", "Main Channel Trough", "Impounded, Offshore", "Impounded, Shoreline", "Main Channel Border, Unstructured", "Main Channel Border, Wing Dam Area", "Side Channel Border","Tributary", "Tailwater Zone","Unexploded Ordinance Area, Pool 13")
+## "Main Channel Border, Wingdam, Partial"
+  ## partial means partial data, all snag is NA, exclude
+## "Unexploded Ordinance Area - Pool 13"
+  ## not a habitat, located only in pool 13, exclude
+## "Main Channel Trough"
+  ## all snag is NA, exclude
+
+ltrmfishdat <- ltrmfishdat %>% 
+  # remove the stratum for the above reasons
+  filter(!stratum_name %in% c("Main Channel Border, Wingdam, Partial", "Unexploded Ordinance Area, Pool 13", "Main Channel Trough")) %>%
+  # only in sites where they electroshocked for fish during the day
+  filter(gear %in% "D") %>%
+  # remove the rows where snag is NA
+  filter(!is.na(snag)) %>%
+  # remove rows not in a pool
+  filter(!pool %in% "") %>%
+  # drop the unused levels
+  droplevels()
 #save(ltrmfishdat, file = "data/ltrmfishdat.Rda")
 
 #Update fish names to current taxonomy (based on Google searches) and correct spelling errors
