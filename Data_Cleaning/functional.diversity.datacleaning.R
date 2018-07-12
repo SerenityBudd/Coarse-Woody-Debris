@@ -3,18 +3,10 @@ source("libraries.R")
 # load in the data
 load("data/fishinfo.Rda")
 load("data/ltrmfishdat.Rda")
-load("data/strata.Rda")
 
-# create a pool8 df using all of the fish in both fishinfo and fishdat
-pool8.fish <- ltrmfishdat %>%
-  filter(pool == "08") %>% droplevels()
-pool8.fish <- left_join(pool8.fish, strata, by = "barcode")
-pool8.fish$snag <- factor(pool8.fish$snag,
-                          levels = c(0,1),
-                          labels = c("No", "Yes"))
 
 # create a working dataframe with the cols we need
-funcdiv <- select(pool8.fish, c(fishcode, barcode, snag, stratum_name, stratum.y, length, weight, grp_wdth, gear, effmin, catch))
+funcdiv <- select(ltrmfishdat, c(fishcode, barcode, snag, snag01, stratum, stratum_name, length, weight, grp_wdth, effmin, pool, catch))
 
 # remove rows where catch was <1
 funcdiv <- filter(funcdiv, catch >=1)
@@ -67,15 +59,47 @@ funcdiv2$Fishcode <- as.character(funcdiv2$Fishcode)
 fishinfo2$Fishcode <- as.character(fishinfo2$Fishcode)
 
 # merge the df 
-funcdiv3 <- left_join(funcdiv2, fishinfo2, by = "Fishcode")
-#save(funcdiv3, file = "data/funcdiv3.Rda")
+funcdiv.all <- left_join(funcdiv2, fishinfo2, by = "Fishcode")
+#save(funcdiv.all, file = "data/funcdiv.all.Rda")
 
-str(funcdiv3)
-head(funcdiv3)
+str(funcdiv.all)
+head(funcdiv.all)
+dim(funcdiv.all)
 
 #for (i in 1:ncol(funcdiv3)) {
 #  print(colnames(funcdiv3)[i]) 
 #  print(summary(funcdiv3[,i]))
 #}
 
+# create a pool8 df using all of the fish in both fishinfo and fishdat
+funcdiv4 <- funcdiv.all %>%
+  filter(pool == "04") %>% droplevels()
+#save(funcdiv4, file = "data/funcdiv4.Rda")
+
+funcdiv8 <- funcdiv.all %>%
+  filter(pool == "08") %>% droplevels()
+#save(funcdiv8, file = "data/funcdiv8.Rda")
+
+funcdiv13 <- funcdiv.all %>%
+  filter(pool == "13") %>% droplevels()
+#save(funcdiv13, file = "data/funcdiv13.Rda")
+
+funcdiv26 <- funcdiv.all %>%
+  filter(pool == "26") %>% droplevels()
+#save(funcdiv26, file = "data/funcdiv26.Rda")
+
+funcdivLG <- funcdiv.all %>%
+  filter(pool == "LG") %>% droplevels()
+#save(funcdivLG, file = "data/funcdivLG.Rda")
+
+funcdivOR <- funcdiv.all %>%
+  filter(pool == "OR") %>% droplevels()
+#save(funcdivOR, file = "data/funcdivOR.Rda")
+
+ 
+#POOL/REACH
+#Alphanumeric code for the LTRMP study reach or pool number:
+#  04 = Pool 4, 26 = Pool 26
+#  08 = Pool 8, LG = La Grange Pool, Illinois River
+#  13 = Pool 13, OR = Open Mississippi River
 
