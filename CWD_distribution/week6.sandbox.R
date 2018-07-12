@@ -159,5 +159,5 @@ for(i in 1:length(densityplots.interact)){
 #What if I want to make the lines only go as far as they should based on the standard error clouds?
 
 
-#Random forest modeling in `caret` package: black box. Easy to learn, hard to understand. 
-library(caret)
+
+
