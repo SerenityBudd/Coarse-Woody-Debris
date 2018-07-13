@@ -108,3 +108,13 @@ funcdiv4.8.13 <- funcdiv.all %>%
 #  08 = Pool 8, LG = La Grange Pool, Illinois River
 #  13 = Pool 13, OR = Open Mississippi River
 
+fishtraits_new <- read.csv("data/new_fishtraits.csv")
+#save(fishtraits_new, file = "data/fishtraits_new.Rda")
+
+
+# the fishcodes in both the LTRM data and fish traits
+inters3 <- intersect(unique(funcdiv.all[,"Common.Name"]), fishtraits_new[,"Common.Name"])
+
+
+dim(filter(funcdiv.all, Common.Name %in% setdiff(funcdiv.all[,"Common.Name"], fishtraits_new[,"Common.Name"])))
+## would lose out on [1] 23640 rows out of 1543161
