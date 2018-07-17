@@ -1,5 +1,5 @@
 source("libraries.R")
-load("data/funcdiv3.Rda")
+load("data/funcdiv8.Rda")
 
 
 #######################################################
@@ -8,7 +8,7 @@ load("data/funcdiv3.Rda")
 ## create a dataframe specifying the number of fish per species per barcode
 ##     barcode Fishcode Num_Fish_per_Species
 ##    -1201327   RVRH           6
-xxx <- funcdiv3 %>% group_by(barcode) %>% count(Fishcode)
+xxx <- funcdiv8 %>% group_by(barcode) %>% count(Fishcode)
 colnames(xxx)[3] <- "Num_Fish_per_Species"
 
 
@@ -30,7 +30,7 @@ colnames(zzz)[2] <- "Num_Fish"
 ## T TESTS
 
 ## create a richness dataframe to do a t test on, combinging snag and yyy
-dt.richness.t <- left_join(yyy, select(funcdiv3, c(barcode, snag)), by = "barcode") %>% distinct
+dt.richness.t <- left_join(yyy, select(funcdiv8, c(barcode, snag)), by = "barcode") %>% distinct
 
 
 ## there is a signigficant diff in richness between sites with and without CWD
@@ -38,7 +38,7 @@ with(dt.richness.t, t.test(Num_Species~snag, alternative = "less"))
 
 
 ## create an abundance dataframe to do a t test on, combining snag and zzz
-dt.abund.t <- left_join(zzz, select(funcdiv3, c(barcode, snag)), by = "barcode") %>% distinct
+dt.abund.t <- left_join(zzz, select(funcdiv8, c(barcode, snag)), by = "barcode") %>% distinct
 
 
 ## there is a signigficant diff in abundance between sites with and without CWD
