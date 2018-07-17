@@ -25,4 +25,7 @@ library(rpart)
 library(rpart.plot)
 library(stringr)
 library(xtable)
+library(randomForest)
+library(MASS)
+library(ggfortify)
 
