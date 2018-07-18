@@ -192,47 +192,6 @@ intrain <- sample(1:nrow(sites), nrow_Train, replace = F)
 train <- sites[intrain,]
 test <- sites[-intrain,]
 
-#====================
-# LDA
-#====================
-lda.fit <- lda(snag~., data = train)
-#this throws an error: variable 39 appears to be constant within groups. (but there is no variable 39?)
-  #now it works. seems to have been an error caused by splitting the data, because it went away when I re-split the data. This is concerning. 
-
-#====================
-# logistic regression
-#====================
-glm.fit <- glm(snag~., data = train, family = binomial)
-#predict on the training data
-glm.pred <- as.numeric(predict(glm.fit, newdata = train)>0)
-table(glm.pred, train$snag)
-(error_rate <- mean(glm.pred!=train$snag, na.rm = T))
-
-# predict on the test data
-glm.pred <- as.numeric(predict(glm.fit, newdata = test)>0)
-table(glm.pred, test$snag)
-(error_rate <- mean(glm.pred!=test$snag, na.rm = T))
-
-# variable importance
-summary(glm.fit)
-posterior <- 1/(1+exp(-predict(glm.fit, newdata = train)))
-#====================
-# a classification tree (rpart):
-#====================
-cart.fit <- rpart(snag~., data = train, method ="class")
-plotcp(cart.fit)
-#rpart.plot(cart.fit, type = 5)
-
-#predict on the training data
-cart.pred <- predict(cart.fit, newdata = train, type = "class")
-table(cart.pred, train$snag)
-(error_rate <- mean(cart.pred!=train$snag, na.rm = T))
-
-#predict on the test data
-cart.pred <- predict(cart.fit, newdata = test, type = "class")
-table(cart.pred, test$snag)
-(error_rate <- mean(cart.pred!=test$snag, na.rm = T))
-
 #=====================
 # random forests
 #=====================
@@ -246,7 +205,11 @@ names(test)[1] <- "snag"
 locate.nas(train)
 locate.nas(test)
 
-rf.fit <- randomForest(snag~., data = train)
+# Make a tree
+rf.fit <- randomForest(snag~.,
+                       data = train,
+                       cutoff = c(0.43, 0.57),
+                       importance = T)
 # predict on the training data
 rf.pred <- predict(rf.fit, newdata = train, type = "class")
 table(rf.pred, train$snag)
@@ -259,33 +222,25 @@ table(rf.pred, test$snag)
 
 # out-of bag error rate
 rf.fit
-plot(rf.fit)
-legend("topright", colnames(rf.fit$err.rate),
-       col=1:4,
-       cex=0.8,
-       fill=1:4)
-  #with ggplot
+  #Error rate plot over number of trees
   err.rate <- rf.fit$err.rate %>% as.data.frame()
   err.rate$ntrees <- 1:nrow(err.rate)
   err.rate <- melt(err.rate, id.vars = "ntrees")
   names(err.rate)[names(err.rate) == "variable"] <- "type"
-#make the plot
-err.rate %>% ggplot(aes(x = ntrees, 
-                        y = value, 
-                        color = type))+
-  geom_line()+
-  scale_color_manual(name = "Type", values = c("blue", "black", "red"))+
-  ylab("Error Rate")+
-  xlab("Number of Trees in Forest")+
-  ggtitle("Error Rates for Random Forest Classification")+
-  theme_bw()
+      #make the plot
+      err.rate %>% ggplot(aes(x = ntrees, 
+                              y = value, 
+                              color = type))+
+        geom_line()+
+        scale_color_manual(name = "Type", values = c("blue", "black", "red"))+
+        ylab("Error Rate")+
+        xlab("Number of Trees in Forest")+
+        ggtitle("Error Rates for Random Forest Classification")+
+        theme_bw()
+      
+  #these error rates are quite different, and it makes us wonder if we should balance the data. 
 
 # variable importance
-rf.fit <- randomForest(snag~., 
-                       data = train, 
-                       na.action = na.roughfix, 
-                       importance = TRUE)
-(importance <- importance(rf.fit))
 varImpPlot(rf.fit)
 # explanation of variable importance plots
 #https://www.quora.com/How-do-you-explain-%E2%80%98mean-decrease-accuracy%E2%80%99-and-%E2%80%98mean-decrease-gini%E2%80%99-in-layman%E2%80%99s-terms
@@ -305,37 +260,35 @@ hist(rf.fit$oob.times)#how many times was each point allowed to be out of the ba
 
 
 #===========================
-# random forest with data by polygon
+# random forest with data by polygon (presence/absence of snag)
 #===========================
 load("data/poly.Rda")
-source("rfPerformanceStats.R")
-# impute NA values using the randomForest impute function
+source("libraries.R")
+source("ownfunctions.R")
 locate.nas(poly)
-poly_imp <- rfImpute(x = poly[,4:ncol(poly)], y = poly$propsnag)
-names(poly_imp)[1] <- "propsnag"
-poly_imp <- cbind(poly[,c("uniq_id", "AQUA_CODE")], poly_imp) #add back the categoricals
-locate.nas(poly_imp)
 
-# split propsnag into groups by probability: >0.50, <0.50, and = 0.50
-poly_imp$class <- NULL
-poly_imp$class[poly_imp$propsnag < 0.50] <- "< 0.5"
-poly_imp$class[poly_imp$propsnag > 0.50] <- "> 0.5"
-poly_imp$class[poly_imp$propsnag == 0.50] <- "= 0.5"
+
+#impute NA's
+poly <- cbind(poly[,1:3], #include the first 3 columns
+              rfImpute(x = poly[,4:ncol(poly)], #exclude the first 3 columns from NA imputation
+                       y = poly$propsnag) #specify the response column
+)
+poly[,"poly$propsnag"] <- NULL #remove response column, since we bound in the original one
 
 # split propsnag into snag presence/absence
-poly_imp$pa <- NULL
-poly_imp$pa[poly_imp$propsnag == 0] <- "absence"
-poly_imp$pa[poly_imp$propsnag > 0] <- "presence"
-poly_imp$pa <- as.factor(poly_imp$pa)
+poly$pa <- NULL
+poly$pa[poly$propsnag == 0] <- "absence"
+poly$pa[poly$propsnag > 0] <- "presence"
+poly$pa <- as.factor(poly$pa)
   # now we have very unbalanced classes.
-poly_imp <- poly_imp %>% dplyr::select(-c("propsnag", "class", "uniq_id"))
+poly <- poly %>% dplyr::select(-c("propsnag", "uniq_id", "n"))
 
 # separate into training and test data, taking 1/3 of the data to be test data (as per the powerpoint slides and the paper)
 # We're going to deal with data imbalance using the BRF (balanced random forest) technique, also known as downsampling. See http://appliedpredictivemodeling.com/blog/2013/12/8/28rmc2lv96h8fw8700zm4nl50busep and http://statistics.berkeley.edu/sites/default/files/tech-reports/666.pdf for guidelines on this.  
-nrow_Train <- 2*round(nrow(poly_imp)/3)
-intrain <- sample(1:nrow(poly_imp), nrow_Train, replace = F)
-train <- poly_imp[intrain,]
-test <- poly_imp[-intrain,]
+nrow_Train <- 2*round(nrow(poly)/3)
+intrain <- sample(1:nrow(poly), nrow_Train, replace = F)
+train <- poly[intrain,]
+test <- poly[-intrain,]
 
 # how many samples are in the minority class?
 nmin <- nrow(train[train$pa == "absence",])
@@ -351,11 +304,7 @@ tree_balanced <- randomForest(pa ~.,
                        sampsize = nmax,
                        ntree = 1000,
                        importance = TRUE,
-                       cutoff = c(.15, .85))
-# predict on the training data
-bal.pred <- predict(tree_balanced, newdata = train, type = "class")
-table(bal.pred, train$pa)
-(error_rate <- mean(bal.pred!=train$pa, na.rm = T))
+                       cutoff = c(.3, .7))
 
 # predict on the test data
 bal.pred <- predict(tree_balanced, newdata = test, type = "class")
@@ -378,25 +327,18 @@ err.rate %>% ggplot(aes(x = ntrees,
   xlab("Number of Trees in Forest")+
   ggtitle("Error Rates for Random Forest Classification (4)")+
   theme_bw()
-  
-  #our error rate for the minority class is still astronomically high: over 80% error, compared to less than 10% error for the majority class. 
-balanced_stats <- rfPerformanceStats(tree = tree_balanced, newdata = test, responsevar = "pa", beta = 0.5)
+
 
 # Make an unbalanced tree for comparison
 tree_ub <- randomForest(pa ~., 
                         data = train,
                         ntree = 1000,
                         importance = TRUE)
-# predict on the training data
-bal.pred <- predict(tree_ub, newdata = train, type = "class")
-table(bal.pred, train$pa)
-(error_rate <- mean(bal.pred!=train$pa, na.rm = T))
-# error rate is 0. Are we just waaaayyy overfitting the data?
-
 # predict on the test data
 bal.pred <- predict(tree_ub, newdata = test, type = "class")
 table(bal.pred, test$pa)
 (error_rate <- mean(bal.pred!=test$pa, na.rm = T))
+
 # plot the error rate over number of trees
 #with ggplot
 err.rate <- tree_ub$err.rate %>% as.data.frame()
@@ -413,36 +355,33 @@ err.rate %>% ggplot(aes(x = ntrees,
   xlab("Number of Trees in Forest")+
   ggtitle("Error Rates for Random Forest Classification")+
   theme_bw()
-ub_stats <- rfPerformanceStats(tree = tree_ub, newdata = test, responsevar = "pa", beta = 0.5)
 
 #===========================
-# Random forest *regression* tree to predict propsnag
+# Random forest *regression* tree to predict `propsnag`, not binary categories
 #===========================
 load("data/poly.Rda")
 source("libraries.R")
-source("rfPerformanceStats.R")
-# impute NA values using the randomForest impute function
+source("ownfunctions.R")
 locate.nas(poly)
-poly_imp <- rfImpute(x = poly[,4:ncol(poly)], y = poly$propsnag)
-names(poly_imp)[1] <- "propsnag"
-poly_imp <- cbind(poly[,c("uniq_id", "AQUA_CODE")], poly_imp) #add back the categoricals
-locate.nas(poly_imp)
-poly_imp <- poly_imp %>% dplyr::select(-uniq_id)
+poly <- na.omit(poly) #for now, we'll just drop the rows that have NA's in them. But I don't understand why the depth information is missing, and this may significantly affect the models. Can we fill in the missing data?
+
+poly <- poly %>% dplyr::select(-c(uniq_id, n))
 
 # separate into training and test data, taking 1/3 of the data to be test data (as per the powerpoint slides and the paper)
 # We're going to deal with data imbalance using the BRF (balanced random forest) technique, also known as downsampling. See http://appliedpredictivemodeling.com/blog/2013/12/8/28rmc2lv96h8fw8700zm4nl50busep and http://statistics.berkeley.edu/sites/default/files/tech-reports/666.pdf for guidelines on this.  
-nrow_Train <- 2*round(nrow(poly_imp)/3)
-intrain <- sample(1:nrow(poly_imp), nrow_Train, replace = F)
-train <- poly_imp[intrain,]
-test <- poly_imp[-intrain,]
+nrow_Train <- 2*round(nrow(poly)/3)
+intrain <- sample(1:nrow(poly), nrow_Train, replace = F)
+train <- poly[intrain, ]
+test <- poly[-intrain,]
 
 # Make a regression tree
 tree_reg <- randomForest(propsnag ~., 
                          data = train, 
-                         ntree = 1000, 
+                         ntree = 10000, 
                          importance = TRUE)
 (importance <- importance(tree_reg))
 varImpPlot(tree_reg)
+  # if we run this a couple times, we see that it's not completely robust, but the same variables are jumping to the top every time. 
 # predict on the training data
 pred <- predict(tree_reg, newdata = train, type = "response")
 train$pred <- pred
@@ -465,21 +404,21 @@ ggplot(data = df, aes(x = ntree, y = OOB_MSE))+
 #==============================
 # How transferrable is this between pools?
 #==============================
-poly_4 <- poly_imp[poly_imp$pool == 4,]
+poly_4 <- poly[poly$pool == 4,]
   #separate into training and test data
   nrow_Train4 <- 2*round(nrow(poly_4)/3)
   intrain4 <- sample(1:nrow(poly_4), nrow_Train4, replace = F)
   train4 <- poly_4[intrain4,]
   test4 <- poly_4[-intrain4,]
 
-poly_8 <- poly_imp[poly_imp$pool == 8,]
+poly_8 <- poly[poly$pool == 8,]
   #separate into training and test data
   nrow_Train8 <- 2*round(nrow(poly_8)/3)
   intrain8 <- sample(1:nrow(poly_8), nrow_Train8, replace = F)
   train8 <- poly_8[intrain8,]
   test8 <- poly_8[-intrain8,]
   
-poly_13 <- poly_imp[poly_imp$pool == 13,]
+poly_13 <- poly[poly$pool == 13,]
   #separate into training and test data
   nrow_Train13 <- 2*round(nrow(poly_13)/3)
   intrain13 <- sample(1:nrow(poly_13), nrow_Train13, replace = F)
@@ -487,7 +426,10 @@ poly_13 <- poly_imp[poly_imp$pool == 13,]
   test13 <- poly_13[-intrain13,]
 
 # Make a regression tree for pool 8
-tree8 <- randomForest(propsnag ~., data = train8, ntree = 1000, importance = T)
+tree8 <- randomForest(propsnag ~., 
+                      data = train8, 
+                      ntree = 10000, 
+                      importance = T)
 (importance <- importance(tree8))
 varImpPlot(tree8)
 
@@ -498,7 +440,10 @@ pred8_13 <- predict(tree8, newdata = test13, type = "response")
 (MSE1 <- mean((pred8_13 - test13$propsnag)^2))
 
 # Make a regression tree for pool 4
-tree4 <- randomForest(propsnag ~., data = train4, ntree = 1000, importance = T)
+tree4 <- randomForest(propsnag ~., 
+                      data = train4, 
+                      ntree = 10000, 
+                      importance = T)
 (importance <- importance(tree4))
 varImpPlot(tree4)
 
@@ -509,7 +454,10 @@ pred4_13 <- predict(tree4, newdata = test13, type = "response")
 (MSE1 <- mean((pred4_13 - test13$propsnag)^2))
 
 # Make a regression tree for pool 13
-tree13 <- randomForest(propsnag ~., data = train13, ntree = 1000, importance = T)
+tree13 <- randomForest(propsnag ~., 
+                       data = train13, 
+                       ntree = 10000, 
+                       importance = T)
 (importance <- importance(tree13))
 varImpPlot(tree13)
 
