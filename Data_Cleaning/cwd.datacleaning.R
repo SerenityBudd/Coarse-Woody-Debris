@@ -403,5 +403,59 @@ save(cat.preds, file = "data/sites_catpreds.Rda")
 save(info.vars, file = "data/sites_infovars.Rda")
 save(all_reduced, file = "data/all_reduced.Rda")
 
+#===================================================
+# Polygon-level data
+#===================================================
+load("data/all_reduced.Rda")
+source("libraries.R")
+source("ownfunctions.R")
+source("color_schemes.R")
+# Summarize by polygon
+# There are multiple strata per polygon so we'll exclude "stratum" as a column for that
+strata <- table(all_reduced$uniq_id, all_reduced$stratum) %>% prop.table(margin = 1) %>% as.data.frame.matrix()
+strata$uniq_id <- row.names(strata)
+row.names(strata) <- NULL
+
+strata[, "max.prop"] <- apply(strata[, 1:11], 1, max)
+nrow(strata[strata$max.prop < 0.75,])/nrow(strata)
+#continue to exclude stratum for now, but we need to run this by USGS people.
+
+# Same thing with NEAR_TERR_CLASS_31.p and NEAR_FOREST_CLASS_31.p and substrt
+
+poly <- all_reduced %>% group_by(uniq_id) %>% 
+  filter(!is.na(snag)) %>%
+  summarize(propsnag = sum(snag)/n(),
+            n = n(),
+            AQUA_CODE = firstel(AQUA_CODE),
+            pool = firstel(pool),
+            Area = firstel(Area),
+            Perimeter = firstel(Perimeter),
+            max_depth = firstel(max_depth),
+            avg_depth = firstel(avg_depth),
+            tot_vol = firstel(tot_vol),
+            shoreline_density_index = firstel(shoreline_density_index),
+            pct_aqveg = firstel(pct_aqveg),
+            pct_terr = firstel(pct_terr),
+            pct_prm_wetf = firstel(pct_prm_wetf),
+            pct_terr_shore_wetf = firstel(pct_terr_shore_wetf),
+            medianNEAR_TERR_DIST.p = median(NEAR_TERR_DIST.p, na.rm = T),
+            medianNEAR_FOREST_DIST.p = median(NEAR_FOREST_DIST.p, na.rm = T),
+            #median_depth.p = median(depth.p, na.rm = T), #it's kind of redundant to include median point depth when we already have several measures of depth on the polygon level.
+            median_current.p = median(current.p, na.rm = T),
+            propwingdyke = sum(as.numeric(as.character(wingdyke.p)))/n(),
+            propriprap = sum(as.numeric(as.character(riprap.p)))/n(),
+            proptrib = sum(as.numeric(as.character(trib.p)))/n(),
+            pct_area_le100 = firstel(pct_area_le100)) %>%
+  as.data.frame()
+head(poly)
+poly$propwingdyke <- ifelse(poly$propwingdyke > 0, "1", "0")
+poly$propriprap <- ifelse(poly$propriprap > 0, "1", "0")
+poly$proptrib <- ifelse(poly$proptrib > 0, "1", "0")
+poly <- poly %>% rename(wingdyke = propwingdyke, 
+                        riprap = propriprap,
+                        trib = proptrib) %>% 
+  mutate_if(is.character, as.factor)
+save(poly, file = "data/poly.Rda")
+
 
 
