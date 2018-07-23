@@ -131,7 +131,7 @@ with(tbl, t.test(current ~ stratum_name, alternative = "less"))
     xlab("Stratum") +
     ylab("Current (m/s)") +
     ggtitle(paste("Current by Stratum at Pools 8 & 13")))
-ggsave(filename = "plots/boxplot.current.png", plot = boxplot.current, dpi = 500)
+#ggsave(filename = "plots/boxplot.current.png", plot = boxplot.current, dpi = 500)
 
 
 (plot.current <- ggplot(data = tbl, aes(current)) + 
@@ -142,4 +142,4 @@ ggsave(filename = "plots/boxplot.current.png", plot = boxplot.current, dpi = 500
   xlab("Current (m/s)") +
   ylab("Density") +
   ggtitle(paste("Density Plot of Current at Pools 8 & 13")))
-ggsave(filename = "plots/plot.current.png", plot = plot.current, dpi = 500)
+#ggsave(filename = "plots/plot.current.png", plot = plot.current, dpi = 500)
