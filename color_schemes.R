@@ -48,3 +48,8 @@ names(strataColors_codes) <- strata_codes
 # More distinct colors for landcover types
 lcColors_lumped <- c("cyan2", "maroon2", "forestgreen", "lawngreen", "navajowhite2")
 names(lcColors_lumped) <- c("Aquatic veg", "Developed", "Forest", "Grassland or meadow", "Sand")
+
+
+aquahab_codes_2010 <- c("CFL", "SC", "SCB", "TSC", "USCB")
+AQUA_2010_colors <- c("chartreuse3", "darkorchid3", "orange", "darkturquoise", "red")
+names(AQUA_2010_colors) <- aquahab_codes_2010

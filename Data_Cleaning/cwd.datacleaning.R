@@ -211,18 +211,22 @@ table(droplevels(sites_aa$NEAR_TERR_CLASS_31_N)) #looks good, no water
 table(droplevels(sites_aa_5m$NEAR_TERR_CLASS_31_N)) #likewise. 
 
 # Append point-level data to each data frame
-tojoin_0 <- fish_data_EF %>% select(year, sitetype, depth, current, gear, stageht, substrt, wingdyke, riprap, trib, barcode) %>%
+tojoin_0 <- fish_data_EF %>% dplyr::select(year, sitetype, depth, current, gear, stageht, substrt, wingdyke, riprap, trib, barcode) %>%
   unique() %>% filter(barcode %in% sites_aa$barcode)
-tojoin_5 <- fish_data_EF %>% select(year, sitetype, depth, current, gear, stageht, substrt, wingdyke, riprap, trib, barcode) %>%
+tojoin_5 <- fish_data_EF %>% dplyr::select(year, sitetype, depth, current, gear, stageht, substrt, wingdyke, riprap, trib, barcode) %>%
   unique() %>% filter(barcode %in% sites_aa_5m$barcode)
 sites_aa <- left_join(sites_aa, tojoin_0, by = "barcode")
 sites_aa_5m <- left_join(sites_aa_5m, tojoin_5, by = "barcode")
 
-pointcols <- c("year", "depth", "current", "gear", "stageht", "substrt", "wingdyke", "riprap", "trib", "NEAR_TERR_DIST", "NEAR_TERR_FID", "NEAR_TERR_CLASS_31", "NEAR_TERR_CLASS_15", "NEAR_TERR_CLASS_7", "NEAR_TERR_CLASS_31_N", "NEAR_TERR_CLASS_15_N", "NEAR_TERR_CLASS_7_N", "NEAR_TERR_HEIGHT_N", "NEAR_FOREST_DIST", "NEAR_FOREST_FID", "NEAR_FOREST_CLASS_31", "NEAR_FOREST_CLASS_15", "NEAR_FOREST_CLASS_7", "NEAR_FOREST_CLASS_31_N", "NEAR_FOREST_CLASS_15_N", "NEAR_FOREST_CLASS_7_N", "NEAR_FOREST_HEIGHT_N")
+pointcols <- c("year", "sitetype","depth", "current", "gear", "stageht", "substrt", "wingdyke", "riprap", "trib", "NEAR_TERR_DIST", "NEAR_TERR_FID", "NEAR_TERR_CLASS_31", "NEAR_TERR_CLASS_15", "NEAR_TERR_CLASS_7", "NEAR_TERR_CLASS_31_N", "NEAR_TERR_CLASS_15_N", "NEAR_TERR_CLASS_7_N", "NEAR_TERR_HEIGHT_N", "NEAR_FOREST_DIST", "NEAR_FOREST_FID", "NEAR_FOREST_CLASS_31", "NEAR_FOREST_CLASS_15", "NEAR_FOREST_CLASS_7", "NEAR_FOREST_CLASS_31_N", "NEAR_FOREST_CLASS_15_N", "NEAR_FOREST_CLASS_7_N", "NEAR_FOREST_HEIGHT_N")
 for(i in 1:length(pointcols)){
   colnames(sites_aa)[colnames(sites_aa) == pointcols[i]] <- paste0(pointcols[i], ".p")
   colnames(sites_aa_5m)[colnames(sites_aa_5m) == pointcols[i]] <- paste0(pointcols[i], ".p")
 }
+
+# Exclude values with a sitetype of 2 (fixed sites) and exclude fyke net sites
+sites_aa <- sites_aa %>% filter(sitetype.p != 2, gear.p == "D")
+sites_aa_5m <- sites_aa_5m %>% filter(sitetype.p != 2, gear.p == "D")
 
 #make the rest of the cleaning into a function so it can be applied to sites_aa_5m as well as sites_aa. 
 furthercleaning <- function(sites_aa){
@@ -317,7 +321,7 @@ sites_aa_5m <- addpools(sites_aa_5m)
   sites_aa$riprap.p <- factor(as.character(sites_aa$riprap.p))
   sites_aa$trib.p <- factor(as.character(sites_aa$trib.p))
   sites_aa$snagyn <- factor(sites_aa$snagyn)
-  sites_aa$sitetype <- factor(as.character(sites_aa$sitetype))
+  sites_aa$sitetype.p <- factor(as.character(sites_aa$sitetype))
   
   sites_aa_5m$pool <- factor(as.character(sites_aa_5m$pool))
   sites_aa_5m$year.p <- as.numeric(sites_aa_5m$year.p)
@@ -326,7 +330,7 @@ sites_aa_5m <- addpools(sites_aa_5m)
   sites_aa_5m$riprap.p <- factor(as.character(sites_aa_5m$riprap.p))
   sites_aa_5m$trib.p <- factor(as.character(sites_aa_5m$trib.p))
   sites_aa_5m$snagyn <- factor(sites_aa_5m$snagyn)
-  sites_aa$sitetype <- factor(as.character(sites_aa$sitetype))
+  sites_aa_5m$sitetype.p <- factor(as.character(sites_aa_5m$sitetype))
 
 save(sites_aa, file = "data/sites_aa.Rda")
 save(sites_aa_5m, file = "data/sites_aa_5m.Rda")
@@ -349,6 +353,109 @@ for(i in 1:length(subsets)){
   write.csv(df, file = paste("data/", names(subsets)[i], ".csv", sep = ""))
 }
 
+#############
+#############
+#############
+# Reducing the number of variables
+# Ok, let's do this systematically. 
+load("data/sites_aa_5m.Rda")
+source("ownfunctions.R")
+source("libraries.R")
+#exclude variables that we really just don't care about for analysis purposes
+names(sites_aa_5m)
+excl_1 <- c("FID", "Join_Count", "TARGET_FID", "Field1", "lcode", "sdate", "utm_e", "utm_n", "OBJECTID", "aa_num", "AQUA_DESC", "bath_pct", "area_gt50", "area_gt100", "area_gt200", "area_gt300", "min_rm", "max_rm", "len_met", "len_prm_lotic", "len_prm_lentic", "len_terr", "len_wetf", "len_wd", "scour_wd", "psco_wd", "len_revln", "area_tpi1", "pct_tpi1", "area_tpi2", "pct_tpi2", "area_tpi3", "pct_tpi3", "area_tpi4", "pct_tpi4", "year_phot", "area_le50", "area_le100", "area_le200", "area_le300", "gear.p", "sitetype.p")
+all_reduced <- sites_aa_5m %>% dplyr::select(-excl_1)
+names(all_reduced)
+# exclude sd_depth because it doesn't seem very relevant
+all_reduced <- all_reduced %>% dplyr::select(-c(sd_depth))
+names(all_reduced)
+# exclude avg_fetch, sill, num_rev, and num_wd because they aren't biologically logical
+all_reduced <- all_reduced %>% dplyr::select(-c(avg_fetch, sill, num_rev, num_wd))
+names(all_reduced)
+# Molly says to get rid of all terrestrial categories below _31, as well as the _HEIGHT category.
+all_reduced <- all_reduced %>% dplyr::select(-c(NEAR_TERR_CLASS_15.p, NEAR_TERR_CLASS_15_N.p, NEAR_TERR_CLASS_7.p, NEAR_TERR_CLASS_7_N.p, NEAR_TERR_HEIGHT_N.p, NEAR_FOREST_CLASS_15.p, NEAR_FOREST_CLASS_15_N.p, NEAR_FOREST_CLASS_7_N.p, NEAR_FOREST_CLASS_7.p, NEAR_FOREST_HEIGHT_N.p))
+names(all_reduced)
+# as per JC's recommendation and discussion with KathiJo and Molly, exclude revetment categories. Also exclude wdl_p_m2 because it has a lot of NA's and we have a binary `wingdyke` index to use instead that has far fewer NA's. 
+all_reduced <- all_reduced %>% dplyr::select(-c(pct_prm_rev, pct_terr_shore_rev, rev_p_m2, wdl_p_m2))
+names(all_reduced)
+# Exclude pct_area_le50, pct_area_le200, and pct_area_le300 because they're redundant with pct_area_100
+all_reduced <- all_reduced %>% dplyr::select(-c(pct_area_le50, pct_area_le200, pct_area_le300))
+names(all_reduced)
+# Exclude NEAR_TERR_FID.p and NEAR_FOREST_FID.p columns because we've decided we're not going to try to include two levels of random variables (as per discussion with Barb on 7/12/18)
+all_reduced <- all_reduced %>% dplyr::select(-c(NEAR_TERR_FID.p, NEAR_FOREST_FID.p))
+names(all_reduced)
+# Exclude pct_opwat because it's the inverse of pct_aqveg, and exclude pct_aq because it's the inverse of pct_terr
+all_reduced <- all_reduced %>% dplyr::select(-c(pct_opwat, pct_aq))
+names(all_reduced)
+#separate variables into quantitative predictors, categorical predictors, and other informational/index variables
+quant.preds <- all_reduced %>% dplyr::select(barcode, Area, Perimeter, max_depth, avg_depth, tot_vol, shoreline_density_index, econ, pct_prm_lotic, num_lotic_outl, pct_prm_lentic, num_lentic_outl, pct_aqveg, pct_terr, pct_prm_wetf, pct_terr_shore_wetf, sinuosity, NEAR_TERR_DIST.p, NEAR_FOREST_DIST.p, depth.p, current.p, stageht.p, pct_area_le100)
+str(quant.preds) #check that everything is numeric or integer. We're good. 
+
+cat.preds <- all_reduced %>% dplyr::select(barcode, stratum, AQUA_CODE, pool, NEAR_TERR_CLASS_31.p, NEAR_FOREST_CLASS_31.p, substrt.p, wingdyke.p, riprap.p, trib.p)
+str(cat.preds) #check that everything is a factor
+#sitetype isn't a factor. Need to go back and change that. 
+
+info.vars <- all_reduced %>% dplyr::select(barcode, snag, snagyn, uniq_id, NEAR_TERR_CLASS_31_N.p, NEAR_FOREST_CLASS_31_N.p, year.p, stratum_name)
+str(info.vars) #examine structure
+
+save(quant.preds, file = "data/sites_quantpreds.Rda")
+save(cat.preds, file = "data/sites_catpreds.Rda")
+save(info.vars, file = "data/sites_infovars.Rda")
+save(all_reduced, file = "data/all_reduced.Rda")
+
+#===================================================
+# Polygon-level data
+#===================================================
+load("data/all_reduced.Rda")
+source("libraries.R")
+source("ownfunctions.R")
+source("color_schemes.R")
+# Summarize by polygon
+# There are multiple strata per polygon so we'll exclude "stratum" as a column for that
+strata <- table(all_reduced$uniq_id, all_reduced$stratum) %>% prop.table(margin = 1) %>% as.data.frame.matrix()
+strata$uniq_id <- row.names(strata)
+row.names(strata) <- NULL
+
+strata[, "max.prop"] <- apply(strata[, 1:11], 1, max)
+nrow(strata[strata$max.prop < 0.75,])/nrow(strata)
+#continue to exclude stratum for now, but we need to run this by USGS people.
+
+# Same thing with NEAR_TERR_CLASS_31.p and NEAR_FOREST_CLASS_31.p and substrt
+
+poly <- all_reduced %>% group_by(uniq_id) %>% 
+  filter(!is.na(snag)) %>%
+  summarize(propsnag = sum(snag)/n(),
+            n = n(),
+            AQUA_CODE = firstel(AQUA_CODE),
+            pool = firstel(pool),
+            Area = firstel(Area),
+            Perimeter = firstel(Perimeter),
+            max_depth = firstel(max_depth),
+            avg_depth = firstel(avg_depth),
+            tot_vol = firstel(tot_vol),
+            shoreline_density_index = firstel(shoreline_density_index),
+            pct_aqveg = firstel(pct_aqveg),
+            pct_terr = firstel(pct_terr),
+            pct_prm_wetf = firstel(pct_prm_wetf),
+            pct_terr_shore_wetf = firstel(pct_terr_shore_wetf),
+            medianNEAR_TERR_DIST.p = median(NEAR_TERR_DIST.p, na.rm = T),
+            medianNEAR_FOREST_DIST.p = median(NEAR_FOREST_DIST.p, na.rm = T),
+            #median_depth.p = median(depth.p, na.rm = T), #it's kind of redundant to include median point depth when we already have several measures of depth on the polygon level.
+            median_current.p = median(current.p, na.rm = T),
+            propwingdyke = sum(as.numeric(as.character(wingdyke.p)))/n(),
+            propriprap = sum(as.numeric(as.character(riprap.p)))/n(),
+            proptrib = sum(as.numeric(as.character(trib.p)))/n(),
+            pct_area_le100 = firstel(pct_area_le100)) %>%
+  as.data.frame()
+head(poly)
+poly$propwingdyke <- ifelse(poly$propwingdyke > 0, "1", "0")
+poly$propriprap <- ifelse(poly$propriprap > 0, "1", "0")
+poly$proptrib <- ifelse(poly$proptrib > 0, "1", "0")
+poly <- poly %>% rename(wingdyke = propwingdyke, 
+                        riprap = propriprap,
+                        trib = proptrib) %>% 
+  mutate_if(is.character, as.factor)
+save(poly, file = "data/poly.Rda")
 
 
 
