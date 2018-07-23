@@ -9,10 +9,9 @@ fam.funcdiv <- filter(funcdiv4.8.13,
                       Family.Name %in% c("Centrarchidae")
                       ## these are the strata with enough sampling points
                       & stratum_name %in% c("Backwater, Contiguous Shoreline", "Impounded, Shoreline", "Main Channel Border, Unstructured", "Main Channel Border, Wing Dam Area", "Side Channel Border")
-                      ## when comparing MCB-U to IMP-S
-                    #  & !pool == "04"
+######################## when comparing MCB-U to IMP-S
+                      & !pool == "04"
                       ) %>%
-  #Impounded, Shoreline
   droplevels()
 
 
@@ -23,7 +22,10 @@ fam.funcdiv$Common.Name <- as.character(fam.funcdiv$Common.Name)
 tbl0 <- fam.funcdiv %>%
   ## select the relevant columns
   select(c(Common.Name, barcode, snag, 
-           stratum_name, effmin, pool, Trophic.Guild)) %>%
+           stratum_name, effmin, pool, Trophic.Guild
+############# when comparing MCB-U to IMP-S
+           , current
+         )) %>%
   droplevels()
 ## remove NAs
 tbl0 <- tbl0[complete.cases(tbl0),]
@@ -31,6 +33,7 @@ tbl0 <- tbl0[complete.cases(tbl0),]
 
 sum(is.na(tbl0))
 summary(tbl0)
+
 
 ###################################################
 ## create a community data matrix
@@ -70,27 +73,30 @@ tbl2 <- tbl0 %>%
   as.data.frame(.) 
 
 ## create a table of fish and snag
-ttt <- with(filter(tbl, stratum_name == "Main Channel Border, Unstructured"), table(Common.Name, snag))
+ttt <- with(filter(tbl0, stratum_name == "Main Channel Border, Unstructured"), table(Common.Name, snag))
 
-#with(filter(tbl, stratum_name == "Stratum"), table(snag))
+#with(filter(tbl0, stratum_name == "Main Channel Border, Unstructured"), table(snag))
 
 ## chisq.test(x=c(No snag, Yes snag),p=c(.k,.j)), goodness of fit
 ## for strata == "Backwater, Contiguous Shoreline", p = c(.30,.70)
-## for strata == "Impounded, Shoreline", p = c(.46,.54)
-## for strata == "Main Channel Border, Unstructured", p = c(.31,.69) -- all pools
-## for strata == "Main Channel Border, Unstructured", p = c(.37,.63) -- pools 8 & 13
+## for strata == "Impounded, Shoreline", p = c(.46,.54) 
+    ## -- pools 8 & 13 
+## for strata == "Main Channel Border, Unstructured", p = c(.37,.63) 
+    ## -- pools 8 & 13
+## for strata == "Main Channel Border, Unstructured", p = c(.31,.69) 
+    ## -- all pools
 ## for strata == "Main Channel Border, Wing Dam Area", p = c(.87,.13)
 ## for strata == "Side Channel Border", p = c(.23,.77)
 
 for (i in 1:dim(ttt)[1]) {
   ## do the chi squared test on each species
-  y <- chisq.test(x=c(ttt[i,1], ttt[i,2]),p=c(.37,.63))
+  y <- chisq.test(x=c(ttt[i,1], ttt[i,2]),p = c(.37,.63))
   ## make a column for the p value
   tbl2$p.value[i] <- round(y$p.value,4)
   ## make a table of logicals about significance 
   tbl2$significant[i] <- tbl2$p.value[i] < .05
   ## make a table of the results, which sites the fish prefer 
-  tbl2$preference[i] <- ifelse(tbl2$significant[i] == FALSE, "none", 
+  tbl2$preference[i] <- ifelse(tbl2$significant[i] == FALSE, "NONE", 
                                ifelse(ttt[i,1] < ttt[i,2], "snag", "no snag"))
 }
 
@@ -109,4 +115,31 @@ tbl3
 xtable(tbl3)
 
 ###################################################
+## FOR COMPARING MCB-U  & IMP-S ONLY
+###################################################
+tbl <- tbl0 %>% filter(stratum_name %in% c(
+  "Main Channel Border, Unstructured", "Impounded, Shoreline"
+)) %>% droplevels()
+summary(tbl)
+###################################################
+with(tbl, t.test(current ~ stratum_name, alternative = "less"))
 
+(boxplot.current <- ggplot(data = tbl, aes(stratum_name, current)) + 
+    geom_boxplot(fill = c("mediumpurple1","darkolivegreen3")) +
+    theme_bw() +
+    theme(text = element_text(size = 20)) +
+    xlab("Stratum") +
+    ylab("Current (m/s)") +
+    ggtitle(paste("Current by Stratum at Pools 8 & 13")))
+ggsave(filename = "plots/boxplot.current.png", plot = boxplot.current, dpi = 500)
+
+
+(plot.current <- ggplot(data = tbl, aes(current)) + 
+  geom_density(aes(fill = stratum_name), alpha = .3) +
+  theme_bw() +
+  theme(text = element_text(size = 20)) +
+  scale_fill_manual(values = c("blue", "red"), name = "Stratum") + 
+  xlab("Current (m/s)") +
+  ylab("Density") +
+  ggtitle(paste("Density Plot of Current at Pools 8 & 13")))
+ggsave(filename = "plots/plot.current.png", plot = plot.current, dpi = 500)
