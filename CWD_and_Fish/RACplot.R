@@ -2,60 +2,6 @@ source("libraries.R")
 load("data/funcdiv4.8.13.Rda")
 
 ################################################
-## Shannon Weaver Diversity
-
-shannon_div <- function(Pool) {
-  ## filter the dataframe by pool
-  funcy <- funcdiv4.8.13 %>% 
-    filter(pool %in% Pool) 
-  ## create a dataframe specifying the number of fish per species per barcode
-  xxx <- funcy %>%
-    group_by(barcode) %>% count(Fishcode)
-  colnames(xxx)[3] <- "Num_Fish_per_Species"
-  
-  ## spread the dataframe so each col is a fishcode
-  aaa <- spread(data = xxx, value = Num_Fish_per_Species, Fishcode) 
-  ## replace the NAs with zero
-  aaa[is.na(aaa)] <- 0
-  ## make the tibble a dataframe
-  aaa <- data.frame(aaa)
-  
-  ## make a dataframe that includes barcode/snag
-  dt.plot <- left_join(aaa, select(funcy, c(barcode, snag)), by = "barcode") %>% distinct 
-  dt.plot <- dt.plot[complete.cases(dt.plot),]
-  
-  ## make a dataframe to do analysis on, leaves out barcodes and snag out
-  bbb <- select(dt.plot, -c(barcode, snag))
-  
-  ## use 'vegan' to calculate the shannon diversity index for each barcode
-  div_shannon <- diversity(x = bbb, index = "shannon", base = 2)
-  
-  ## create a column in the dataframe for the shannon div index
-  dt.plot$div_shan <- div_shannon
-  
-  ## run a t-test on shannon div and snag
-  print(with(dt.plot, t.test(div_shan~snag, alternative = "less")))
-  
-  ## plot the densities of the vectors above
-  ggplot(data = dt.plot, aes(div_shan)) + 
-    geom_density(aes(fill = snag), alpha = .3) +
-    theme_bw() +
-    theme(text = element_text(size = 20)) +
-    scale_fill_manual(values = c("blue", "red"), name = "Snag") + 
-    geom_vline(xintercept = c(1.5, 3.5), colour = "black") + 
-    xlab("Shannon–Weaver Diversity Index") +
-    ylab("Density") +
-    ggtitle(paste("Density Plot of Shannon-Weaver Index at Pool", Pool, "Sites"))
-}
-
-
-shannon_div(Pool = "08")
-shannon_div(Pool = "04")
-shannon_div(Pool = "13")
-shannon_div(Pool = c("04","08","13"))
-
-
-################################################
 ## Rank abundance curve - trophic guilds
 
 RACplot <- function(Pool, Snag, Stratum) {
@@ -160,6 +106,64 @@ RACplotNative("08", "No", "Main Channel Border, Wing Dam Area")
 RACplotNative("08", "Yes", "Side Channel Border")
 RACplotNative("08", "No", "Side Channel Border")
 
+################################################
+RACplotTrophic <- function(Pool) {
+  
+  funcy <- 
+    funcdiv4.8.13 %>%
+    filter(pool == Pool
+           & snag == "Yes"
+           & !is.na(Trophic.Guild))
+  
+  xplot <- 
+    funcy %>% group_by(snag) %>% 
+    count(Trophic.Guild) %>%
+    distinct()
+  
+  funcy1 <- 
+    funcdiv4.8.13 %>%
+    filter(pool == Pool
+           & snag == "No"
+           & !is.na(Trophic.Guild))
+  
+  xplot1 <- 
+    funcy1 %>% group_by(snag) %>% 
+    count(Trophic.Guild) %>%
+    distinct()
+  
+  xplot2 <- bind_rows(xplot, xplot1)
+  
+  
+  ggplot(data = xplot2, aes(x = reorder(Trophic.Guild, -n), n, group = "group")) +
+    geom_point(aes(shape = snag, fill = Trophic.Guild), size = 5) +
+    scale_shape_manual(values = c(21, 24)) +
+    scale_fill_manual(values=c("#f1a340", "#B640FF","#a6cee3", "#e41a1c", "#ffffb3", "#4daf4a"),
+                      name="Trophic Guild",
+                      breaks=c("Herbivore","Omnivore","General Invertivore","Benthic Invertivore" ,"Piscivore","Planktivore"),
+                      labels=c("Herbivore","Omnivore","General Invertivore","Benthic Invertivore" ,"Piscivore","Planktivore")) +
+    guides(fill = guide_legend(override.aes=list(shape = 21))) +
+    scale_y_continuous(trans='log10', breaks= c(10^c(0:5))) +
+    theme_bw() +
+    theme(axis.text.x=element_blank()) +
+    xlab("") +
+    ylab("Abundance (Log10 Scale)") +
+    ggtitle(paste("Species Abundance for Pool", Pool, "Sites"))
+}
+
+
+RACplotTrophic("08")
+RACplotTrophic("04")
+RACplotTrophic("13")
+
+
+RACplotTrophic("08", "Yes", "Impounded, Shoreline")
+RACplotTrophic("08", "No", "Impounded, Shoreline")
+RACplotTrophic("08", "Yes", "Main Channel Border, Unstructured")
+RACplotTrophic("08", "No", "Main Channel Border, Unstructured")
+RACplotTrophic("08", "Yes", "Main Channel Border, Wing Dam Area")
+RACplotTrophic("08", "No", "Main Channel Border, Wing Dam Area")
+RACplotTrophic("08", "Yes", "Side Channel Border")
+RACplotTrophic("08", "No", "Side Channel Border")
 
 ################################################
 ## Abundance plot 
@@ -196,15 +200,5 @@ ABUNDplot <- function(Pool, Snag, Stratum) {
 }
 
 ABUNDplot("08", "No", "Backwater, Contiguous Shoreline")
-
-
-################################################
-
-geomSeries <- function(base, max) {
-  base^(0:floor(log(max, base)))
-}
-
-geomSeries(base=2, max=2000)
-################################################
 
 
