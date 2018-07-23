@@ -31,6 +31,9 @@ colnames(zzz.all)[2] <- "Num_Fish"
 #######################################################
 ## T TESTS
 
+##########################
+## Richness
+
 ## create a richness dataframe to do a t test on, combinging snag and yyy.all
 dt.richness.t.all <- left_join(yyy.all, select(funcdiv4.8.13, c(barcode, snag)), by = "barcode") %>% distinct
 
@@ -39,6 +42,23 @@ dt.richness.t.all <- left_join(yyy.all, select(funcdiv4.8.13, c(barcode, snag)),
 with(dt.richness.t.all, t.test(Num_Species~snag, alternative = "less")) 
 
 
+## boxplot for species richness ~ snag
+with(dt.richness.t.all, boxplot(Num_Species~snag))
+
+## density plots for species richness ~ snag 
+ggplot(data = dt.richness.t.all, aes(Num_Species)) + 
+  geom_density(aes(fill = snag), alpha = .3) +
+  theme_bw() +
+  theme(text = element_text(size = 20)) +
+  scale_fill_manual(values = c("blue", "red"), name = "Snag") + 
+  xlab("Species Richness") +
+  ylab("Density") +
+  ggtitle(paste("Density Plot of Species Richness at all Pools"))
+
+
+##########################
+## Abundance
+
 ## create an abundance dataframe to do a t test on, combining snag and zzz.all
 dt.abund.t.all <- left_join(zzz.all, select(funcdiv4.8.13, c(barcode, snag)), by = "barcode") %>% distinct
 
@@ -46,3 +66,16 @@ dt.abund.t.all <- left_join(zzz.all, select(funcdiv4.8.13, c(barcode, snag)), by
 ## there is a signigficant diff in abundance between sites with and without CWD
 with(dt.abund.t.all, t.test(Num_Fish~snag, alternative = "less"))
 
+
+## boxplots for species abundance ~ snag
+with(dt.abund.t.all, boxplot(Num_Fish~snag, ylim = c(0,300)))
+
+## density plots for species abundance ~ snag
+ggplot(data = dt.abund.t.all, aes(Num_Fish)) + 
+  geom_density(aes(fill = snag), alpha = .3) +
+  theme_bw() +
+  theme(text = element_text(size = 20)) +
+  scale_fill_manual(values = c("blue", "red"), name = "Snag") + 
+  xlab("Species Abundance") +
+  ylab("Density") +
+  ggtitle(paste("Density Plot of Species Abundance at all Pools"))
