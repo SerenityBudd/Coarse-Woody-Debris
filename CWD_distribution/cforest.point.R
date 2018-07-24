@@ -51,21 +51,27 @@ importances_all <- data.frame(
 ers <- rep(NA, 5)
 
 for(i in 1:5){
+  print(paste("BEGINNING RUN", i))
   train <- all %>% dplyr::filter(grp != i) %>% dplyr::select(-grp) # train on 4/5 of the data, remove `grp` because it's not a predictor variable
   test <- all %>% dplyr::filter(grp == i) %>% dplyr::select(-grp) # test on the remaining 1/5 of the data. Remove `grp``
   # build a tree
+  print("growing forest")
   tree <- partykit::cforest(snag~., 
                             data = train,
                             strata = snag,
                             ntree = 5, trace = T,
                             perturb = list(replace = F,
                                            fraction = 0.632)) # weights?
+  print("making predictions")
   pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights?
+  print("constructing confusion matrix")
   cm <- table(true = test$snag, pred = predict(tree, newdata = test)) #confusion matrix
+  print("calculating error rate")
   e <- (cm[1,2] + cm[2,1])/sum(cm) # calculate the error rate
   ers[i] <- e # assign to the i'th element of ers vector
   
   # calculate variable importances
+  print("calculating variable importances")
   vi.part <- varimp(tree)
   importances_all[,i] <- vi.part
   print(paste("Run", i, "complete"))
@@ -99,22 +105,28 @@ importances_pool4 <- data.frame(
 ers <- rep(NA, 5)
 
 for(i in 1:5){
+  print(paste("BEGINNING RUN", i))
   train <- points_4 %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable. Also remove `pool` because now we're only in one pool. 
   test <- points_4 %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp` and `pool`.
   
   # build a tree
+  print("growing forest")
   tree <- partykit::cforest(snag~., 
                             data = train,
                             strata = snag,
                             ntree = 5, trace = T,
                             perturb = list(replace = F,
                                            fraction = 0.632)) # weights?
+  print("making predictions")
   pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights?
+  print("constructing confusion matrix")
   cm <- table(true = test$snag, pred = predict(tree, newdata = test)) #confusion matrix
+  print("calculating error rate")
   e <- (cm[1,2] + cm[2,1])/sum(cm) # calculate the error rate
   ers[i] <- e # assign to the i'th element of ers vector
   
   # calculate variable importances
+  print("calculating variable importances")
   vi.part <- varimp(tree)
   importances_pool4[,i] <- vi.part
   print(paste("Run", i, "complete"))
@@ -142,22 +154,28 @@ importances_pool8 <- data.frame(
 ers <- rep(NA, 5)
 
 for(i in 1:5){
+  print(paste("BEGINNING RUN", i))
   train <- points_8 %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable. Also remove `pool` because now we're only in one pool. 
   test <- points_8 %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp` and `pool`.
   
   # build a tree
+  print("growing forest")
   tree <- partykit::cforest(snag~., 
                             data = train,
                             strata = snag,
                             ntree = 5, trace = T,
                             perturb = list(replace = F,
                                            fraction = 0.632)) # weights?
+  print("making predictions")
   pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights?
+  print("constructing confusion matrix")
   cm <- table(true = test$snag, pred = predict(tree, newdata = test)) #confusion matrix
+  print("calculating error rate")
   e <- (cm[1,2] + cm[2,1])/sum(cm) # calculate the error rate
   ers[i] <- e # assign to the i'th element of ers vector
   
   # calculate variable importances
+  print("calculating variable importances")
   vi.part <- varimp(tree)
   importances_pool8[,i] <- vi.part
   print(paste("Run", i, "complete"))
@@ -185,22 +203,28 @@ importances_pool13 <- data.frame(
 ers <- rep(NA, 5)
 
 for(i in 1:5){
+  print(paste("BEGINNING RUN", i))
   train <- points_13 %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable. Also remove `pool` because now we're only in one pool. 
   test <- points_13 %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp` and `pool`.
   
   # build a tree
+  print("growing forest")
   tree <- partykit::cforest(snag~., 
                             data = train,
                             strata = snag,
                             ntree = 5, trace = T,
                             perturb = list(replace = F,
                                            fraction = 0.632)) # weights?
+  print("making predictions")
   pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights?
+  print("constructing confusion matrix")
   cm <- table(true = test$snag, pred = predict(tree, newdata = test)) #confusion matrix
+  print("calculating error rate")
   e <- (cm[1,2] + cm[2,1])/sum(cm) # calculate the error rate
   ers[i] <- e # assign to the i'th element of ers vector
   
   # calculate variable importances
+  print("calculating variable importances")
   vi.part <- varimp(tree)
   importances_pool13[,i] <- vi.part
   print(paste("Run", i, "complete"))
