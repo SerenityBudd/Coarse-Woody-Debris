@@ -37,10 +37,17 @@ dt.richness.t <- left_join(yyy, select(funcdiv8, c(barcode, snag)), by = "barcod
 with(dt.richness.t, t.test(Num_Species~snag, alternative = "less")) 
 
 
+with(dt.richness.t, boxplot(Num_Species~snag))
+
+
+
 ## create an abundance dataframe to do a t test on, combining snag and zzz
 dt.abund.t <- left_join(zzz, select(funcdiv8, c(barcode, snag)), by = "barcode") %>% distinct
 
 
 ## there is a signigficant diff in abundance between sites with and without CWD
 with(dt.abund.t, t.test(Num_Fish~snag, alternative = "less"))
+
+
+with(dt.abund.t, boxplot(Num_Fish~snag, ylim = c(0,400)))
 
