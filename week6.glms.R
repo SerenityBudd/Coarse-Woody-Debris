@@ -85,6 +85,7 @@ anova(m6, m5, test = "Chisq")
 m7 <- glm(cbind(nyes, nno) ~ pool + pct_prm_wetf + avg_depth + Perimeter + riprap + AQUA_CODE + Area, data = poly, family = "binomial")
 summary(m7)
 anova(m7, test = "Chisq")
+Anova(m7, test.statistic = "F", type = "II")
 anova(m7, m6, test = "Chisq") 
   # Pretty clearly not helpful
 
@@ -92,32 +93,28 @@ anova(m7, m6, test = "Chisq")
 m8 <- glm(cbind(nyes, nno) ~ pool + pct_prm_wetf + avg_depth + Perimeter + riprap + AQUA_CODE + medianNEAR_FOREST_DIST.p, data = poly, family = "binomial")
 summary(m8)
 anova(m8, test = "Chisq")
+Anova(m8, test.statistic = "Wald", type = "II")
 anova(m8, m6, test = "Chisq") 
   # Marginally helpful but probably not justifiable. 
 
 # Add interaction between riprap and pct_prm_wetf (leaving out forest dist for now)
-m9 <- glm(cbind(nyes, nno) ~ pool + pct_prm_wetf + avg_depth + Perimeter + riprap + AQUA_CODE + Area + pct_prm_wetf*riprap, data = poly, family = "binomial")
+m9 <- glm(cbind(nyes, nno) ~ pool + pct_prm_wetf + avg_depth + Perimeter + riprap + AQUA_CODE + pct_prm_wetf*riprap, data = poly, family = "binomial")
 summary(m9)
 anova(m9, test = "Chisq")
 anova(m9, m6, test = "Chisq") 
   #NOPENOPENOPE
 
 # Add interaction between AQUA_CODE and avg_depth (leaving out forest dist for now)--motivated by the stratum*depth logistic regression from a while ago (on the point level)
-m10 <- glm(cbind(nyes, nno) ~ pool + pct_prm_wetf + avg_depth + Perimeter + riprap + AQUA_CODE + Area + AQUA_CODE*avg_depth, data = poly, family = "binomial")
+m10 <- glm(cbind(nyes, nno) ~ pool + pct_prm_wetf + avg_depth + Perimeter + riprap + AQUA_CODE + AQUA_CODE*avg_depth, data = poly, family = "binomial")
 summary(m10)
 anova(m10, test = "Chisq")
+Anova(m10, test.statistic = "Wald", type = "II")
 anova(m10, m6, test = "Chisq") 
-  # This seems helpful, but now Area's not great.
+  # This seems helpful.
 
-# Remove Area
-m11 <- glm(cbind(nyes, nno) ~ pool + pct_prm_wetf + avg_depth + Perimeter + riprap + AQUA_CODE + AQUA_CODE*avg_depth, data = poly, family = "binomial")
-summary(m11)
-anova(m11, test = "Chisq")
-anova(m11, m10, test = "Chisq") #Adding Area wasn't justifiable, going from m11 to m10
-
-mod_all <- m11
+mod_all <- m10
 summary(mod_all)
-
+save(mod_all, file = "data/mod_all.Rda")
 #=================================================
 # GLM for pool 4 only
 m1 <- glm(cbind(nyes, nno) ~ pct_aqveg + pct_area_le100 + avg_depth + Area + tot_vol + max_depth, data = poly[poly$pool == 4,], family = "binomial")
