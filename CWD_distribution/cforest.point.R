@@ -3,9 +3,9 @@
 # cforest tree on point level for larger sample size
 #========================================
 load("data/all_reduced.Rda")
-all_reduced <- all_reduced %>% dplyr::select(-c(barcode, uniq_id, Area, pct_prm_lotic, pct_prm_lentic, num_lotic_outl, num_lentic_outl, econ, pct_terr_shore_wetf, sinuosity, NEAR_TERR_CLASS_31_N.p, NEAR_FOREST_CLASS_31_N.p, year.p, stageht.p, stratum_name, snagyn, pct_area_le100, depth.p, current.p, substrt.p, trib.p, pct_aqveg)) %>% na.omit()
+all_reduced <- all_reduced %>% dplyr::select(-c(barcode, uniq_id, Area, pct_prm_lotic, pct_prm_lentic, num_lotic_outl, num_lentic_outl, econ, pct_terr_shore_wetf, sinuosity, NEAR_TERR_CLASS_31_N.p, NEAR_FOREST_CLASS_31_N.p, year.p, stageht.p, stratum_name, snagyn, pct_area_le100, depth.p, current.p, substrt.p, trib.p, pct_aqveg, AQUA_CODE)) %>% na.omit()
 all <- all_reduced
-colnames(all) <- c("stratum", "snag", "aqua_code", "pool", "perimeter", "max_depth", "avg_depth", "total_volume", "shoreline_density_index", "pct_terrestrial_shore", "pct_perimeter_wetforest", "dist_to_land", "nearest_land_class", "dist_to_forest", "nearest_forest_class", "wingdam", "revetment")
+colnames(all) <- c("stratum", "snag", "pool", "perimeter", "max_depth", "avg_depth", "total_volume", "shoreline_density_index", "pct_terrestrial_shore", "pct_perimeter_wetforest", "dist_to_land", "nearest_land_class", "dist_to_forest", "nearest_forest_class", "wingdam", "revetment")
 all$snag <- factor(as.character(all$snag))
 
 #=========================
@@ -40,7 +40,7 @@ splitup <- function(df, k){
 all <- splitup(all, 5)
 
 # define predictor variables for the full data set
-predictorvars_all <- c("stratum", "aqua_code", "pool", "perimeter", "max_depth", "avg_depth", "total_volume", "shoreline_density_index", "pct_terrestrial_shore", "pct_perimeter_wetforest", "dist_to_land", "nearest_land_class", "dist_to_forest", "nearest_forest_class", "wingdam", "revetment")
+predictorvars_all <- c("stratum", "pool", "perimeter", "max_depth", "avg_depth", "total_volume", "shoreline_density_index", "pct_terrestrial_shore", "pct_perimeter_wetforest", "dist_to_land", "nearest_land_class", "dist_to_forest", "nearest_forest_class", "wingdam", "revetment")
 
 # initialize an empty data frame to contain variable importance values
 importances_all <- data.frame(
@@ -83,7 +83,7 @@ plotnice(varimps_all, color = "olivedrab4", title = "Point RF var. importance (5
 # Points, individual pools 
 #=============================
 
-predictorvars_pools <- c("stratum", "aqua_code", "perimeter", "max_depth", "avg_depth", "total_volume", "shoreline_density_index", "pct_terrestrial_shore", "pct_perimeter_wetforest", "dist_to_land", "nearest_land_class", "dist_to_forest", "nearest_forest_class", "wingdam", "revetment") #define vars for the pools
+predictorvars_pools <- c("stratum", "perimeter", "max_depth", "avg_depth", "total_volume", "shoreline_density_index", "pct_terrestrial_shore", "pct_perimeter_wetforest", "dist_to_land", "nearest_land_class", "dist_to_forest", "nearest_forest_class", "wingdam", "revetment") #define vars for the pools
 
 #=============================
 # pool 4
