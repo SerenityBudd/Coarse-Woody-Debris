@@ -455,6 +455,24 @@ poly <- poly %>% rename(wingdyke = propwingdyke,
                         riprap = propriprap,
                         trib = proptrib) %>% 
   mutate_if(is.character, as.factor)
+
+# Are some of these variables highly correlated?
+locate.nas(poly)
+poly <- na.omit(poly) #exclude rows that have NA's, since imputing them tends to mess things up.
+c <- cor(poly[,c("Area", "Perimeter", "max_depth", "avg_depth", "tot_vol", "shoreline_density_index", "pct_aqveg", "pct_terr", "pct_prm_wetf", "pct_terr_shore_wetf", "medianNEAR_TERR_DIST.p", "medianNEAR_FOREST_DIST.p", "median_current.p", "pct_area_le100")])
+corrplot(c, method = "circle", 
+         type = "lower", 
+         diag = F)
+#see high correlations: absolute value >0.6
+chigh <- c
+chigh[abs(chigh) <= 0.6] <- NA
+corrplot(chigh, method = "circle",
+         type = "lower",
+         diag = F)
+#let's get rid of pct_area_le100, because it's highly correlated with both avg_depth and pct_aqveg. Also get rid of Area because it's highly correlated with tot_vol and Perimeter. pct_terr_shore_wetf is confusing. Also get rid of `trib` because it has low importance/often is excluded from the model due to lack of information.
+poly <- poly %>% dplyr::select(-c(Area, pct_area_le100, pct_terr_shore_wetf, trib))
+
+
 save(poly, file = "data/poly.Rda")
 
 
