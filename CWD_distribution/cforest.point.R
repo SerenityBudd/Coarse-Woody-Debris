@@ -59,7 +59,7 @@ for(i in 1:5){
   tree <- partykit::cforest(snag~., 
                             data = train,
                             strata = snag,
-                            ntree = 5, trace = T,
+                            ntree = 500, trace = T,
                             perturb = list(replace = F,
                                            fraction = 0.632)) # weights?
   print("making predictions")
@@ -114,7 +114,7 @@ for(i in 1:5){
   tree <- partykit::cforest(snag~., 
                             data = train,
                             strata = snag,
-                            ntree = 5, trace = T,
+                            ntree = 500, trace = T,
                             perturb = list(replace = F,
                                            fraction = 0.632)) # weights?
   print("making predictions")
@@ -163,7 +163,7 @@ for(i in 1:5){
   tree <- partykit::cforest(snag~., 
                             data = train,
                             strata = snag,
-                            ntree = 5, trace = T,
+                            ntree = 500, trace = T,
                             perturb = list(replace = F,
                                            fraction = 0.632)) # weights?
   print("making predictions")
@@ -212,7 +212,7 @@ for(i in 1:5){
   tree <- partykit::cforest(snag~., 
                             data = train,
                             strata = snag,
-                            ntree = 5, trace = T,
+                            ntree = 500, trace = T,
                             perturb = list(replace = F,
                                            fraction = 0.632)) # weights?
   print("making predictions")
@@ -238,4 +238,5 @@ colnames(varimps_pool13) <- c("predictorvars", "imps")
 plotnice(varimps_pool13, color = "darkblue", title = "Point RF var. importance (5fold), pool 13")
 # save as rf_avg_varimp_point_pool13_5foldcv.png
 
-
+cforest_errors <- list(cv_error_all, cv_error_pool4, cv_error_pool8, cv_error_pool13)
+save(errors, file = "data/cforest_errors.Rda")
