@@ -395,7 +395,7 @@ ggplot(data = importance, aes(x = var, y = Pct_Inc_MSE))+
 }
 plotimportance(tree_reg, color = "olivedrab4")
 
-  # if we run this a couple times, we see that it's not completely robust, but the same variables are jumping to the top every time. 
+# if we run this a couple times, we see that it's not completely robust, but the same variables are jumping to the top every time. 
 # predict on the training data
 pred <- predict(tree_reg, newdata = train, type = "response")
 train$pred <- pred
