@@ -402,6 +402,7 @@ save(quant.preds, file = "data/sites_quantpreds.Rda")
 save(cat.preds, file = "data/sites_catpreds.Rda")
 save(info.vars, file = "data/sites_infovars.Rda")
 save(all_reduced, file = "data/all_reduced.Rda")
+chisq.test(all_reduced$stratum, all_reduced$AQUA_CODE)$expected
 
 #===================================================
 # Polygon-level data
