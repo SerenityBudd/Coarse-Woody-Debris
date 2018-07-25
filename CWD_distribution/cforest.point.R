@@ -2,6 +2,7 @@
 #========================================
 # cforest tree on point level for larger sample size
 #========================================
+source("libraries.R")
 load("data/all_reduced.Rda")
 all_reduced <- all_reduced %>% dplyr::select(-c(barcode, uniq_id, Area, pct_prm_lotic, pct_prm_lentic, num_lotic_outl, num_lentic_outl, econ, pct_terr_shore_wetf, sinuosity, NEAR_TERR_CLASS_31_N.p, NEAR_FOREST_CLASS_31_N.p, year.p, stageht.p, stratum_name, snagyn, pct_area_le100, depth.p, current.p, substrt.p, trib.p, pct_aqveg, AQUA_CODE)) %>% na.omit()
 all <- all_reduced
@@ -54,16 +55,21 @@ for(i in 1:5){
   print(paste("BEGINNING RUN", i))
   train <- all %>% dplyr::filter(grp != i) %>% dplyr::select(-grp) # train on 4/5 of the data, remove `grp` because it's not a predictor variable
   test <- all %>% dplyr::filter(grp == i) %>% dplyr::select(-grp) # test on the remaining 1/5 of the data. Remove `grp``
+  
+  print("calculating weights")
+  w1 <- length(train$snag[train$snag == 0])/length(train$snag)
+  w0 <- length(train$snag[train$snag == 1])/length(train$snag)
+  train$weight <- ifelse(train$snag == 1, w1, w0)
   # build a tree
   print("growing forest")
-  tree <- partykit::cforest(snag~., 
+  tree <- partykit::cforest(snag ~.-weight, 
                             data = train,
-                            strata = snag,
+                            weights = weight,
                             ntree = 500, trace = T,
                             perturb = list(replace = F,
-                                           fraction = 0.632)) # weights?
+                                           fraction = 0.632))
   print("making predictions")
-  pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights?
+  pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights come from the model.
   print("constructing confusion matrix")
   cm <- table(true = test$snag, pred = predict(tree, newdata = test)) #confusion matrix
   print("calculating error rate")
@@ -79,7 +85,7 @@ for(i in 1:5){
 cv_error_all <- mean(ers) # cross-validated mean error rate
 
 imps_all <- rowSums(importances_all)/5 # calculate average variable importances
-varimps_all <- cbind(predictorvars_all, imps) %>% as.data.frame %>% mutate(imps = as.numeric(as.character(imps))) %>% mutate(predictorvars_all = reorder(predictorvars_all, -imps))
+varimps_all <- cbind(predictorvars_all, imps_all) %>% as.data.frame %>% mutate(imps_all = as.numeric(as.character(imps_all))) %>% mutate(predictorvars_all = reorder(predictorvars_all, -imps_all))
 colnames(varimps_all) <- c("predictorvars", "imps")# get the data into the right format for ggplot
 
 plotnice(varimps_all, color = "olivedrab4", title = "Point RF var. importance (5fold), all pools")
@@ -108,12 +114,16 @@ for(i in 1:5){
   print(paste("BEGINNING RUN", i))
   train <- points_4 %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable. Also remove `pool` because now we're only in one pool. 
   test <- points_4 %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp` and `pool`.
+  print("calculating weights")
+  w1 <- length(train$snag[train$snag == 0])/length(train$snag)
+  w0 <- length(train$snag[train$snag == 1])/length(train$snag)
+  train$weight <- ifelse(train$snag == 1, w1, w0)
   
   # build a tree
   print("growing forest")
-  tree <- partykit::cforest(snag~., 
+  tree <- partykit::cforest(snag~.-weight, 
                             data = train,
-                            strata = snag,
+                            weights = weight,
                             ntree = 500, trace = T,
                             perturb = list(replace = F,
                                            fraction = 0.632)) # weights?
@@ -139,6 +149,7 @@ colnames(varimps_pool4) <- c("predictorvars", "imps")
 
 plotnice(varimps_pool4, color = "cadetblue4", title = "Point RF var. importance (5fold), pool 4")
 # save as rf_avg_varimp_point_pool4_5foldcv.png
+save(cv_error_pool4, file = "data/cv_error_pool4.Rda")
 
 #=============================
 # pool 8
@@ -158,11 +169,16 @@ for(i in 1:5){
   train <- points_8 %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable. Also remove `pool` because now we're only in one pool. 
   test <- points_8 %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp` and `pool`.
   
+  print("calculating weights")
+  w1 <- length(train$snag[train$snag == 0])/length(train$snag)
+  w0 <- length(train$snag[train$snag == 1])/length(train$snag)
+  train$weight <- ifelse(train$snag == 1, w1, w0)
+  
   # build a tree
   print("growing forest")
-  tree <- partykit::cforest(snag~., 
+  tree <- partykit::cforest(snag~.-weight, 
                             data = train,
-                            strata = snag,
+                            weights = weight,
                             ntree = 500, trace = T,
                             perturb = list(replace = F,
                                            fraction = 0.632)) # weights?
@@ -181,6 +197,7 @@ for(i in 1:5){
   print(paste("Run", i, "complete"))
 }
 cv_error_pool8 <- mean(ers) # cross-validated mean error rate
+save(cv_error_pool8, file = "data/cv_error_pool8.Rda")
 
 imps_pool8 <- rowSums(importances_pool8)/5 # calculate average variable importances
 varimps_pool8 <- cbind(predictorvars_pools, imps_pool8) %>% as.data.frame %>% mutate(imps_pool8 = as.numeric(as.character(imps_pool8))) %>% mutate(predictorvars_pools = reorder(predictorvars_pools, -imps_pool8)) # get the data into the right format for ggplot
@@ -206,11 +223,16 @@ for(i in 1:5){
   print(paste("BEGINNING RUN", i))
   train <- points_13 %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable. Also remove `pool` because now we're only in one pool. 
   test <- points_13 %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp` and `pool`.
+  print("calculating weights")
+  w1 <- length(train$snag[train$snag == 0])/length(train$snag)
+  w0 <- length(train$snag[train$snag == 1])/length(train$snag)
+  train$weight <- ifelse(train$snag == 1, w1, w0)
   
   # build a tree
   print("growing forest")
-  tree <- partykit::cforest(snag~., 
+  tree <- partykit::cforest(snag~.-weight, 
                             data = train,
+                            weights = weight,
                             strata = snag,
                             ntree = 500, trace = T,
                             perturb = list(replace = F,
@@ -239,4 +261,4 @@ plotnice(varimps_pool13, color = "darkblue", title = "Point RF var. importance (
 # save as rf_avg_varimp_point_pool13_5foldcv.png
 
 cforest_errors <- list(cv_error_all, cv_error_pool4, cv_error_pool8, cv_error_pool13)
-save(errors, file = "data/cforest_errors.Rda")
+save(cforest_errors, file = "data/cforest_errors.Rda")
