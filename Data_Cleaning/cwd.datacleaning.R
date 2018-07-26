@@ -364,29 +364,43 @@ source("libraries.R")
 #exclude variables that we really just don't care about for analysis purposes
 names(sites_aa_5m)
 excl_1 <- c("FID", "Join_Count", "TARGET_FID", "Field1", "lcode", "sdate", "utm_e", "utm_n", "OBJECTID", "aa_num", "AQUA_DESC", "bath_pct", "area_gt50", "area_gt100", "area_gt200", "area_gt300", "min_rm", "max_rm", "len_met", "len_prm_lotic", "len_prm_lentic", "len_terr", "len_wetf", "len_wd", "scour_wd", "psco_wd", "len_revln", "area_tpi1", "pct_tpi1", "area_tpi2", "pct_tpi2", "area_tpi3", "pct_tpi3", "area_tpi4", "pct_tpi4", "year_phot", "area_le50", "area_le100", "area_le200", "area_le300", "gear.p", "sitetype.p")
-all_reduced <- sites_aa_5m %>% dplyr::select(-excl_1)
-names(all_reduced)
+all_reduced1 <- sites_aa_5m %>% dplyr::select(-excl_1)
+names(all_reduced1)
 # exclude sd_depth because it doesn't seem very relevant
-all_reduced <- all_reduced %>% dplyr::select(-c(sd_depth))
-names(all_reduced)
+all_reduced1 <- all_reduced1 %>% dplyr::select(-c(sd_depth))
+names(all_reduced1)
 # exclude avg_fetch, sill, num_rev, and num_wd because they aren't biologically logical
-all_reduced <- all_reduced %>% dplyr::select(-c(avg_fetch, sill, num_rev, num_wd))
-names(all_reduced)
+all_reduced1 <- all_reduced1 %>% dplyr::select(-c(avg_fetch, sill, num_rev, num_wd))
+names(all_reduced1)
 # Molly says to get rid of all terrestrial categories below _31, as well as the _HEIGHT category.
-all_reduced <- all_reduced %>% dplyr::select(-c(NEAR_TERR_CLASS_15.p, NEAR_TERR_CLASS_15_N.p, NEAR_TERR_CLASS_7.p, NEAR_TERR_CLASS_7_N.p, NEAR_TERR_HEIGHT_N.p, NEAR_FOREST_CLASS_15.p, NEAR_FOREST_CLASS_15_N.p, NEAR_FOREST_CLASS_7_N.p, NEAR_FOREST_CLASS_7.p, NEAR_FOREST_HEIGHT_N.p))
+
+all_reduced <- all_reduced1 %>% dplyr::select(-c(NEAR_TERR_CLASS_15.p, NEAR_TERR_CLASS_15_N.p, NEAR_TERR_CLASS_7.p, NEAR_TERR_CLASS_7_N.p, NEAR_TERR_HEIGHT_N.p, NEAR_FOREST_CLASS_15.p, NEAR_FOREST_CLASS_15_N.p, NEAR_FOREST_CLASS_7_N.p, NEAR_FOREST_CLASS_7.p, NEAR_FOREST_HEIGHT_N.p))
 names(all_reduced)
+
+# After `glmer` rejected the NEAR_TERR_CLASS_31_N.p because it had too few points per category, we're going to change this and keep the 15-level one instead.
+all_reduced_15 <- all_reduced1 %>% dplyr::select(-c(NEAR_TERR_CLASS_31.p, NEAR_TERR_CLASS_31_N.p, NEAR_TERR_CLASS_7.p, NEAR_TERR_CLASS_7_N.p, NEAR_TERR_HEIGHT_N.p, NEAR_FOREST_CLASS_31.p, NEAR_FOREST_CLASS_31_N.p, NEAR_FOREST_CLASS_7_N.p, NEAR_FOREST_CLASS_7.p, NEAR_FOREST_HEIGHT_N.p))
+names(all_reduced_15)
+
 # as per JC's recommendation and discussion with KathiJo and Molly, exclude revetment categories. Also exclude wdl_p_m2 because it has a lot of NA's and we have a binary `wingdyke` index to use instead that has far fewer NA's. 
 all_reduced <- all_reduced %>% dplyr::select(-c(pct_prm_rev, pct_terr_shore_rev, rev_p_m2, wdl_p_m2))
+all_reduced_15 <- all_reduced_15 %>% dplyr::select(-c(pct_prm_rev, pct_terr_shore_rev, rev_p_m2, wdl_p_m2))
 names(all_reduced)
+names(all_reduced_15)
 # Exclude pct_area_le50, pct_area_le200, and pct_area_le300 because they're redundant with pct_area_100
 all_reduced <- all_reduced %>% dplyr::select(-c(pct_area_le50, pct_area_le200, pct_area_le300))
+all_reduced_15 <- all_reduced_15 %>% dplyr::select(-c(pct_area_le50, pct_area_le200, pct_area_le300))
 names(all_reduced)
+names(all_reduced_15)
 # Exclude NEAR_TERR_FID.p and NEAR_FOREST_FID.p columns because we've decided we're not going to try to include two levels of random variables (as per discussion with Barb on 7/12/18)
 all_reduced <- all_reduced %>% dplyr::select(-c(NEAR_TERR_FID.p, NEAR_FOREST_FID.p))
 names(all_reduced)
+all_reduced_15 <- all_reduced_15 %>% dplyr::select(-c(NEAR_TERR_FID.p, NEAR_FOREST_FID.p))
+names(all_reduced_15)
 # Exclude pct_opwat because it's the inverse of pct_aqveg, and exclude pct_aq because it's the inverse of pct_terr
 all_reduced <- all_reduced %>% dplyr::select(-c(pct_opwat, pct_aq))
 names(all_reduced)
+all_reduced_15 <- all_reduced_15 %>% dplyr::select(-c(pct_opwat, pct_aq))
+names(all_reduced_15)
 #separate variables into quantitative predictors, categorical predictors, and other informational/index variables
 quant.preds <- all_reduced %>% dplyr::select(barcode, Area, Perimeter, max_depth, avg_depth, tot_vol, shoreline_density_index, econ, pct_prm_lotic, num_lotic_outl, pct_prm_lentic, num_lentic_outl, pct_aqveg, pct_terr, pct_prm_wetf, pct_terr_shore_wetf, sinuosity, NEAR_TERR_DIST.p, NEAR_FOREST_DIST.p, depth.p, current.p, stageht.p, pct_area_le100)
 str(quant.preds) #check that everything is numeric or integer. We're good. 
@@ -402,6 +416,7 @@ save(quant.preds, file = "data/sites_quantpreds.Rda")
 save(cat.preds, file = "data/sites_catpreds.Rda")
 save(info.vars, file = "data/sites_infovars.Rda")
 save(all_reduced, file = "data/all_reduced.Rda")
+save(all_reduced_15, file = "data/all_reduced_15.Rda")
 chisq.test(all_reduced$stratum, all_reduced$AQUA_CODE)$expected
 
 #===================================================
