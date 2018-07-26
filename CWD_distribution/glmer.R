@@ -20,75 +20,139 @@ allscaled$dist_to_land <- scale(allscaled$dist_to_land)
 allscaled$dist_to_forest <- scale(allscaled$dist_to_forest)
 
 #=============================
+# ALL POOLS
+#=============================
+m0 <- glmer(snag ~ stratum + (1 | uniq_id),
+            data = allscaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun = 2e5)))
+summary(m0)
+
+# add avg_depth
+m1 <- glmer(snag ~ stratum + avg_depth + (1 | uniq_id),
+            data = allscaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun = 2e5)))
+summary(m1)
+anova(m1, m0, test = "Chisq") #good
+
+# add pool
+m2 <- glmer(snag ~ stratum + avg_depth + pool + (1 | uniq_id),
+            data = allscaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun = 2e5)))
+summary(m2)
+anova(m2, m1, test = "Chisq") # very good
+
+# add revetment
+m3 <- glmer(snag ~ stratum + avg_depth + pool + revetment + (1 | uniq_id),
+            data = allscaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun = 2e5)))
+summary(m3)
+anova(m3, m2, test = "Chisq") # still good
+
+# add nearest_land_class
+m4 <- glmer(snag ~ stratum + avg_depth + pool + revetment + nearest_land_class + (1 | uniq_id),
+            data = allscaled,
+            family = binomial,
+            control = glmerControl(optimizer = "Nelder_Mead",
+                                   optCtrl = list(maxfun = 2e5)))
+# failed to converge
+
+# Back to m3. Try interacting stratum and avg_depth
+m5 <- glmer(snag ~ stratum*avg_depth + pool + revetment + (1 | uniq_id),
+            data = allscaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun = 2e5)))
+summary(m5) #mistakes have been made
+
+# What if we interact avg_depth with pool instead?
+m6 <- glmer(snag ~ stratum + avg_depth*pool + revetment + (1 | uniq_id),
+            data = allscaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun = 2e5)))
+summary(m6) # nope
+anova(m6) # nope
+
+# Last try: interact avg_depth with revetment
+m7 <- glmer(snag ~ stratum + pool + avg_depth*revetment + (1 | uniq_id),
+            data = allscaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun = 2e5)))
+summary(m7) # ooh
+anova(m7) #hmm
+pf(99.666, 1, 11)
+pf(6.403, 1, 11)
+pf(12.545, 1, 11)
+pf(42.466, 2, 11)
+pf(66.254, 6, 11)
+#... guess not.
+
+
+#=============================
 # POOL 4
 #=============================
 pool4_scaled <- allscaled[allscaled$pool == 4,] %>% dplyr::select(-pool)
 
-# start with the first three variables, stratum, nearest_land_class, and wingdam
-m1 <- glmer(snag ~ stratum + nearest_land_class + wingdam + (1 | uniq_id),
+m0 <- glmer(snag ~ stratum + (1 | uniq_id),
+            data = pool4_scaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun=2e5)))
+summary(m0)
+
+# add nearest_land_class
+m1 <- glmer(snag ~ stratum + nearest_land_class + (1 | uniq_id),
       data = pool4_scaled,
       family = binomial,
       control = glmerControl(optimizer = "bobyqa",
                              optCtrl=list(maxfun=2e5))) 
-# the model gives a warning that it won't converge. Try different optimizers, according to https://rstudio-pubs-static.s3.amazonaws.com/33653_57fc7b8e5d484c909b615d8633c01d51.html:
-afurl <- "https://raw.githubusercontent.com/lme4/lme4/master/inst/utils/allFit.R"
-eval(parse(text = getURL(afurl)))
-aa <- allFit(m1)
-is.OK <- sapply(aa, is, "merMod")
-aa.OK <- aa[is.OK]
-lapply(aa.OK, function(x) x@optinfo$conv$lme4$messages)
+summary(m1) #doesn't work
 
-# these don't seem to help. According to various SO posts, probably have too few observations in each category. This may be because we have two categorical variables with a lot of categories.
-# View summary anyway
-summary(m1)
-# maybe we could lump the land classes into something smaller: go back and use the 7-type or 15-type land classes. 
-
-#Let's try getting rid of nearest_land_class:
+# that didn't work; probably too many categories. Try wingdam instead.
 m2 <- glmer(snag ~ stratum + wingdam + (1 | uniq_id),
             data = pool4_scaled,
             family = binomial,
             control = glmerControl(optimizer = "bobyqa",
                                    optCtrl=list(maxfun=2e5))) 
 summary(m2)
-anova(m2, test = "Chisq") #it's annoying that this doesn't provide P-values. `nlme` package doesn't seem to work. 
-pf(3.0681, df1 = 1, df2 = 5) #not significant
+anova(m2, m0, test = "Chisq") #not good
 
-# try avg depth instead
-m3 <- glmer(snag ~ stratum + avg_depth + (1 | uniq_id),
+# try perimeter instead
+m3 <- glmer(snag ~ stratum + perimeter + (1 | uniq_id),
             data = pool4_scaled,
             family = binomial,
             control = glmerControl(optimizer = "bobyqa",
-                                   optCtrl = list(maxfun = 2e5)))
-summary(m3) # that's not happy either
+                                   optCtrl=list(maxfun=2e5))) 
+summary(m3) # not good
 
-#how about perimeter
-m4 <- glmer(snag ~ stratum + perimeter + (1 | uniq_id),
+# try avg_depth instead
+m4 <- glmer(snag ~ stratum + avg_depth + (1 | uniq_id),
             data = pool4_scaled,
             family = binomial,
             control = glmerControl(optimizer = "bobyqa",
-                                   optCtrl = list(maxfun = 2e5)))
-summary(m4) # no good
+                                   optCtrl=list(maxfun=2e5))) 
+summary(m4) # also not good
 
-#pct_terrestrial_shore
-m5 <- glmer(snag ~ stratum + pct_terrestrial_shore + (1 | uniq_id),
-            data = pool4_scaled,
-            family = binomial,
-            control = glmerControl(optimizer = "bobyqa",
-                                   optCtrl = list(maxfun = 2e5)))
-summary(m5) # nope
-
-# Let's stop for now, conclude that we need to use a smaller land class division to fit the pool 4 model. 
+# this one is just a disaster; i don't know what to do. 
 
 #=============================
 # POOL 8
 #=============================
 pool8_scaled <- allscaled[allscaled$pool == 8,] %>% dplyr::select(-pool)
-# stratum only
 m0 <- glmer(snag ~ stratum + (1 | uniq_id),
             data = pool8_scaled,
             family = binomial,
             control = glmerControl(optimizer = "bobyqa",
-                                   optCtrl = list(maxfun = 2e5)))
+                                   optCtrl = list(maxfun=2e5)))
 summary(m0)
 
 # start with the first two variables, stratum and wingdam
@@ -98,49 +162,102 @@ m1 <- glmer(snag ~ stratum + wingdam + (1 | uniq_id),
             control = glmerControl(optimizer = "bobyqa",
                                    optCtrl=list(maxfun=2e5))) 
 summary(m1)
-anova(m1)
-pf(0.5735, 1, 5) #wingdam is not significant
+# that was bad
+anova(m1, m0, test = "Chisq") #not significant
 
-# try avg_depth instead
+# how about stratum and average depth
 m2 <- glmer(snag ~ stratum + avg_depth + (1 | uniq_id),
             data = pool8_scaled,
             family = binomial,
             control = glmerControl(optimizer = "bobyqa",
                                    optCtrl=list(maxfun=2e5))) 
 summary(m2)
-anova(m2) #yes significant here
-pf(5.2876, 1, 5) #not significant here
+anova(m2, m0, test = "Chisq") #marginally significant
 
-# is it better than the null model?
-anova(m2, m0, test = "Chisq")
-# marginally better
-
-# try adding revetment
-m3 <- glmer(snag ~ stratum + revetment + (1 | uniq_id),
+# add revetment
+m3 <- glmer(snag ~ stratum + avg_depth + revetment + (1 | uniq_id),
             data = pool8_scaled,
             family = binomial,
             control = glmerControl(optimizer = "bobyqa",
-                                   optCtrl = list(maxfun = 2e5)))
-summary(m3)
+                                   optCtrl=list(maxfun=2e5))) 
+summary(m3) #not good
 
-# that works. What about revetment and average depth?
-m4 <- glmer(snag ~ stratum + revetment + avg_depth + (1 | uniq_id),
-            data = pool8_scaled,
-            family = binomial,
-            control = glmerControl(optimizer = "bobyqa",
-                                   optCtrl = list(maxfun = 2e5)))
+# add shoreline density index
+m4 <- glmer(snag ~ stratum + avg_depth + shoreline_density_index + (1 | uniq_id),
+                  data = pool8_scaled,
+                  family = binomial,
+                  control = glmerControl(optimizer = "bobyqa",
+                                         optCtrl=list(maxfun=2e5))) 
 summary(m4)
-anova(m4, m3, test = "Chisq") # barely not significant, marginal
+anova(m4, m2, test = "Chisq") # marginally significant
 
-# what about wing dam and average depth?
-m5 <- glmer(snag ~ stratum + wingdam + avg_depth + (1 | uniq_id),
+# add interaction term between stratum and avg_depth
+m5 <- glmer(snag ~ stratum*avg_depth + shoreline_density_index + (1 | uniq_id),
             data = pool8_scaled,
             family = binomial,
             control = glmerControl(optimizer = "bobyqa",
-                                   optCtrl = list(maxfun = 2e5)))
+                                   optCtrl=list(maxfun=2e5))) 
 summary(m5)
-#compare to m1 and m2
-anova(m5, m1, test = "Chisq") # yes
-anova(m5, m2, test = "Chisq") # no
+anova(m5) #very bad
 
-# stop here for now because the next variable is nearest land class
+# add interaction term instead between stratum and shoreline_density_index
+m6 <- glmer(snag ~ avg_depth + stratum*shoreline_density_index + (1 | uniq_id),
+            data = pool8_scaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl=list(maxfun=2e5))) 
+summary(m6)
+anova(m6) #very very very bad
+
+mfinal_pool8 <- m4
+summary(mfinal_pool8)
+
+#=============================
+# POOL 13
+#=============================
+pool13_scaled <- allscaled[allscaled$pool == 13,] %>% dplyr::select(-pool)
+
+m0 <- glmer(snag ~ stratum + (1 | uniq_id),
+            data = pool13_scaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun=2e5)))
+summary(m0)
+
+# add avg_depth
+m1 <- glmer(snag ~ stratum + avg_depth + (1 | uniq_id),
+            data = pool13_scaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun=2e5)))
+summary(m1)
+anova(m1, m0, test = "Chisq") #marginally helpful
+
+# add shoreline_density_index
+m2 <- glmer(snag ~ stratum + avg_depth + shoreline_density_index + (1 | uniq_id),
+            data = pool13_scaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun=2e5)))
+summary(m2) #nope nope nope
+
+# add max depth instead
+m3 <- glmer(snag ~ stratum + avg_depth + max_depth + (1 | uniq_id),
+            data = pool13_scaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun=2e5)))
+summary(m3) #nope nope nope
+
+# The best model we had was m1, which had stratum and avg depth. What if we interact the two?
+m4 <- glmer(snag ~ stratum*avg_depth + (1 | uniq_id),
+            data = pool13_scaled,
+            family = binomial,
+            control = glmerControl(optimizer = "bobyqa",
+                                   optCtrl = list(maxfun=2e5)))
+summary(m4)
+anova(m4)
+pf(4.20, 5, 11)
+pf(4.30, 1, 11)
+# summary looks okay but neither of these terms is significant in the anova. 
+
