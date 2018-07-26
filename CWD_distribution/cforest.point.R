@@ -90,6 +90,7 @@ colnames(varimps_all) <- c("predictorvars", "imps")# get the data into the right
 
 plotnice(varimps_all, color = "olivedrab4", title = "Point RF var. importance (5fold), all pools")
 # save as rf_avg_varimp_point_all_5foldcv.png
+save(cv_error_all, file = "data/cv_error_all.Rda")
 
 #=============================
 # Points, individual pools 
@@ -252,6 +253,7 @@ for(i in 1:5){
   print(paste("Run", i, "complete"))
 }
 cv_error_pool13 <- mean(ers) # cross-validated mean error rate
+save(cv_error_pool13, file = "data/cv_error_pool13.Rda")
 
 imps_pool13 <- rowSums(importances_pool13)/5 # calculate average variable importances
 varimps_pool13 <- cbind(predictorvars_pools, imps_pool13) %>% as.data.frame %>% mutate(imps_pool13 = as.numeric(as.character(imps_pool13))) %>% mutate(predictorvars_pools = reorder(predictorvars_pools, -imps_pool13)) # get the data into the right format for ggplot
