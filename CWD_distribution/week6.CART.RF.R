@@ -266,14 +266,8 @@ load("data/poly.Rda")
 source("libraries.R")
 source("ownfunctions.R")
 locate.nas(poly)
-
-
-#impute NA's
-poly <- cbind(poly[,1:3], #include the first 3 columns
-              rfImpute(x = poly[,4:ncol(poly)], #exclude the first 3 columns from NA imputation
-                       y = poly$propsnag) #specify the response column
-)
-poly[,"poly$propsnag"] <- NULL #remove response column, since we bound in the original one
+#omit NA's
+poly <- na.omit(poly)
 
 # split propsnag into snag presence/absence
 poly$pa <- NULL
@@ -379,9 +373,29 @@ tree_reg <- randomForest(propsnag ~.,
                          data = train, 
                          ntree = 10000, 
                          importance = TRUE)
-(importance <- importance(tree_reg))
-varImpPlot(tree_reg)
-  # if we run this a couple times, we see that it's not completely robust, but the same variables are jumping to the top every time. 
+
+# Write a function to transform variable importance values and plot them in a pretty way. 
+plotimportance <- function(tree_reg, color){
+(importance <- importance(tree_reg, type = 1) %>% as.data.frame) #have to specify type = 1 to get mean decrease in accuracy; the default type = 2 is mean decrease in node impurity, which is unreliable and subject to bias. 
+importance$var <- c("Habitat", "Pool", "Perimeter", "Max. Depth", "Avg. Depth", "Volume", "Shoreline Density Index", "% Aquatic Veg.", "% Terrestrial Border", "% Forest Border", "Med. Distance to Land", "Med. Distance to Forest", "Med. Current", "Wingdam", "Revetment", "Tributary Mouth")
+names(importance)[names(importance) == "%IncMSE"] <- "Pct_Inc_MSE"
+importance <- importance %>% arrange(desc(Pct_Inc_MSE)) %>% 
+  mutate(var = factor(var)) %>% mutate(var = reorder(var, -Pct_Inc_MSE))
+importance$var
+
+  #nicer variable importance plot
+ggplot(data = importance, aes(x = var, y = Pct_Inc_MSE))+
+  geom_col(fill = color)+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.title.x=element_blank())+
+  ylab("Relative Importance")+
+  ggtitle(paste0("Random Forest Variable Importance for ", quote(tree_reg)))+
+  theme(text = element_text(size=20))
+}
+plotimportance(tree_reg, color = "olivedrab4")
+
+# if we run this a couple times, we see that it's not completely robust, but the same variables are jumping to the top every time. 
 # predict on the training data
 pred <- predict(tree_reg, newdata = train, type = "response")
 train$pred <- pred
@@ -430,8 +444,7 @@ tree8 <- randomForest(propsnag ~.,
                       data = train8, 
                       ntree = 10000, 
                       importance = T)
-(importance <- importance(tree8))
-varImpPlot(tree8)
+plotimportance(tree8, color = "brown")
 
 # predict on the other pools
 pred8_4 <- predict(tree8, newdata = test4, type = "response")
@@ -444,8 +457,7 @@ tree4 <- randomForest(propsnag ~.,
                       data = train4, 
                       ntree = 10000, 
                       importance = T)
-(importance <- importance(tree4))
-varImpPlot(tree4)
+plotimportance(tree4, color = "cadetblue4")
 
 # predict on the other pools
 pred4_8 <- predict(tree4, newdata = test8, type = "response")
@@ -458,8 +470,7 @@ tree13 <- randomForest(propsnag ~.,
                        data = train13, 
                        ntree = 10000, 
                        importance = T)
-(importance <- importance(tree13))
-varImpPlot(tree13)
+plotimportance(tree13, color = "darkblue")
 
 # predict on the other pools
 pred13_4 <- predict(tree13, newdata = test4, type = "response")

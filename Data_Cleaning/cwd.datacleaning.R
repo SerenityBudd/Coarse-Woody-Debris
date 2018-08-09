@@ -1,95 +1,3 @@
-source("libraries.R")
-source("ownfunctions.R")
-
-fishdat <- read.csv("data/ltrm_fish_data.csv")
-head(fishdat)
-str(fishdat)
-
-# Filter out the rows from pool8 and create the pool 8 dataframe
-pool8 <- fishdat %>%
-  filter(pool == "08") %>% droplevels()
-
-# Edit site names to remove duplicates
-pool8$site <- as.character(pool8$site) #convert to character so we can edit easily
-pool8$site <- trimws(pool8$site) #trim white space
-pool8$site <- toupper(pool8$site) #convert to uppercase
-sort(unique(pool8$site)) #show the current levels
-pool8$site[pool8$site == ""] <- NA # convert blanks to NA's
-pool8$site[pool8$site == "BROWNSVUILLE"] <- "BROWNSVILLE"
-pool8$site[pool8$site == "CONEY COMPLE"] <- "CONEY COMPLEX"
-pool8$site[pool8$site == "CONEYCOMPLEX"] <- "CONEY COMPLEX"
-pool8$site[pool8$site == "FRENCH SLOUG"] <- "FRENCH SLOUGH"
-pool8$site[pool8$site == "FRENCHSLOUGH"] <- "FRENCH SLOUGH"
-pool8$site[pool8$site == "HORSHOE"] <- "HORSESHOE"
-pool8$site[pool8$site == "I90 BAY"] <- "I-90 BAY"
-pool8$site[pool8$site == "LAWRENCE LK"] <- "LAWRENCE LAKE"
-pool8$site[pool8$site == "LAWRENCELK"] <- "LAWRENCE LAKE"
-pool8$site[pool8$site == "SHADY MAPLE"] <- "SHADY MAPLES"
-pool8$site[pool8$site == "TARGET LK"] <- "TARGET LAKE"
-pool8$site[pool8$site == "UPPERPOOL"] <- "UPPER POOL"
-pool8$site <- factor(pool8$site) #convert back to factor
-sort(unique(pool8$site)) #take a look at the new levels
-
-#convert dates and times to character 
-pool8$sdate <- as.character(pool8$sdate)
-pool8$fdate <- as.character(pool8$fdate)
-pool8$stime <- as.character(pool8$stime)
-pool8$ftime <- as.character(pool8$ftime)
-
-# change the date and time formats with `hm()` and `mdy()` from the package lubridate
-#pool8$stim <- hm(pool8$stime)
-#pool8$ftim <- hm(pool8$ftime)
-
-pool8$sdat <- chron(pool8$sdate, format = c(dates = "m/d/y"))
-pool8$fdat <- chron(pool8$fdate, format = c(dates = "m/d/y"))
-
-#change the coding for some of the variables
-pool8$substrt <- recode_factor(pool8$substrt, `1` = "silt", `2` = "Silt/Clay/Little Sand", `3` = "Sand/Mostly Sand", `4` = "Gravel/Rock/Hard Clay")
-pool8$sitetype <- recode_factor(pool8$sitetype, `0` = "prim.rand", `1` = "alt.rand", `2` = "subj.perm")
-
-# Add lat/long columns
-
-#project the utm easting and northing onto a CRS using utm zone 15
-sputm <- SpatialPoints(pool8[,c("utm_e", "utm_n")], proj4string = CRS("+proj=utm +zone=15 +datum=WGS84"))
-#transform to latlon, save as a data frame
-lonlat <- as.data.frame(spTransform(sputm, CRS("+proj=longlat +datum=WGS84")))
-#rename the columns
-names(lonlat) <- c("lon", "lat")
-#join to the original data frame
-pool8 <- cbind(pool8, lonlat)
-pool8$snag <- factor(pool8$snag)
-
-# Assuming that data on CWD (and other environmental variables) were only taken once per sampling event (barcode), let's make a data frame with information per barcode.
-
-# Function to extract values per barcode, or flag if this isn't possible. This function doesn't work and I don't know why. 
-flag <- function(x){
-  if(length(unique(x)) == 1){
-    return(x[1])
-  }
-  else{
-    print(9999999999)
-  }
-}
-  #this still doesn't quite work right
-
-# New function that just takes the first element, regardless.
-firstel <- function(x){
-  return(x[1])
-}
-
-# make a new working data set with a smaller subset of the columns in the original data. 
-pool8.wrk <- pool8[ , !names(pool8) %in% c("batchno", "orphflag", "recorder", "userdef", "subproj", "pathcode", "weight", "catch", "grp_width", "tfs", "length", "fishcode", "rownum", "rec_site", "pageno", "leader", "contanrs", "labind")]
-
-# Make a data frame with data summarized by barcode, using the flag function to extract a value for each barcode for each variable. 
-pool8.barcodes <- as.data.frame(pool8 %>% 
-                                  group_by(barcode) %>% 
-                                  summarize_all(firstel))
-
-#save(pool8.barcodes, file = "data/pool8.barcodes.Rda")
-for (i in 1:ncol(pool8.barcodes)) {
-  print(colnames(pool8.barcodes)[i]) 
-  print(summary(pool8.barcodes[,i]))
-}
 
 ############################
 #New reprojected electrofishing and fyke net dataset from Molly.
@@ -128,6 +36,8 @@ sites_aa_5m$pool <- pools
 sites_aa <- sites_aa[,c(1:4, 71, 5:70)]
 sites_aa_5m <- sites_aa_5m[,c(1:4, 71, 5:70)]
 
+
+
 # "Observations with value of 0 in all the columns from aqa_2010_lvl3_011918.shp do not intersect with the aquatic areas layer"
 # I'd like these to have values of NA, not 0. 
 # Figure out which variables come from the aqa_2010_lvl2 file
@@ -142,6 +52,17 @@ sites_aa <- sites_aa %>% filter(Field1 %notin% badrows_0$Field1)
 sites_aa_5m <- sites_aa_5m %>% filter(Field1 %notin% badrows_5$Field1)
 dim(sites_aa)
 dim(sites_aa_5m)
+
+#there are a concerning number of NA's in the `pool` column that shouldn't be there. Luckily, the `uniq_id` column tells us which pool these are from. 
+addpools <- function(sites_aa){
+  pools <- as.numeric(substr(x = as.character(sites_aa$uniq_id), 
+                             start = 2, 
+                             stop = 3))
+  sites_aa$pool[is.na(sites_aa$pool)] <- pools[is.na(sites_aa$pool)]
+  return(sites_aa)
+}
+sites_aa <- addpools(sites_aa)
+sites_aa_5m <- addpools(sites_aa_5m)
 
 # Add columns for distance to terrestrial areas
 rows_0 <- sites_aa$Field1
@@ -226,7 +147,8 @@ for(i in 1:length(pointcols)){
 
 # Exclude values with a sitetype of 2 (fixed sites) and exclude fyke net sites
 sites_aa <- sites_aa %>% filter(sitetype.p != 2, gear.p == "D")
-sites_aa_5m <- sites_aa_5m %>% filter(sitetype.p != 2, gear.p == "D")
+sites_aa_5m <- sites_aa_5m %>% filter(sitetype.p != 2)
+sites_aa_5m <- sites_aa_5m %>% filter(gear.p == "D")
 
 #make the rest of the cleaning into a function so it can be applied to sites_aa_5m as well as sites_aa. 
 furthercleaning <- function(sites_aa){
@@ -302,16 +224,8 @@ sites_aa$Hectares <- NULL
 sites_aa_5m$Acres <- NULL
 sites_aa_5m$Hectares <- NULL
 
-  #there are a concerning number of NA's in the `pool` column that shouldn't be there. Luckily, the `uniq_id` column tells us which pool these are from. 
-addpools <- function(sites_aa){
-  pools <- as.numeric(substr(x = as.character(sites_aa$uniq_id), 
-                             start = 2, 
-                             stop = 3))
-  sites_aa$pool[is.na(sites_aa$pool)] <- pools[is.na(sites_aa$pool)]
-  return(sites_aa)
-}
-sites_aa <- addpools(sites_aa)
-sites_aa_5m <- addpools(sites_aa_5m)
+# Remove one point that has NEAR_TERR_CLASS.p equal to agriculture
+sites_aa_5m <- sites_aa_5m %>% filter(NEAR_TERR_CLASS_7.p != "Ag")
 
 ## Make sure all columns are in the right format and correct them if they aren't
   sites_aa$pool <- factor(as.character(sites_aa$pool))
@@ -364,29 +278,44 @@ source("libraries.R")
 #exclude variables that we really just don't care about for analysis purposes
 names(sites_aa_5m)
 excl_1 <- c("FID", "Join_Count", "TARGET_FID", "Field1", "lcode", "sdate", "utm_e", "utm_n", "OBJECTID", "aa_num", "AQUA_DESC", "bath_pct", "area_gt50", "area_gt100", "area_gt200", "area_gt300", "min_rm", "max_rm", "len_met", "len_prm_lotic", "len_prm_lentic", "len_terr", "len_wetf", "len_wd", "scour_wd", "psco_wd", "len_revln", "area_tpi1", "pct_tpi1", "area_tpi2", "pct_tpi2", "area_tpi3", "pct_tpi3", "area_tpi4", "pct_tpi4", "year_phot", "area_le50", "area_le100", "area_le200", "area_le300", "gear.p", "sitetype.p")
-all_reduced <- sites_aa_5m %>% dplyr::select(-excl_1)
-names(all_reduced)
+all_reduced1 <- sites_aa_5m %>% dplyr::select(-excl_1)
+names(all_reduced1)
 # exclude sd_depth because it doesn't seem very relevant
-all_reduced <- all_reduced %>% dplyr::select(-c(sd_depth))
-names(all_reduced)
+all_reduced1 <- all_reduced1 %>% dplyr::select(-c(sd_depth))
+names(all_reduced1)
 # exclude avg_fetch, sill, num_rev, and num_wd because they aren't biologically logical
-all_reduced <- all_reduced %>% dplyr::select(-c(avg_fetch, sill, num_rev, num_wd))
-names(all_reduced)
+all_reduced1 <- all_reduced1 %>% dplyr::select(-c(avg_fetch, sill, num_rev, num_wd))
+names(all_reduced1)
 # Molly says to get rid of all terrestrial categories below _31, as well as the _HEIGHT category.
-all_reduced <- all_reduced %>% dplyr::select(-c(NEAR_TERR_CLASS_15.p, NEAR_TERR_CLASS_15_N.p, NEAR_TERR_CLASS_7.p, NEAR_TERR_CLASS_7_N.p, NEAR_TERR_HEIGHT_N.p, NEAR_FOREST_CLASS_15.p, NEAR_FOREST_CLASS_15_N.p, NEAR_FOREST_CLASS_7_N.p, NEAR_FOREST_CLASS_7.p, NEAR_FOREST_HEIGHT_N.p))
+
+all_reduced <- all_reduced1 %>% dplyr::select(-c(NEAR_TERR_CLASS_15.p, NEAR_TERR_CLASS_15_N.p, NEAR_TERR_CLASS_7.p, NEAR_TERR_CLASS_7_N.p, NEAR_TERR_HEIGHT_N.p, NEAR_FOREST_CLASS_15.p, NEAR_FOREST_CLASS_15_N.p, NEAR_FOREST_CLASS_7_N.p, NEAR_FOREST_CLASS_7.p, NEAR_FOREST_HEIGHT_N.p))
 names(all_reduced)
+
+# After `glmer` rejected the NEAR_TERR_CLASS_31_N.p because it had too few points per category, we're going to change this and keep the 7-level one instead.
+all_reduced_7 <- all_reduced1 %>% dplyr::select(-c(NEAR_TERR_CLASS_31.p, NEAR_TERR_CLASS_31_N.p, NEAR_TERR_CLASS_15.p, NEAR_TERR_CLASS_15_N.p, NEAR_TERR_HEIGHT_N.p, NEAR_FOREST_CLASS_31.p, NEAR_FOREST_CLASS_31_N.p, NEAR_FOREST_CLASS_15_N.p, NEAR_FOREST_CLASS_15.p, NEAR_FOREST_HEIGHT_N.p))
+names(all_reduced_7)
+
+
 # as per JC's recommendation and discussion with KathiJo and Molly, exclude revetment categories. Also exclude wdl_p_m2 because it has a lot of NA's and we have a binary `wingdyke` index to use instead that has far fewer NA's. 
 all_reduced <- all_reduced %>% dplyr::select(-c(pct_prm_rev, pct_terr_shore_rev, rev_p_m2, wdl_p_m2))
+all_reduced_7 <- all_reduced_7 %>% dplyr::select(-c(pct_prm_rev, pct_terr_shore_rev, rev_p_m2, wdl_p_m2))
 names(all_reduced)
+names(all_reduced_7)
 # Exclude pct_area_le50, pct_area_le200, and pct_area_le300 because they're redundant with pct_area_100
 all_reduced <- all_reduced %>% dplyr::select(-c(pct_area_le50, pct_area_le200, pct_area_le300))
+all_reduced_7 <- all_reduced_7 %>% dplyr::select(-c(pct_area_le50, pct_area_le200, pct_area_le300))
 names(all_reduced)
+names(all_reduced_7)
 # Exclude NEAR_TERR_FID.p and NEAR_FOREST_FID.p columns because we've decided we're not going to try to include two levels of random variables (as per discussion with Barb on 7/12/18)
 all_reduced <- all_reduced %>% dplyr::select(-c(NEAR_TERR_FID.p, NEAR_FOREST_FID.p))
 names(all_reduced)
+all_reduced_7 <- all_reduced_7 %>% dplyr::select(-c(NEAR_TERR_FID.p, NEAR_FOREST_FID.p))
+names(all_reduced_7)
 # Exclude pct_opwat because it's the inverse of pct_aqveg, and exclude pct_aq because it's the inverse of pct_terr
 all_reduced <- all_reduced %>% dplyr::select(-c(pct_opwat, pct_aq))
 names(all_reduced)
+all_reduced_7 <- all_reduced_7 %>% dplyr::select(-c(pct_opwat, pct_aq))
+names(all_reduced_7)
 #separate variables into quantitative predictors, categorical predictors, and other informational/index variables
 quant.preds <- all_reduced %>% dplyr::select(barcode, Area, Perimeter, max_depth, avg_depth, tot_vol, shoreline_density_index, econ, pct_prm_lotic, num_lotic_outl, pct_prm_lentic, num_lentic_outl, pct_aqveg, pct_terr, pct_prm_wetf, pct_terr_shore_wetf, sinuosity, NEAR_TERR_DIST.p, NEAR_FOREST_DIST.p, depth.p, current.p, stageht.p, pct_area_le100)
 str(quant.preds) #check that everything is numeric or integer. We're good. 
@@ -402,6 +331,8 @@ save(quant.preds, file = "data/sites_quantpreds.Rda")
 save(cat.preds, file = "data/sites_catpreds.Rda")
 save(info.vars, file = "data/sites_infovars.Rda")
 save(all_reduced, file = "data/all_reduced.Rda")
+save(all_reduced_7, file = "data/all_reduced_7.Rda")
+chisq.test(all_reduced$stratum, all_reduced$AQUA_CODE)$expected
 
 #===================================================
 # Polygon-level data
@@ -455,6 +386,24 @@ poly <- poly %>% rename(wingdyke = propwingdyke,
                         riprap = propriprap,
                         trib = proptrib) %>% 
   mutate_if(is.character, as.factor)
+
+# Are some of these variables highly correlated?
+locate.nas(poly)
+poly <- na.omit(poly) #exclude rows that have NA's, since imputing them tends to mess things up.
+c <- cor(poly[,c("Area", "Perimeter", "max_depth", "avg_depth", "tot_vol", "shoreline_density_index", "pct_aqveg", "pct_terr", "pct_prm_wetf", "pct_terr_shore_wetf", "medianNEAR_TERR_DIST.p", "medianNEAR_FOREST_DIST.p", "median_current.p", "pct_area_le100")])
+corrplot(c, method = "circle", 
+         type = "lower", 
+         diag = F)
+#see high correlations: absolute value >0.6
+chigh <- c
+chigh[abs(chigh) <= 0.6] <- NA
+corrplot(chigh, method = "circle",
+         type = "lower",
+         diag = F)
+#let's get rid of pct_area_le100, because it's highly correlated with both avg_depth and pct_aqveg. Also get rid of Area because it's highly correlated with tot_vol and Perimeter. pct_terr_shore_wetf is confusing. Also get rid of `trib` because it has low importance/often is excluded from the model due to lack of information.
+poly <- poly %>% dplyr::select(-c(Area, pct_area_le100, pct_terr_shore_wetf, trib))
+
+
 save(poly, file = "data/poly.Rda")
 
 
