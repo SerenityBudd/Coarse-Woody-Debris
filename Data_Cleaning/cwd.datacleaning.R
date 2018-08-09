@@ -36,6 +36,8 @@ sites_aa_5m$pool <- pools
 sites_aa <- sites_aa[,c(1:4, 71, 5:70)]
 sites_aa_5m <- sites_aa_5m[,c(1:4, 71, 5:70)]
 
+
+
 # "Observations with value of 0 in all the columns from aqa_2010_lvl3_011918.shp do not intersect with the aquatic areas layer"
 # I'd like these to have values of NA, not 0. 
 # Figure out which variables come from the aqa_2010_lvl2 file
