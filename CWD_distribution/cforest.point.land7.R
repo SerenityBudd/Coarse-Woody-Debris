@@ -11,6 +11,8 @@ all$snag <- factor(as.character(all$snag))
 table(all$nearest_forest_class)
 #remove this factor
 all$nearest_forest_class <- NULL
+table(droplevels(all$nearest_land_class))
+all <- all %>% filter(nearest_land_class != "Ag")
 
 #=========================
 # intialize functions
@@ -56,8 +58,8 @@ ers <- rep(NA, 5)
 
 for(i in 1:5){
   print(paste("BEGINNING RUN", i))
-  train <- all %>% dplyr::filter(grp != i) %>% dplyr::select(-grp, pool) # train on 4/5 of the data, remove `grp` because it's not a predictor variable
-  test <- all %>% dplyr::filter(grp == i) %>% dplyr::select(-grp, pool) # test on the remaining 1/5 of the data. Remove `grp``
+  train <- all %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable
+  test <- all %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp``
   
   print("calculating weights")
   w1 <- length(train$snag[train$snag == 0])/length(train$snag)
@@ -90,13 +92,12 @@ cv_error_all_landclass7 <- mean(ers) # cross-validated mean error rate
 imps_all <- rowSums(importances_all)/5 # calculate average variable importances
 varimps_all <- cbind(predictorvars_all, imps_all) %>% as.data.frame %>% mutate(imps_all = as.numeric(as.character(imps_all))) %>% mutate(predictorvars_all = reorder(predictorvars_all, -imps_all))
 colnames(varimps_all) <- c("predictorvars", "imps")# get the data into the right format for ggplot
+save(varimps_all, file = "data/varimps_all.Rda") #save the variable importances
 
 p <- plotnice(varimps_all, color = "olivedrab4", title = "Point RF var. importance (5fold), all pools")
 ggsave(plot = p, "rf_avg_varimp_point_all_5foldcv_landclass7.png",
-       width = 7, height = 4.5)
-save(cv_error_all_landclass7, file = "data/cv_error_all_landclass7.Rda")
-# save as rf_avg_varimp_point_all_5foldcv.png
-
+       width = 7, height = 4.5) #save the plot
+save(cv_error_all_landclass7, file = "data/cv_error_all_landclass7.Rda") #save the error
 #=============================
 # Points, individual pools 
 #=============================
@@ -152,6 +153,7 @@ cv_error_pool4_landclass7 <- mean(ers) # cross-validated mean error rate
 imps_pool4 <- rowSums(importances_pool4)/5 # calculate average variable importances
 varimps_pool4 <- cbind(predictorvars_pools, imps_pool4) %>% as.data.frame %>% mutate(imps_pool4 = as.numeric(as.character(imps_pool4))) %>% mutate(predictorvars_pools = reorder(predictorvars_pools, -imps_pool4)) # get the data into the right format for ggplot
 colnames(varimps_pool4) <- c("predictorvars", "imps")
+save(varimps_pool4, file = "data/varimps_pool4.Rda") #save the variable importances
 
 p4 <- plotnice(varimps_pool4, color = "cadetblue4", title = "Point RF var. importance (5fold), pool 4")
 # save as rf_avg_varimp_point_pool4_5foldcv.png
@@ -210,6 +212,7 @@ cv_error_pool8_landclass7 <- mean(ers) # cross-validated mean error rate
 imps_pool8 <- rowSums(importances_pool8)/5 # calculate average variable importances
 varimps_pool8 <- cbind(predictorvars_pools, imps_pool8) %>% as.data.frame %>% mutate(imps_pool8 = as.numeric(as.character(imps_pool8))) %>% mutate(predictorvars_pools = reorder(predictorvars_pools, -imps_pool8)) # get the data into the right format for ggplot
 colnames(varimps_pool8) <- c("predictorvars", "imps")
+save(varimps_pool8, file = "data/varimps_pool8.Rda") #save the variable importances
 
 p8 <- plotnice(varimps_pool8, color = "brown", title = "Point RF var. importance (5fold), pool 8")
 # save as rf_avg_varimp_point_pool8_5foldcv.png
@@ -268,6 +271,7 @@ cv_error_pool13_landclass7 <- mean(ers) # cross-validated mean error rate
 imps_pool13 <- rowSums(importances_pool13)/5 # calculate average variable importances
 varimps_pool13 <- cbind(predictorvars_pools, imps_pool13) %>% as.data.frame %>% mutate(imps_pool13 = as.numeric(as.character(imps_pool13))) %>% mutate(predictorvars_pools = reorder(predictorvars_pools, -imps_pool13)) # get the data into the right format for ggplot
 colnames(varimps_pool13) <- c("predictorvars", "imps")
+save(varimps_pool13, file = "data/varimps_pool13.Rda") #save the variable importances
 
 p13 <- plotnice(varimps_pool13, color = "darkblue", title = "Point RF var. importance (5fold), pool 13")
 # save as rf_avg_varimp_point_pool13_5foldcv.png
@@ -278,3 +282,54 @@ save(cv_error_pool13_landclass7, file = "data/cv_error_pool13_landclass7.Rda")
 
 cforest_errors_landclass7 <- list(cv_error_all_landclass7, cv_error_pool4_landclass7, cv_error_pool8_landclass7, cv_error_pool13_landclass7)
 save(cforest_errors_landclass7, file = "data/cforest_errors_landclass7.Rda")
+
+#==================
+# Load variable importances
+load("data/varimps_all.Rda")
+varimps_all$pool <- "all"
+load("data/varimps_pool4.Rda")
+varimps_pool4$pool <- "4"
+load("data/varimps_pool8.Rda")
+varimps_pool8$pool <- "8"
+load("data/varimps_pool13.Rda")
+varimps_pool13$pool <- "13"
+
+# Bind together and reorder the factors
+vi <- rbind(varimps_pool4, varimps_pool8, varimps_pool13)
+vi$predictorvars <- factor(vi$predictorvars, levels(vi$predictorvars)[c(1, 5, 8, 2, 10, 3, 7, 12, 9, 13, 4, 11, 6)])
+vi$pool <- as.factor(vi$pool)
+vi$pool <- factor(vi$pool, levels(vi$pool)[c(2,3,1)])
+
+# Make plot
+d <- ggplot(data = vi, aes(x = predictorvars, y = imps, fill = pool))+
+  geom_bar(stat = "identity", position = "dodge")+
+  scale_fill_manual(name = "Pool", values = c("darkturquoise", "firebrick2", "royalblue4"))+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.title.x=element_blank())+
+  ylab("Permutation Importance (MDA)")+
+  xlab("Variable")+
+  ggtitle("Random forest variable importances by pool")+
+  theme(text = element_text(size=20))
+d
+
+# Save plot
+ggsave(plot = d, 
+       "varimps_landclass7.png",
+       width = 7.75, height = 5.5)
+
+# plot importances for all together
+k <- ggplot(data = varimps_all, aes(x = predictorvars, y = imps))+
+  geom_bar(stat = "identity")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.title.x=element_blank())+
+  ylab("Permutation Importance (MDA)")+
+  xlab("Variable")+
+  ggtitle("Random forest variable importances, all pools")+
+  theme(text = element_text(size=20))
+
+# Save plot
+ggsave(plot = k, 
+       "varimps_landclass7_all.png",
+       width = 7.75, height = 5.5)
