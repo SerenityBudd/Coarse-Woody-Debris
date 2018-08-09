@@ -1,10 +1,9 @@
 source("libraries.R")
 load("data/funcdiv4.8.13.Rda")
 
-
+## filter data by the sunfish family
 fam.funcdiv <- filter(funcdiv4.8.13, Family.Name %in% c("Centrarchidae")) %>%
   droplevels()
-
 
 ## make common name a character
 fam.funcdiv$Common.Name <- as.character(fam.funcdiv$Common.Name)
@@ -31,7 +30,7 @@ datty <-
 datty2 <- 
   ddply(datty, .(barcode, Common.Name), summarise, N = sum(n), .drop=FALSE)
 
-## number of species per barcode, includes zeros, includes data collected at the sampling point, stratum, snag, effmin, pool
+## number of species per barcode, includes zeros, includes data collected at the sampling point, stratum, snag, sdate, pool
 datty3 <- left_join(datty2, select(tbl0, -c(Common.Name, Trophic.Guild)), by = c("barcode")) %>% distinct()
 #save(datty3, file = "data/datty3.Rda")
 
@@ -50,7 +49,7 @@ xtable(tabbs)
 colSums(tabbs[,-1])
 
 ## number of sampling sites per habitat stratum & snag
-rowSums(with(filter(datty3, Common.Name == "Black crappie"), table(ss, barcode)))
+rowSums(with(datty3, table(ss, barcode)))
 
 dim(datty3)
 # 38576
