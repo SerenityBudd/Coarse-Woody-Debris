@@ -37,6 +37,7 @@ colnames(zzz.all)[2] <- "Num_Fish"
 ## create a richness dataframe to do a t test on, combinging snag and yyy.all
 dt.richness.all <- left_join(yyy.all, select(funcdiv4.8.13, c(barcode, snag)), by = "barcode") %>% distinct
 
+
 ## summary statistics 
 group_by(dt.richness.all, snag) %>%
   summarise(
@@ -50,7 +51,7 @@ group_by(dt.richness.all, snag) %>%
 
 with(dt.richness.all, t.test(Num_Species~snag, alternative = "less")) 
 ## there is a signigficant diff in richness between sites with and without CWD
-
+with(dt.richness.all, wilcox.test(Num_Species~snag, alternative = "less")) 
 ##########################
 ## plotting the data 
 
@@ -79,6 +80,7 @@ ggplot(data = dt.richness.all, aes(Num_Species)) +
 ## create an abundance dataframe to do a t test on, combining snag and zzz.all
 dt.abund.all <- left_join(zzz.all, select(funcdiv4.8.13, c(barcode, snag)), by = "barcode") %>% distinct
 
+
 ## summary statistics 
 group_by(dt.abund.all, snag) %>%
   summarise(
@@ -91,6 +93,8 @@ group_by(dt.abund.all, snag) %>%
 
 with(dt.abund.all, t.test(Num_Fish~snag, alternative = "less"))
 ## there is a signigficant diff in abundance between sites with and without CWD
+with(dt.abund.all, wilcox.test(Num_Fish~snag, alternative = "less"))
+
 
 ##########################
 ## plotting the data 
