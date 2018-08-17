@@ -16,6 +16,7 @@ sites_forest <- read.csv("data/DataSets_7_7/AttributeTables/sites_forest.txt")
 sites_p4p8p13 <- read.csv("data/DataSets_7_7/AttributeTables/sites_p4p8p13.txt")
 sites_terrestrial <- read.csv("data/DataSets_7_7/AttributeTables/sites_terrestrial.txt")
 terrestrial_forests <- read.csv("data/DataSets_7_7/AttributeTables/Terrestrial_Forests.txt")
+rivmi <- read.csv("data/p4p8p13_rivmile.txt")
 
 # Join barcodes and pool # from `fish_data_EF` to `sites_p4p8p13` (the reprojected data)
 rows <- sites_p4p8p13$Field1
@@ -26,6 +27,8 @@ sites_p4p8p13$pool <- pools
 #check that we only have pools 4, 8, and 13
 table(sites_p4p8p13$pool)
 #good. 
+# Join the river mile data
+sites_p4p8p13 <- dplyr::left_join(sites_p4p8p13, rivmi[,c("RIVER_MILE", "TARGET_FID")], by = c("FID" = "TARGET_FID"))
 
 # Also join barcodes for sites_aa and sites_aa_5m
 sites_aa$barcode <- barcodes
@@ -35,8 +38,9 @@ sites_aa_5m$pool <- pools
 #reorder the columns so that barcode is first
 sites_aa <- sites_aa[,c(1:4, 71, 5:70)]
 sites_aa_5m <- sites_aa_5m[,c(1:4, 71, 5:70)]
-
-
+# join river miles
+sites_aa <- dplyr::left_join(sites_aa, sites_p4p8p13[,c("barcode", "RIVER_MILE")], by = "barcode")
+sites_aa_5m <- dplyr::left_join(sites_aa_5m, sites_p4p8p13[,c("barcode", "RIVER_MILE")], by = "barcode")
 
 # "Observations with value of 0 in all the columns from aqa_2010_lvl3_011918.shp do not intersect with the aquatic areas layer"
 # I'd like these to have values of NA, not 0. 
@@ -73,7 +77,7 @@ sites_aa$NEAR_TERR_DIST <- sites_terrestrial$NEAR_DIST[sites_terrestrial$Field1 
 sites_aa_5m$NEAR_TERR_FID <- sites_terrestrial$NEAR_FID[sites_terrestrial$Field1 %in% rows_5]
 sites_aa_5m$NEAR_TERR_DIST <- sites_terrestrial$NEAR_DIST[sites_terrestrial$Field1 %in% rows_5]
 
-# We're going to pull columns from `lc_2010`, not from `terrestrial`, because the FID's don't match up in `terrestrial`.
+# We're going to pull terrestrial areas information columns from `lc_2010`, not from `terrestrial`, because the FID's don't match up in `terrestrial`.
 # Which columns do we want to pull in? Need info on what these columns mean.
 columns_terr <- lc_2010[, c("FID", "CLASS_31", "CLASS_15_C", "CLASS_7_C","CLASS_31_N","CLASS_15_N", "CLASS_7_N", "HEIGHT_N")]
 sites_aa <- left_join(sites_aa, columns_terr, by = c("NEAR_TERR_FID" = "FID"))
@@ -96,7 +100,6 @@ sites_aa_5m <- sites_aa_5m %>% dplyr::rename(NEAR_TERR_CLASS_31 = CLASS_31,
                                        NEAR_TERR_HEIGHT_N = HEIGHT_N)
 
 # Add columns for distance to nearest forested area
-columns_forest <- terrestrial_forests[, c("FID", "CLASS_31", "CLASS_15_C", "CLASS_7_C", "CLASS_31_N", "CLASS_15_N", "CLASS_7_N", "HEIGHT_N")]
 sites_aa$NEAR_FOREST_FID <- sites_forest$NEAR_FID[sites_forest$Field1 %in% rows_0]
 sites_aa$NEAR_FOREST_DIST <- sites_forest$NEAR_DIST[sites_forest$Field1 %in% rows_0]
 
@@ -104,6 +107,7 @@ sites_aa_5m$NEAR_FOREST_FID <- sites_forest$NEAR_FID[sites_forest$Field1 %in% ro
 sites_aa_5m$NEAR_FOREST_DIST <- sites_forest$NEAR_DIST[sites_forest$Field1 %in% rows_5]
 
 #join the attribute columns for the nearest *forested* area
+columns_forest <- terrestrial_forests[, c("FID", "CLASS_31", "CLASS_15_C", "CLASS_7_C", "CLASS_31_N", "CLASS_15_N", "CLASS_7_N", "HEIGHT_N")]
 sites_aa <- left_join(sites_aa, columns_forest, by = c("NEAR_FOREST_FID" = "FID"))
 sites_aa_5m <- left_join(sites_aa_5m, columns_forest, by = c("NEAR_FOREST_FID" = "FID"))
 #change names to indicate that these columns refer to the landcover type of the nearest terrestrial area.
@@ -125,7 +129,7 @@ sites_aa_5m <- sites_aa_5m %>% dplyr::rename(NEAR_FOREST_CLASS_31 = CLASS_31,
 # Any NA's?
 locate.nas(sites_aa)
 locate.nas(sites_aa_5m)
-#looks good except for the large number of NA's for pool number. Not sure why this is. 
+#looks good except for a few NA's for river mile, which we're going to ignore for now.  
 
 # What are the levels of terrestrial habitat types?
 table(droplevels(sites_aa$NEAR_TERR_CLASS_31_N)) #looks good, no water
