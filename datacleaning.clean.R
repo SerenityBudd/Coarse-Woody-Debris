@@ -140,6 +140,10 @@ all_reduced_clean <- arc3
 locate.nas(all_reduced_clean) # find the NA's: we still have a few for river mile, but they can stay. 
 dim(all_reduced_clean) # check that dimensions match the consort diagram: should have 5439 observations at this point.
 
+# Change data types of columns as needed
+all_reduced_clean$pool <- factor(as.character(all_reduced_clean$pool)) 
+all_reduced_clean$year <- as.numeric(all_reduced_clean$year)
+
 # Export dataset
 save(all_reduced_clean, file = "data/all_reduced_clean.Rda")
 
