@@ -68,6 +68,11 @@ ltrmfishdat <- filter(fishdat, fishcode %in% inters)
 ltrmfishdat$snag01 <- ltrmfishdat$snag
 ltrmfishdat$snag <- factor(ltrmfishdat$snag, levels = c(0,1),
                            labels = c("No", "Yes"))
+
+
+# make sdate a date vector
+ltrmfishdat$sdate <- mdy(ltrmfishdat$sdate)
+
 # make a column for the stratum name
 ltrmfishdat$stratum_name <- ltrmfishdat$stratum
 levels(ltrmfishdat$stratum_name) <- c("Backwater, Contiguous Offshore","Backwater, Contiguous Shoreline","Main Channel Border, Wingdam, Partial", "Main Channel Trough", "Impounded, Offshore", "Impounded, Shoreline", "Main Channel Border, Unstructured", "Main Channel Border, Wing Dam Area", "Side Channel Border","Tributary", "Tailwater Zone","Unexploded Ordinance Area, Pool 13")
@@ -78,15 +83,17 @@ levels(ltrmfishdat$stratum_name) <- c("Backwater, Contiguous Offshore","Backwate
 ## "Main Channel Trough"
   ## all snag is NA, exclude
 
-ltrmfishdat <- ltrmfishdat %>% 
-  # remove the stratum for the above reasons
-  filter(!stratum_name %in% c("Main Channel Border, Wingdam, Partial", "Unexploded Ordinance Area, Pool 13", "Main Channel Trough")) %>%
+ltrmfishdat2 <- ltrmfishdat %>% 
+  # remove rows not pool 4, 8, 13
+  filter(pool %in% c("04", "08", "13")) %>%
+  # remove years prior to stratified random sampling
+  filter(year(sdate) > 1992) %>%
+  # remove the stratum due to low number of sampling points
+  filter(!stratum %in% c("BWC-O", "TWZ", "UXO")) %>%
   # only in sites where they electroshocked for fish during the day
   filter(gear %in% "D") %>%
   # remove the rows where snag is NA
   filter(!is.na(snag)) %>%
-  # remove rows not in a pool
-  filter(!pool %in% "") %>%
   # drop the unused levels
   droplevels()
 #save(ltrmfishdat, file = "data/ltrmfishdat.Rda")

@@ -33,6 +33,15 @@ shannon_div <- function(Pool) {
   ## create a column in the dataframe for the shannon div index
   dt.plot$div_shan <- div_shannon
   
+  print(
+    group_by(dt.plot, snag) %>%
+      summarise(
+        count = n(),
+        mean = mean(div_shan, na.rm = TRUE),
+        sd = sd(div_shan, na.rm = TRUE)
+      )
+  )
+  
   ## run a t-test on shannon div and snag
   print(with(dt.plot, t.test(div_shan~snag, alternative = "less")))
   
@@ -48,9 +57,8 @@ shannon_div <- function(Pool) {
     ggtitle(paste("Density Plot of Shannon-Weaver Index at Pool", Pool, "Sites"))
 }
 
-
-shannon_div(Pool = "08")
 shannon_div(Pool = "04")
+shannon_div(Pool = "08")
 shannon_div(Pool = "13")
 shannon_div(Pool = c("04","08","13"))
 

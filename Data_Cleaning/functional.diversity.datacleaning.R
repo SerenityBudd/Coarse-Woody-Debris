@@ -6,7 +6,7 @@ load("data/ltrmfishdat.Rda")
 
 
 # create a working dataframe with the cols we need
-funcdiv <- select(ltrmfishdat, c(fishcode, barcode, snag, snag01, stratum, stratum_name, length, weight, grp_wdth, effmin,secchi,temp, depth, current, pool, catch))
+funcdiv <- select(ltrmfishdat, c(fishcode, barcode, snag, snag01, stratum, stratum_name, length, weight, grp_wdth, effmin,secchi,temp, depth, current, pool, catch, sdate, wingdyke))
 
 # remove rows where catch was <1
 funcdiv <- filter(funcdiv, catch >=1)
@@ -71,96 +71,21 @@ dim(funcdiv.all)
 #  print(summary(funcdiv3[,i]))
 #}
 
-# create a pool8 df using all of the fish in both fishinfo and fishdat
+# create a pool4 df
 funcdiv4 <- funcdiv.all %>%
   filter(pool == "04") %>% droplevels()
 #save(funcdiv4, file = "data/funcdiv4.Rda")
 
+# create a pool8 df
 funcdiv8 <- funcdiv.all %>%
   filter(pool == "08") %>% droplevels()
 #save(funcdiv8, file = "data/funcdiv8.Rda")
 
+# create a pool13 df
 funcdiv13 <- funcdiv.all %>%
   filter(pool == "13") %>% droplevels()
 #save(funcdiv13, file = "data/funcdiv13.Rda")
 
-funcdiv26 <- funcdiv.all %>%
-  filter(pool == "26") %>% droplevels()
-#save(funcdiv26, file = "data/funcdiv26.Rda")
-
-funcdivLG <- funcdiv.all %>%
-  filter(pool == "LG") %>% droplevels()
-#save(funcdivLG, file = "data/funcdivLG.Rda")
-
-funcdivOR <- funcdiv.all %>%
-  filter(pool == "OR") %>% droplevels()
-#save(funcdivOR, file = "data/funcdivOR.Rda")
-
 # create a dataframe for the top 3 pools
-funcdiv4.8.13 <- funcdiv.all %>%
-  filter(pool == "04" | pool == "08" | pool == "13") %>%
-  droplevels()
+funcdiv4.8.13 <- funcdiv.all
 #save(funcdiv4.8.13, file = "data/funcdiv4.8.13.Rda")
-
-#POOL/REACH
-#Alphanumeric code for the LTRMP study reach or pool number:
-#  04 = Pool 4, 26 = Pool 26
-#  08 = Pool 8, LG = La Grange Pool, Illinois River
-#  13 = Pool 13, OR = Open Mississippi River
-
-#######################################################
-fishtraits_new <- read.csv("data/new_fishtraits.csv")
-#save(fishtraits_new, file = "data/fishtraits_new.Rda")
-
-funcdiv2.new <- 
-  left_join(funcdiv2, select(fishinfo2, c(Fishcode, Common.Name)),  by = "Fishcode")
-
-
-funcdiv2.new$Common.Name <- as.character(funcdiv2.new$Common.Name)
-fishtraits_new$Common.Name <- as.character(fishtraits_new$Common.Name)
-
-setdiff(fishtraits_new[,"Common.Name"], funcdiv2.new[,"Common.Name"])
-## Mosquitofish = Western mosquitofish, Northern hogsucker = Northern hog sucker, Rockbass = Rock bass, Sicklefin Chub = Sicklefin chub
-
-fishtraits_new$Common.Name[fishtraits_new$Common.Name == "Mosquitofish"] <- "Western mosquitofish"
-fishtraits_new$Common.Name[fishtraits_new$Common.Name == "Northern hogsucker"] <- "Northern hog sucker"
-fishtraits_new$Common.Name[fishtraits_new$Common.Name == "Rockbass"] <- "Rock bass"
-fishtraits_new$Common.Name[fishtraits_new$Common.Name == "Sicklefin Chub"] <- "Sicklefin chub"
-
-
-# the fishcodes in both the LTRM data and fish traits
-inters3 <- intersect(unique(funcdiv2.new[,"Common.Name"]), fishtraits_new[,"Common.Name"])
-
-
-dim(filter(funcdiv2.new, Common.Name %in% setdiff(funcdiv2.new[,"Common.Name"], fishtraits_new[,"Common.Name"])))
-## would lose out on 11955 rows out of 1543161
-
-
-dim(filter(funcdiv2.new, Common.Name %in% inters3))
-## there would be 1531206 rows left
-
-
-fishtraits_new$Trophic.Level <- factor(fishtraits_new$Trophic.Level)
-
-fishtraits.new <- fishtraits_new %>%
-  filter(Common.Name %in% inters3) %>%
-  separate(col = Trophic.Level, into = c("Trophic.Number","Trophic.Guild"), sep = "-", remove = T) %>%
-  filter(!Trophic.Number == "" & !Spawning.Group == "") %>%
-  droplevels()
-
-fishtraits.new$Trophic.Number <- factor(fishtraits.new$Trophic.Number)
-fishtraits.new$Trophic.Guild <- factor(fishtraits.new$Trophic.Guild)
-
-levels(fishtraits.new$Spawning.Group)
-levels(fishtraits.new$Trophic.Number)
-levels(fishtraits.new$Trophic.Guild)
-
-sum(is.na(fishtraits.new))
-#save(fishtraits.new, file = "data/fishtraits.new.Rda")
-
-funcdiv4.8.13.new <- 
-  left_join(funcdiv2.new, fishtraits.new, by = "Common.Name") %>%
-  filter(pool == "04" | pool == "08" | pool == "13") %>%
-  droplevels()
-#save(funcdiv4.8.13.new, file = "data/funcdiv4.8.13.new.Rda")
-
