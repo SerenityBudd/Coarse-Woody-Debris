@@ -80,3 +80,15 @@ glmerAUCtest <- function(model, dataframe, k){
   return(l)
 }
 
+# Plotnice
+# initialize function to make nicer variable importance plot
+plotnice <- function(varimps, color, title){
+  ggplot(data = varimps, aes(x = predictorvars, y = imps))+
+    geom_col(fill = color)+
+    theme_bw()+
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+          axis.title.x=element_blank())+
+    ylab("Rel. importance")+
+    ggtitle(title)+
+    theme(text = element_text(size=20))
+}
