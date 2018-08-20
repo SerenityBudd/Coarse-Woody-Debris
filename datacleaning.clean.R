@@ -1,4 +1,4 @@
-# Data cleaning: LW
+# Data cleaning: LW; Pools 4, 8, and 13.
 # Kaija Gahm
 # 11 August 2018
 
