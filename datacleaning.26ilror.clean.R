@@ -125,5 +125,8 @@ dim(all2_reduced_clean) # check that dimensions match the consort diagram
 all2_reduced_clean$pool <- factor(as.character(all2_reduced_clean$pool)) 
 all2_reduced_clean$year <- as.numeric(all2_reduced_clean$year)
 
+# Remove the OBJECTID_1 column that's still kicking around
+all2_reduced_clean$OBJECTID_1 <- NULL
+
 # Export dataset
 save(all2_reduced_clean, file = "data/all2_reduced_clean.Rda")
