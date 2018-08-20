@@ -7,9 +7,14 @@ source("libraries.R")
 
 # Load data
 load("data/all_reduced_clean.Rda")
-arc <- all_reduced_clean # call the data `arc` to make typing easier
-arc$pool <- factor(arc$pool, levels(arc$pool)[c(2, 3, 1)]) # convert `pool` to factor and relevel
-locate.nas(arc) # NA's have already been removed in the datacleaning.clean script. The column `near_forest_class` has also been removed. 
+load("data/all2_reduced_clean.Rda")
+
+# remove the river mile column from all_reduced_clean
+all_reduced_clean$river_mile <- NULL
+
+arc <- rbind(all_reduced_clean, all2_reduced_clean) # bind the two data sets together
+arc$pool <- factor(arc$pool, levels(arc$pool)[c(2, 3, 1, 4, 5, 6)]) # convert `pool` to factor and relevel
+locate.nas(arc) # NA's have already been removed. The column `near_forest_class` has also been removed. 
 
 # Summarize by year and pool
 b.yp <- arc %>% 
@@ -30,7 +35,7 @@ head(b.yp)
         xlab("Proportion of points with wood")+
         ggtitle("Proportion of points with wood through time")+
         scale_color_manual(name = "Pool", 
-                           values = c("darkturquoise", "firebrick2", "royalblue4"))+
+                           values = c("darkturquoise", "firebrick2", "royalblue4", "goldenrod2", "mediumorchid3", "black"))+
         theme(text = element_text(size = 20))
 
 # Summarize by pool
@@ -45,22 +50,8 @@ head(b.p)
       # Test for significant differences in wood proportion
       chisq.test(b.p[,3:4]) # yes, these are significantly different
     
-      # Pairwise comparisons: 
-      # Pool 4 vs. Pool 8
-      a <- prop.test(x = c(1151, 899), n = c(1824, 1951)) # would be good to not hard code this...
-      # apply bonferroni correction
-      a$p.value*3 #still super significant
-      
-      # Pool 4 vs. Pool 13
-      b <- prop.test(x = c(1151, 1045), n = c(1824, 1664)) 
-      # apply bonferroni correction
-      b$p.value*3 #not significant
-      
-      # Pool 13 vs. Pool 8
-      c <- prop.test(x = c(1045, 899), n = c(1664, 1951)) 
-      # apply bonferroni correction
-      c$p.value*3 #still super significant
-
+      # Pairwise comparisons
+      pairwise.prop.test(x = b.p$wood, n = b.p$npoints, p.adjust.method = "bonferroni")
 
 # Summarize by stratum
 b.s <- arc %>% group_by(stratum) %>% 
@@ -77,6 +68,9 @@ head(b.s)
       
       # Test for significant differences
       chisq.test(b.s[,2:3])
+      
+      # Pairwise comparisons
+      pairwise.prop.test(x = b.s$wood, n = b.s$npoints, p.adjust.method = "bonferroni")
       
       # Plot of proportions and confidence intervals by stratum
       ggplot(data = b.s, aes(x = stratum, y = propwood))+
@@ -121,4 +115,5 @@ head(b.sp)
         ylab("Proportion of points with wood")+
         xlab("Habitat Stratum")+
         ggtitle("Wood proportion by stratum")+
-        scale_color_manual(name = "Pool", values = c("darkturquoise", "firebrick2", "royalblue4"))
+        scale_color_manual(name = "Pool", values = c("darkturquoise", "firebrick2", "royalblue4", "goldenrod2", "mediumorchid3", "black"))
+      

@@ -122,3 +122,4 @@ ggplot(data = b.sp, aes(x = stratum, y = propwood, color = pool))+
   xlab("Habitat Stratum")+
   ggtitle("Wood proportion by stratum")+
   scale_color_manual(name = "Pool", values = c("goldenrod2", "mediumorchid3", "black"))
+
