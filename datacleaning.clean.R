@@ -144,6 +144,10 @@ dim(all_reduced_clean) # check that dimensions match the consort diagram: should
 all_reduced_clean$pool <- factor(as.character(all_reduced_clean$pool)) 
 all_reduced_clean$year <- as.numeric(all_reduced_clean$year)
 
+# Exclude UXO
+all_reduced_clean <- all_reduced_clean %>% filter(stratum != "UXO")
+dim(all_reduced_clean)
+
 # Export dataset
 save(all_reduced_clean, file = "data/all_reduced_clean.Rda")
 
