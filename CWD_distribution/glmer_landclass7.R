@@ -1,31 +1,31 @@
-library(lme4)
+
+#========================================
+# cforest tree on point level for larger sample size
+#========================================
 source("libraries.R")
-library(effects)
-load("data/all_reduced_7.Rda")
-all_reduced <- all_reduced_7 %>% dplyr::select(-c(RIVER_MILE, barcode, Area, pct_prm_lotic, pct_prm_lentic, num_lotic_outl, num_lentic_outl, econ, pct_terr_shore_wetf, sinuosity, NEAR_TERR_CLASS_7_N.p, NEAR_FOREST_CLASS_7_N.p, year.p, stageht.p, stratum_name, snagyn, pct_area_le100, depth.p, current.p, substrt.p, trib.p, pct_aqveg, AQUA_CODE)) %>% na.omit()
-all <- all_reduced
-colnames(all) <- c("stratum", "snag", "uniq_id", "pool", "perimeter", "max_depth", "avg_depth", "total_volume", "shoreline_density_index", "pct_terrestrial_shore", "pct_perimeter_wetforest", "dist_to_land", "nearest_land_class", "dist_to_forest", "nearest_forest_class", "wingdam", "revetment")
-all$snag <- factor(as.character(all$snag))
+source("ownfunctions.R")
+# Upper river
+load("data/all_reduced_clean.Rda")
+dim(all_reduced_clean)
+locate.nas(all_reduced_clean)
 
-allscaled <- all
+# Lower river
+load("data/all2_reduced_clean.Rda")
+dim(all2_reduced_clean)
+locate.nas(all2_reduced_clean)
 
-# scale numeric variables to avoid problems with convergence
-allscaled$perimeter <- scale(allscaled$perimeter)
-allscaled$max_depth <- scale(allscaled$max_depth)
-allscaled$avg_depth <- scale(allscaled$avg_depth)
-allscaled$total_volume <- scale(allscaled$total_volume)
-allscaled$shoreline_density_index <- scale(allscaled$shoreline_density_index)
-allscaled$pct_terrestrial_shore <- scale(allscaled$pct_terrestrial_shore)
-allscaled$pct_perimeter_wetforest <- scale(allscaled$pct_perimeter_wetforest)
-allscaled$dist_to_land <- scale(allscaled$dist_to_land)
-allscaled$dist_to_forest <- scale(allscaled$dist_to_forest)
+# Bind the two datasets together
+combined <- rbind(all_reduced_clean, all2_reduced_clean)
+combined$snag <- factor(as.character(combined$snag))
+combined$wingdyke <- factor(as.character(combined$wingdyke))
+combined$riprap <- factor(as.character(combined$riprap))
 
-table(allscaled$nearest_land_class)
-# only one row has "Ag" as the nearest land class, so let's get rid of that row.
-allscaled <- allscaled[allscaled$nearest_land_class != "Ag",]
-table(allscaled$nearest_forest_class) # only one class, so this isn't a good predictor
-allscaled$nearest_forest_class <- NULL # remove nearest_forest_class
+# Remove some variables that we aren't going to use
+combined <- combined %>% dplyr::select(-c(barcode, lcode, sdate, utm_e, utm_n, year, near_terr_name))
 
+# Scale the numeric variables to avoid problems with model convergence. 
+combined_scaled <- combined %>%
+  mutate_if(is.numeric, scale) # so elegant!!!
 #=============================
 # ALL POOLS
 #=============================
