@@ -3,16 +3,23 @@
 # cforest tree on point level for larger sample size
 #========================================
 source("libraries.R")
-load("data/all_reduced_7.Rda")
-all_reduced <- all_reduced_7 %>% dplyr::select(-c(RIVER_MILE, barcode, uniq_id, Area, pct_prm_lotic, pct_prm_lentic, num_lotic_outl, num_lentic_outl, econ, pct_terr_shore_wetf, sinuosity, NEAR_TERR_CLASS_7_N.p, NEAR_FOREST_CLASS_7_N.p, year.p, stageht.p, stratum_name, snagyn, pct_area_le100, depth.p, current.p, substrt.p, trib.p, pct_aqveg, AQUA_CODE)) %>% na.omit()
-all <- all_reduced
-colnames(all) <- c("stratum", "snag", "pool", "perimeter", "max_depth", "avg_depth", "total_volume", "shoreline_density_index", "pct_terrestrial_shore", "pct_perimeter_wetforest", "dist_to_land", "nearest_land_class", "dist_to_forest", "nearest_forest_class", "wingdam", "revetment")
-all$snag <- factor(as.character(all$snag))
-table(all$nearest_forest_class)
-#remove this factor
-all$nearest_forest_class <- NULL
-table(droplevels(all$nearest_land_class))
-all <- all %>% filter(nearest_land_class != "Ag")
+source("ownfunctions.R")
+# Upper river
+load("data/all_reduced_clean.Rda")
+dim(all_reduced_clean)
+locate.nas(all_reduced_clean)
+
+# Lower river
+load("data/all2_reduced_clean.Rda")
+dim(all2_reduced_clean)
+locate.nas(all2_reduced_clean)
+
+# Bind the two datasets together
+combined <- rbind(all_reduced_clean, all2_reduced_clean)
+combined$snag <- factor(as.character(combined$snag))
+
+# Remove some variables that we aren't going to use
+combined <- combined %>% dplyr::select(-c(barcode, lcode, sdate, utm_e, utm_n, uniq_id, year, near_terr_name))
 
 #=========================
 # intialize functions
@@ -43,10 +50,10 @@ splitup <- function(df, k){
 #=================================
 
 # split the full data set into 5 groups
-all <- splitup(all, 5)
+combined <- splitup(combined, 5)
 
 # define predictor variables for the full data set
-predictorvars_all <- c("stratum", "perimeter", "max_depth", "avg_depth", "total_volume", "shoreline_density_index", "pct_terrestrial_shore", "pct_perimeter_wetforest", "dist_to_land", "nearest_land_class", "dist_to_forest", "wingdam", "revetment")
+predictorvars_all <- c("stratum", "perimeter", "max_depth", "avg_depth", "tot_vol", "shoreline_density_index", "pct_terr", "pct_prm_wetf", "near_terr_dist", "near_terr_class_7", "near_forest_dist", "wingdyke", "riprap")
 
 # initialize an empty data frame to contain variable importance values
 importances_all <- data.frame(
@@ -58,8 +65,8 @@ ers <- rep(NA, 5)
 
 for(i in 1:5){
   print(paste("BEGINNING RUN", i))
-  train <- all %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable
-  test <- all %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp``
+  train <- combined %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable
+  test <- combined %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp``
   
   print("calculating weights")
   w1 <- length(train$snag[train$snag == 0])/length(train$snag)
@@ -98,16 +105,17 @@ p <- plotnice(varimps_all, color = "olivedrab4", title = "Point RF var. importan
 ggsave(plot = p, "rf_avg_varimp_point_all_5foldcv_landclass7.png",
        width = 7, height = 4.5) #save the plot
 save(cv_error_all_landclass7, file = "data/cv_error_all_landclass7.Rda") #save the error
+
 #=============================
 # Points, individual pools 
 #=============================
 
-predictorvars_pools <- c("stratum", "perimeter", "max_depth", "avg_depth", "total_volume", "shoreline_density_index", "pct_terrestrial_shore", "pct_perimeter_wetforest", "dist_to_land", "nearest_land_class", "dist_to_forest", "wingdam", "revetment") #define vars for the pools
+predictorvars_pools <- c("stratum", "perimeter", "max_depth", "avg_depth", "tot_vol", "shoreline_density_index", "pct_terr", "pct_prm_wetf", "near_terr_dist", "near_terr_class_7", "near_forest_dist", "wingdyke", "riprap")
 
 #=============================
 # pool 4
 
-points_4 <- splitup(all[all$pool == 4,], 5) # split data into 5 groups
+points_4 <- splitup(combined[combined$pool == 4,], 5) # split data into 5 groups
 
 # initialize an empty data frame to contain variable importance values
 importances_pool4 <- data.frame(
@@ -165,7 +173,7 @@ save(cv_error_pool4_landclass7, file = "data/cv_error_pool4_landclass7.Rda")
 #=============================
 # pool 8
 
-points_8 <- splitup(all[all$pool == 8,], 5) # split data into 5 groups
+points_8 <- splitup(combined[combined$pool == 8,], 5) # split data into 5 groups
 
 # initialize an empty data frame to contain variable importance values
 importances_pool8 <- data.frame(
@@ -224,7 +232,7 @@ save(cv_error_pool8_landclass7, file = "data/cv_error_pool8_landclass7.Rda")
 #=============================
 # pool 13
 
-points_13 <- splitup(all[all$pool == 13,], 5) # split data into 5 groups
+points_13 <- splitup(combined[combined$pool == 13,], 5) # split data into 5 groups
 
 # initialize an empty data frame to contain variable importance values
 importances_pool13 <- data.frame(
@@ -280,9 +288,303 @@ ggsave(plot = p13,
        width = 7, height = 4.5)
 save(cv_error_pool13_landclass7, file = "data/cv_error_pool13_landclass7.Rda")
 
-cforest_errors_landclass7 <- list(cv_error_all_landclass7, cv_error_pool4_landclass7, cv_error_pool8_landclass7, cv_error_pool13_landclass7)
-save(cforest_errors_landclass7, file = "data/cforest_errors_landclass7.Rda")
+#=============================
+# pool 26
 
+points_26 <- splitup(combined[combined$pool == 26,], 5) # split data into 5 groups
+
+# initialize an empty data frame to contain variable importance values
+importances_pool26 <- data.frame(
+  predictorvars_pools
+)
+
+# intialize an empty vector to contain error rates
+ers <- rep(NA, 5)
+
+for(i in 1:5){
+  print(paste("BEGINNING RUN", i))
+  train <- points_26 %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable.
+  test <- points_26 %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp`.
+  print("calculating weights")
+  w1 <- length(train$snag[train$snag == 0])/length(train$snag)
+  w0 <- length(train$snag[train$snag == 1])/length(train$snag)
+  train$weight <- ifelse(train$snag == 1, w1, w0)
+  
+  # build a tree
+  print("growing forest")
+  tree <- partykit::cforest(snag~.-weight, 
+                            data = train,
+                            weights = weight,
+                            strata = snag,
+                            ntree = 500, trace = T,
+                            perturb = list(replace = F,
+                                           fraction = 0.632)) # weights?
+  print("making predictions")
+  pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights?
+  print("constructing confusion matrix")
+  cm <- table(true = test$snag, pred = predict(tree, newdata = test)) #confusion matrix
+  print("calculating error rate")
+  e <- (cm[1,2] + cm[2,1])/sum(cm) # calculate the error rate
+  ers[i] <- e # assign to the i'th element of ers vector
+  
+  # calculate variable importances
+  print("calculating variable importances")
+  vi.part <- varimp(tree)
+  importances_pool26[,i] <- vi.part
+  print(paste("Run", i, "complete"))
+}
+cv_error_pool26_landclass7 <- mean(ers) # cross-validated mean error rate
+
+imps_pool26 <- rowSums(importances_pool26)/5 # calculate average variable importances
+varimps_pool26 <- cbind(predictorvars_pools, imps_pool26) %>% as.data.frame %>% mutate(imps_pool26 = as.numeric(as.character(imps_pool26))) %>% mutate(predictorvars_pools = reorder(predictorvars_pools, -imps_pool26)) # get the data into the right format for ggplot
+colnames(varimps_pool26) <- c("predictorvars", "imps")
+save(varimps_pool26, file = "data/varimps_pool26.Rda") #save the variable importances
+
+p26 <- plotnice(varimps_pool26, color = "goldenrod2", title = "Point RF var. importance (5fold), pool 26")
+p26 
+# save as rf_avg_varimp_point_pool26_5foldcv.png
+ggsave(plot = p26, 
+       "rf_avg_varimp_point_pool26_5foldcv_landclass7.png",
+       width = 7, height = 4.5)
+save(cv_error_pool26_landclass7, file = "data/cv_error_pool26_landclass7.Rda")
+
+#=============================
+# LG
+points_LG <- splitup(combined[combined$pool == "LG",], 5) # split data into 5 groups
+table(points_LG$wingdyke) # no wingdyke points, so we have to exclude this as a predictor.
+
+predictorvars_LG <- c("stratum", "perimeter", "max_depth", "avg_depth", "tot_vol", "shoreline_density_index", "pct_terr", "pct_prm_wetf", "near_terr_dist", "near_terr_class_7", "near_forest_dist", "riprap")
+
+# initialize an empty data frame to contain variable importance values
+importances_poolLG <- data.frame(
+  predictorvars_LG
+)
+
+# intialize an empty vector to contain error rates
+ers <- rep(NA, 5)
+
+for(i in 1:5){
+  print(paste("BEGINNING RUN", i))
+  train <- points_LG %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable.
+  test <- points_LG %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp`.
+  print("calculating weights")
+  w1 <- length(train$snag[train$snag == 0])/length(train$snag)
+  w0 <- length(train$snag[train$snag == 1])/length(train$snag)
+  train$weight <- ifelse(train$snag == 1, w1, w0)
+  
+  # build a tree
+  print("growing forest")
+  tree <- partykit::cforest(snag~.-weight, 
+                            data = train,
+                            weights = weight,
+                            strata = snag,
+                            ntree = 500, trace = T,
+                            perturb = list(replace = F,
+                                           fraction = 0.632)) # weights?
+  print("making predictions")
+  pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights?
+  print("constructing confusion matrix")
+  cm <- table(true = test$snag, pred = predict(tree, newdata = test)) #confusion matrix
+  print("calculating error rate")
+  e <- (cm[1,2] + cm[2,1])/sum(cm) # calculate the error rate
+  ers[i] <- e # assign to the i'th element of ers vector
+  
+  # calculate variable importances
+  print("calculating variable importances")
+  vi.part <- varimp(tree)
+  importances_poolLG[,i] <- vi.part
+  print(paste("Run", i, "complete"))
+}
+cv_error_poolLG_landclass7 <- mean(ers) # cross-validated mean error rate
+
+imps_poolLG <- rowSums(importances_poolLG)/5 # calculate average variable importances
+varimps_poolLG <- cbind(predictorvars_LG, imps_poolLG) %>% as.data.frame %>% mutate(imps_poolLG = as.numeric(as.character(imps_poolLG))) %>% mutate(predictorvars_LG = reorder(predictorvars_LG, -imps_poolLG)) # get the data into the right format for ggplot
+colnames(varimps_poolLG) <- c("predictorvars", "imps")
+save(varimps_poolLG, file = "data/varimps_poolLG.Rda") #save the variable importances
+
+pLG <- plotnice(varimps_poolLG, color = "mediumorchid3", title = "Point RF var. importance (5fold), pool LG")
+pLG
+# save as rf_avg_varimp_point_poolLG_5foldcv.png
+ggsave(plot = pLG, 
+       "rf_avg_varimp_point_poolLG_5foldcv_landclass7.png",
+       width = 7, height = 4.5)
+save(cv_error_poolLG_landclass7, file = "data/cv_error_poolLG_landclass7.Rda")
+
+#=============================
+# UPPER
+points_UPPER <- splitup(combined[combined$pool %in% c("4", "8", "13"),], 5) # split data into 5 groups
+
+# initialize an empty data frame to contain variable importance values
+importances_poolUPPER <- data.frame(
+  predictorvars_pools
+)
+
+# intialize an empty vector to contain error rates
+ers <- rep(NA, 5)
+
+for(i in 1:5){
+  print(paste("BEGINNING RUN", i))
+  train <- points_UPPER %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable.
+  test <- points_UPPER %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp`.
+  print("calculating weights")
+  w1 <- length(train$snag[train$snag == 0])/length(train$snag)
+  w0 <- length(train$snag[train$snag == 1])/length(train$snag)
+  train$weight <- ifelse(train$snag == 1, w1, w0)
+  
+  # build a tree
+  print("growing forest")
+  tree <- partykit::cforest(snag~.-weight, 
+                            data = train,
+                            weights = weight,
+                            strata = snag,
+                            ntree = 25, trace = T,
+                            perturb = list(replace = F,
+                                           fraction = 0.632)) # weights?
+  print("making predictions")
+  pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights?
+  print("constructing confusion matrix")
+  cm <- table(true = test$snag, pred = predict(tree, newdata = test)) #confusion matrix
+  print("calculating error rate")
+  e <- (cm[1,2] + cm[2,1])/sum(cm) # calculate the error rate
+  ers[i] <- e # assign to the i'th element of ers vector
+  
+  # calculate variable importances
+  print("calculating variable importances")
+  vi.part <- varimp(tree)
+  importances_poolUPPER[,i] <- vi.part
+  print(paste("Run", i, "complete"))
+}
+cv_error_poolUPPER_landclass7 <- mean(ers) # cross-validated mean error rate
+
+imps_poolUPPER <- rowSums(importances_poolUPPER)/5 # calculate average variable importances
+varimps_poolUPPER <- cbind(predictorvars_pools, imps_poolUPPER) %>% as.data.frame %>% mutate(imps_poolUPPER = as.numeric(as.character(imps_poolUPPER))) %>% mutate(predictorvars_pools = reorder(predictorvars_pools, -imps_poolUPPER)) # get the data into the right format for ggplot
+colnames(varimps_poolUPPER) <- c("predictorvars", "imps")
+save(varimps_poolUPPER, file = "data/varimps_poolUPPER.Rda") #save the variable importances
+
+pUPPER <- plotnice(varimps_poolUPPER, color = "black", title = "Point RF var. importance (5fold), pool UPPER")
+# save as rf_avg_varimp_point_poolUPPER_5foldcv.png
+ggsave(plot = pUPPER, 
+       "rf_avg_varimp_point_poolUPPER_5foldcv_landclass7.png",
+       width = 7, height = 4.5)
+save(cv_error_poolUPPER_landclass7, file = "data/cv_error_poolUPPER_landclass7.Rda")
+
+#=============================
+# UPPER RIVER POOLS: 4, 8, AND 13
+points_UPPER <- splitup(combined[combined$pool %in% c(4, 8, 13),], 5) # split data into 5 groups
+
+# initialize an empty data frame to contain variable importance values
+importances_poolUPPER <- data.frame(
+  predictorvars_pools
+)
+
+# intialize an empty vector to contain error rates
+ers <- rep(NA, 5)
+
+for(i in 1:5){
+  print(paste("BEGINNING RUN", i))
+  train <- points_UPPER %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable.
+  test <- points_UPPER %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool)) # test on the remaining 1/5 of the data. Remove `grp`.
+  print("calculating weights")
+  w1 <- length(train$snag[train$snag == 0])/length(train$snag)
+  w0 <- length(train$snag[train$snag == 1])/length(train$snag)
+  train$weight <- ifelse(train$snag == 1, w1, w0)
+  
+  # build a tree
+  print("growing forest")
+  tree <- partykit::cforest(snag~.-weight, 
+                            data = train,
+                            weights = weight,
+                            strata = snag,
+                            ntree = 500, trace = T,
+                            perturb = list(replace = F,
+                                           fraction = 0.632)) # weights?
+  print("making predictions")
+  pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights?
+  print("constructing confusion matrix")
+  cm <- table(true = test$snag, pred = predict(tree, newdata = test)) #confusion matrix
+  print("calculating error rate")
+  e <- (cm[1,2] + cm[2,1])/sum(cm) # calculate the error rate
+  ers[i] <- e # assign to the i'th element of ers vector
+  
+  # calculate variable importances
+  print("calculating variable importances")
+  vi.part <- varimp(tree)
+  importances_poolUPPER[,i] <- vi.part
+  print(paste("Run", i, "complete"))
+}
+cv_error_poolUPPER_landclass7 <- mean(ers) # cross-validated mean error rate
+
+imps_poolUPPER <- rowSums(importances_poolUPPER)/5 # calculate average variable importances
+varimps_poolUPPER <- cbind(predictorvars_pools, imps_poolUPPER) %>% as.data.frame %>% mutate(imps_poolUPPER = as.numeric(as.character(imps_poolUPPER))) %>% mutate(predictorvars_pools = reorder(predictorvars_pools, -imps_poolUPPER)) # get the data into the right format for ggplot
+colnames(varimps_poolUPPER) <- c("predictorvars", "imps")
+save(varimps_poolUPPER, file = "data/varimps_poolUPPER.Rda") #save the variable importances
+
+pUPPER <- plotnice(varimps_poolUPPER, color = "gray40", title = "Point RF var. importance (5fold), pool UPPER")
+pUPPER
+# save as rf_avg_varimp_point_poolUPPER_5foldcv.png
+ggsave(plot = pUPPER, 
+       "rf_avg_varimp_point_poolUPPER_5foldcv_landclass7.png",
+       width = 7, height = 4.5)
+save(cv_error_poolUPPER_landclass7, file = "data/cv_error_poolUPPER_landclass7.Rda")
+
+#=============================
+# LOWER RIVER SECTIONS: Pool 26, LG, and OR
+points_LOWER <- splitup(combined[combined$pool %in% c("26", "LG", "OR"),], 5) # split data into 5 groups
+
+# initialize an empty data frame to contain variable importance values
+importances_poolLOWER <- data.frame(
+  predictorvars_LG # using the predictors for LG, which excludes wingdyke
+)
+
+# intialize an empty vector to contain error rates
+ers <- rep(NA, 5)
+
+for(i in 1:5){
+  print(paste("BEGINNING RUN", i))
+  train <- points_LOWER %>% dplyr::filter(grp != i) %>% dplyr::select(-c(grp, pool, wingdyke)) # train on 4/5 of the data, remove `grp` because it's not a predictor variable.
+  test <- points_LOWER %>% dplyr::filter(grp == i) %>% dplyr::select(-c(grp, pool, wingdyke)) # test on the remaining 1/5 of the data. Remove `grp`.
+  print("calculating weights")
+  w1 <- length(train$snag[train$snag == 0])/length(train$snag)
+  w0 <- length(train$snag[train$snag == 1])/length(train$snag)
+  train$weight <- ifelse(train$snag == 1, w1, w0)
+  
+  # build a tree
+  print("growing forest")
+  tree <- partykit::cforest(snag~.-weight, 
+                            data = train,
+                            weights = weight,
+                            strata = snag,
+                            ntree = 500, trace = T,
+                            perturb = list(replace = F,
+                                           fraction = 0.632)) # weights?
+  print("making predictions")
+  pred_resp <- predict.cforest(tree, newdata = test, type = "response") # response predictions. weights?
+  print("constructing confusion matrix")
+  cm <- table(true = test$snag, pred = predict(tree, newdata = test)) #confusion matrix
+  print("calculating error rate")
+  e <- (cm[1,2] + cm[2,1])/sum(cm) # calculate the error rate
+  ers[i] <- e # assign to the i'th element of ers vector
+  
+  # calculate variable importances
+  print("calculating variable importances")
+  vi.part <- varimp(tree)
+  importances_poolLOWER[,i] <- vi.part
+  print(paste("Run", i, "complete"))
+}
+cv_error_poolLOWER_landclass7 <- mean(ers) # cross-validated mean error rate
+
+imps_poolLOWER <- rowSums(importances_poolLOWER)/5 # calculate average variable importances
+varimps_poolLOWER <- cbind(predictorvars_LG, imps_poolLOWER) %>% as.data.frame %>% mutate(imps_poolLOWER = as.numeric(as.character(imps_poolLOWER))) %>% mutate(predictorvars_LG = reorder(predictorvars_LG, -imps_poolLOWER)) # get the data into the right format for ggplot
+colnames(varimps_poolLOWER) <- c("predictorvars", "imps")
+save(varimps_poolLOWER, file = "data/varimps_poolLOWER.Rda") #save the variable importances
+
+pLOWER <- plotnice(varimps_poolLOWER, color = "gray40", title = "Point RF var. importance (5fold), pool LOWER")
+pLOWER
+# save as rf_avg_varimp_point_poolLOWER_5foldcv.png
+ggsave(plot = pLOWER, 
+       "rf_avg_varimp_point_poolLOWER_5foldcv_landclass7.png",
+       width = 7, height = 4.5)
+save(cv_error_poolLOWER_landclass7, file = "data/cv_error_poolLOWER_landclass7.Rda")
 #==================
 # Load variable importances
 load("data/varimps_all.Rda")
@@ -293,17 +595,27 @@ load("data/varimps_pool8.Rda")
 varimps_pool8$pool <- "8"
 load("data/varimps_pool13.Rda")
 varimps_pool13$pool <- "13"
+load("data/varimps_pool26.Rda")
+varimps_pool26$pool <- "26"
+load("data/varimps_poolLG.Rda")
+varimps_poolLG$pool <- "LG"
+load("data/varimps_poolOR.Rda")
+varimps_poolOR$pool <- "OR"
+load("data/varimps_poolUPPER.Rda")
+varimps_poolUPPER$pool <- "UPPER"
+load("data/varimps_poolLOWER.Rda")
+varimps_poolLOWER$pool <- "LOWER"
 
 # Bind together and reorder the factors
-vi <- rbind(varimps_pool4, varimps_pool8, varimps_pool13)
-vi$predictorvars <- factor(vi$predictorvars, levels(vi$predictorvars)[c(1, 5, 8, 2, 10, 3, 7, 12, 9, 13, 4, 11, 6)])
+vi <- rbind(varimps_pool4, varimps_pool8, varimps_pool13, varimps_pool26, varimps_poolLG, varimps_poolOR, varimps_poolUPPER, varimps_poolLOWER)
+vi$predictorvars <- factor(vi$predictorvars, levels(vi$predictorvars)[c(1, 9, 11, 4, 10, 12, 5, 2, 8, 13, 3, 7, 6)])
 vi$pool <- as.factor(vi$pool)
-vi$pool <- factor(vi$pool, levels(vi$pool)[c(2,3,1)])
+vi$pool <- factor(vi$pool, levels(vi$pool)[c(3, 4, 1, 2, 5, 7, 8, 6)])
 
 # Make plot
 d <- ggplot(data = vi, aes(x = predictorvars, y = imps, fill = pool))+
   geom_bar(stat = "identity", position = "dodge")+
-  scale_fill_manual(name = "Pool", values = c("darkturquoise", "firebrick2", "royalblue4"))+
+  scale_fill_manual(name = "Pool", values = c("darkturquoise", "firebrick2", "royalblue4", "goldenrod2", "mediumorchid3", "black", "gray40", "gray70"))+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
         axis.title.x=element_blank())+
@@ -318,7 +630,7 @@ ggsave(plot = d,
        "varimps_landclass7.png",
        width = 7.75, height = 5.5)
 
-# plot importances for all together
+# plot importances for combined together
 k <- ggplot(data = varimps_all, aes(x = predictorvars, y = imps))+
   geom_bar(stat = "identity")+
   theme_bw()+
@@ -326,7 +638,7 @@ k <- ggplot(data = varimps_all, aes(x = predictorvars, y = imps))+
         axis.title.x=element_blank())+
   ylab("Permutation Importance (MDA)")+
   xlab("Variable")+
-  ggtitle("Random forest variable importances, all pools")+
+  ggtitle("Random forest variable importances, combined pools")+
   theme(text = element_text(size=20))
 
 # Save plot
