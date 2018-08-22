@@ -51,7 +51,7 @@ head(b.p)
       chisq.test(b.p[,3:4]) # yes, these are significantly different
     
       # Pairwise comparisons
-      pairwise.prop.test(x = b.p$wood, n = b.p$npoints, p.adjust.method = "bonferroni")
+      ppt <- pairwise.prop.test(x = b.p$wood, n = b.p$npoints, p.adjust.method = "bonferroni")
 
 # Summarize by stratum
 b.s <- arc %>% group_by(stratum) %>% 
@@ -70,7 +70,7 @@ head(b.s)
       chisq.test(b.s[,2:3])
       
       # Pairwise comparisons
-      pairwise.prop.test(x = b.s$wood, n = b.s$npoints, p.adjust.method = "bonferroni")
+      ppt1 <- pairwise.prop.test(x = b.s$wood, n = b.s$npoints, p.adjust.method = "bonferroni")
       
       # Plot of proportions and confidence intervals by stratum
       ggplot(data = b.s, aes(x = stratum, y = propwood))+
