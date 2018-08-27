@@ -57,20 +57,16 @@ inters <- intersect(FishCodes[,1], fishinfo[,"Fishcode"])
 fishinfo <- filter(fishinfo, Fishcode %in% inters)
 identical(as.character(fishinfo[,1]), inters)
 
-# the fish info data says the LTRM proj has not collected these
-nos <- fishinfo[fishinfo$LTRMP == "N","Fishcode"]
-# they have, so we will keep them
-fishdat[fishdat$fishcode %in% nos,"fishcode"]
-
 # remove the rows of fishcodes that are not in the fish info data
 ltrmfishdat <- filter(fishdat, fishcode %in% inters) 
-# make snag a factor
+
+# make snag01 a binary vector
 ltrmfishdat$snag01 <- ltrmfishdat$snag
+# make snag a factor vector
 ltrmfishdat$snag <- factor(ltrmfishdat$snag, levels = c(0,1),
                            labels = c("No", "Yes"))
 
-
-# make sdate a date vector
+# make sdate a date vector using the 'lubridate' package
 ltrmfishdat$sdate <- mdy(ltrmfishdat$sdate)
 
 # make a column for the stratum name

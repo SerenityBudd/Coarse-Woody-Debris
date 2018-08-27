@@ -13,6 +13,7 @@ funcdiv <- filter(funcdiv, catch >=1)
 
 # repeat all the rows "catch" number of times
 funcdiv2 <- funcdiv[rep(rownames(funcdiv), funcdiv$catch), ]
+# remove the column "catch"
 funcdiv2 <- select(funcdiv2, -c(catch))
 
 # rename Fishcode so the 2 datasets are easier to merge
@@ -21,25 +22,37 @@ head(funcdiv2)
 
 # select the colums that we will use for our regression 
 fishinfo2 <- select(fishinfo, c(Fishcode, Common.Name, Family.Name, Scientific.Name.Current, Swim.Factor:Turbidity.Tolerance, Trophic.Guild, R.Guild1:F.Guild3,Mean.Fecundity, Mean.Ovum.Diameter, Spawning.Duration,Spawning.Bouts,Age.at.Maturity:Maximum.Age, Native))
+
+# make Trophic.Guild a factor with clarified names
 fishinfo2$Trophic.Guild <- factor(fishinfo2$Trophic.Guild,
                     levels = c(1,2,3,4,5,6),
                     labels = c("Herbivore", "Omnivore", "General Invertivore", 
                                "Benthic Invertivore", "Piscivore", "Planktivore"))
+
+# make Current.Preference a factor with clarified names
 fishinfo2$Current.Preference <- factor(fishinfo2$Current.Preference,
                                        levels = c(1,2,3,4),
                                        labels = c("Fast", "Moderate", "Slow-none", 
                                                   "General"))
+
+# make Substrate.Preference a factor with clarified names
 fishinfo2$Substrate.Preference <- factor(fishinfo2$Substrate.Preference,
                                        levels = c(1,2,3,4,5,6,7,8),
                                        labels = c("Cobble", "Gravel", "Sand", 
                                                   "Silt", "General",	"Vegetation", "Structure", "Pelagic"))
+
+# make Spawning.Substrate a factor with clarified names
 fishinfo2$Spawning.Substrate <- factor(fishinfo2$Spawning.Substrate,
                                          levels = c(1,2,3,4,5,6,7,8),
                                          labels = c("Cobble", "Gravel", "Sand", 
                                                     "Silt", "General",	"Vegetation", "Structure", "Pelagic"))
+
+# make Turbidity.Tolerance a factor with clarified names
 fishinfo2$Turbidity.Tolerance <- factor(fishinfo2$Turbidity.Tolerance,
                                        levels = c(1,2,3),
                                        labels = c("High", "Medium", "Low"))
+
+# make Silt.Tolerance a factor with clarified names
 fishinfo2$Silt.Tolerance <- factor(fishinfo2$Silt.Tolerance,
                                         levels = c(1,2,3),
                                         labels = c("High", "Medium", "Low"))
