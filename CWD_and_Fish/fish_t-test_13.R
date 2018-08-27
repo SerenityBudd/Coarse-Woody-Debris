@@ -8,31 +8,36 @@ load("data/funcdiv13.Rda")
 ## create a dataframe specifying the number of fish per species per barcode
 ##     barcode Fishcode Num_Fish_per_Species
 ##    -1201327   RVRH           6
-xxx <- funcdiv13 %>% group_by(barcode) %>% count(Fishcode)
-colnames(xxx)[3] <- "Num_Fish_per_Species"
+xxx13 <- funcdiv13 %>% group_by(barcode) %>% count(Fishcode)
+colnames(xxx13)[3] <- "Num_Fish_per_Species"
 
 
 ## create a dataframe specifying the number of unique species per barcode
 ##     barcode  Num_Species
 ##    -1201327       9
-yyy <- xxx %>% group_by(barcode) %>% count(barcode)
-colnames(yyy)[2] <- "Num_Species"
+yyy13 <- xxx13 %>% group_by(barcode) %>% count(barcode)
+colnames(yyy13)[2] <- "Num_Species"
 
 
 ## create a dataframe specifying the total number of fish per barcode
 ##     barcode  Num_Fish
 ##    -1201327     22
-zzz <- xxx %>% group_by(barcode) %>% count(barcode, wt = Num_Fish_per_Species)
-colnames(zzz)[2] <- "Num_Fish"
+zzz13 <- xxx13 %>% group_by(barcode) %>% count(barcode, wt = Num_Fish_per_Species)
+colnames(zzz13)[2] <- "Num_Fish"
 
 
 #######################################################
-## T TESTS
+## RICHNESS
 
-## create a richness dataframe to do a t test on, combinging snag and yyy
-dt.richness.t <- left_join(yyy, select(funcdiv13, c(barcode, snag)), by = "barcode") %>% distinct
+##########################
+## t-test
 
-group_by(dt.richness.t, snag) %>%
+## create a richness dataframe to do a t test on, combinging snag and yyy13
+dt.richness.t <- left_join(yyy13, select(funcdiv13, c(barcode, snag)), by = "barcode") %>% distinct
+
+## summary statistics 
+rich13stats <- 
+  group_by(dt.richness.t, snag) %>%
   summarise(
     count = n(),
     mean = mean(Num_Species, na.rm = TRUE),
@@ -40,17 +45,25 @@ group_by(dt.richness.t, snag) %>%
   )
 
 ## there is a signigficant diff in richness between sites with and without CWD
-with(dt.richness.t, t.test(Num_Species~snag, alternative = "less")) 
+t.rich13 <- with(dt.richness.t, t.test(Num_Species~snag, alternative = "less")) 
 
-
+##########################
+## plotting the data 
 with(dt.richness.t, boxplot(Num_Species~snag))
 
 
+#######################################################
+## ABUNDANCE
 
-## create an abundance dataframe to do a t test on, combining snag and zzz
-dt.abund.t <- left_join(zzz, select(funcdiv13, c(barcode, snag)), by = "barcode") %>% distinct
+##########################
+## t-test
 
-group_by(dt.abund.t, snag) %>%
+## create an abundance dataframe to do a t test on, combining snag and zzz13
+dt.abund.t <- left_join(zzz13, select(funcdiv13, c(barcode, snag)), by = "barcode") %>% distinct
+
+## summary statistics 
+abund13stats <- 
+  group_by(dt.abund.t, snag) %>%
   summarise(
     count = n(),
     mean = mean(Num_Fish, na.rm = TRUE),
@@ -58,8 +71,9 @@ group_by(dt.abund.t, snag) %>%
   )
 
 ## there is a signigficant diff in abundance between sites with and without CWD
-with(dt.abund.t, t.test(Num_Fish~snag, alternative = "less"))
+t.abund13 <- with(dt.abund.t, t.test(Num_Fish~snag, alternative = "less"))
 
-
+##########################
+## plotting the data 
 with(dt.abund.t, boxplot(Num_Fish~snag, ylim = c(0,400)))
 

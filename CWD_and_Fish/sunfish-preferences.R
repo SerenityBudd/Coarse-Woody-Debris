@@ -43,13 +43,19 @@ datty4 <-
 
 ## table of abundances by species (as rows)
 tabbs <- spread(data = datty4, key = ss, value = Nn)
-xtable(tabbs)
 
 ## total number of fish at each habitat (stratum + snag)
 colSums(tabbs[,-1])
 
 ## number of sampling sites per habitat stratum & snag
-rowSums(with(datty3, table(ss, barcode)))
+rowSums(with(filter(datty3, Common.Name == "Black crappie"), table(ss, barcode)))
+
+tabbs1 <- rbind(tabbs[,-1],
+                colSums(tabbs[,-1]),
+                rowSums(with(filter(datty3, Common.Name == "Black crappie"), table(ss, barcode))))
+rownames(tabbs1) <- c(tabbs$Common.Name, "Total Fish", "Total Sites")
+#write.csv(tabbs1, "data/abundances.csv")
+#xtable(tabbs1)
 
 dim(datty3)
 # 38576
@@ -63,15 +69,15 @@ BKCPdat <- datty3 %>%
 #############################################
 ## poisson regression 
 
-BKCP.m1 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = BKCPdat)
-summary(BKCP.m1)
-anova(BKCP.m1, test = "Chisq")
-BKCP.m1coeff <- exp(BKCP.m1$coefficients)
+#BKCP.m1 <- glm(formula = N ~ stratum_name * snag, family = quasipoisson(link=log), data = BKCPdat)
+#summary(BKCP.m1)
+#anova(BKCP.m1, test = "Chisq")
+#BKCP.m1coeff <- exp(BKCP.m1$coefficients)
 
 #############################################
 ## without interaction 
 
-BKCP.m2 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = BKCPdat)
+BKCP.m2 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = BKCPdat)
 summary(BKCP.m2)
 anova(BKCP.m2, test = "Chisq")
 BKCP.m2coeff <- exp(BKCP.m2$coefficients)
@@ -85,7 +91,7 @@ BLGLdat <- datty3 %>%
 #############################################
 ## poisson regression 
 
-BLGL.m1 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = BLGLdat)
+BLGL.m1 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = BLGLdat)
 summary(BLGL.m1)
 anova(BLGL.m1, test = "Chisq")
 BLGL.m1coeff <- exp(BLGL.m1$coefficients)
@@ -93,10 +99,10 @@ BLGL.m1coeff <- exp(BLGL.m1$coefficients)
 #############################################
 ## without interaction 
 
-BLGL.m2 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = BLGLdat)
-summary(BLGL.m2)
-anova(BLGL.m2, test = "Chisq")
-BLGL.m2coeff <- exp(BLGL.m2$coefficients)
+#BLGL.m2 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = BLGLdat)
+#summary(BLGL.m2)
+#anova(BLGL.m2, test = "Chisq")
+#BLGL.m2coeff <- exp(BLGL.m2$coefficients)
 
 
 ##############################################################################
@@ -107,7 +113,7 @@ GNSFdat <- datty3 %>%
 #############################################
 ## poisson regression 
 
-GNSF.m1 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = GNSFdat)
+GNSF.m1 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = GNSFdat)
 summary(GNSF.m1)
 anova(GNSF.m1, test = "Chisq")
 GNSF.m1coeff <- exp(GNSF.m1$coefficients)
@@ -115,10 +121,10 @@ GNSF.m1coeff <- exp(GNSF.m1$coefficients)
 #############################################
 ## without interaction 
 
-GNSF.m2 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = GNSFdat)
-summary(GNSF.m2)
-anova(GNSF.m2, test = "Chisq")
-GNSF.m2coeff <- exp(GNSF.m2$coefficients)
+#GNSF.m2 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = GNSFdat)
+#summary(GNSF.m2)
+#anova(GNSF.m2, test = "Chisq")
+#GNSF.m2coeff <- exp(GNSF.m2$coefficients)
 
 
 ##############################################################################
@@ -129,15 +135,15 @@ LMBSdat <- datty3 %>%
 #############################################
 ## poisson regression 
 
-LMBS.m1 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = LMBSdat)
-summary(LMBS.m1)
-anova(LMBS.m1, test = "Chisq")
-LMBS.m1coeff <- exp(LMBS.m1$coefficients)
+#LMBS.m1 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = LMBSdat)
+#summary(LMBS.m1)
+#anova(LMBS.m1, test = "Chisq")
+#LMBS.m1coeff <- exp(LMBS.m1$coefficients)
 
 #############################################
 ## without interaction 
 
-LMBS.m2 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = LMBSdat)
+LMBS.m2 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = LMBSdat)
 summary(LMBS.m2)
 anova(LMBS.m2, test = "Chisq")
 LMBS.m2coeff <- exp(LMBS.m2$coefficients)
@@ -151,15 +157,15 @@ OSSFdat <- datty3 %>%
 #############################################
 ## poisson regression 
 
-OSSF.m1 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = OSSFdat)
-summary(OSSF.m1)
-anova(OSSF.m1, test = "Chisq")
-OSSF.m1coeff <- exp(OSSF.m1$coefficients)
+#OSSF.m1 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = OSSFdat)
+#summary(OSSF.m1)
+#anova(OSSF.m1, test = "Chisq")
+#OSSF.m1coeff <- exp(OSSF.m1$coefficients)
 
 #############################################
 ## without interaction 
 
-OSSF.m2 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = OSSFdat)
+OSSF.m2 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = OSSFdat)
 summary(OSSF.m2)
 anova(OSSF.m2, test = "Chisq")
 OSSF.m2coeff <- exp(OSSF.m2$coefficients)
@@ -173,15 +179,15 @@ RKBSdat <- datty3 %>%
 #############################################
 ## poisson regression 
 
-RKBS.m1 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = RKBSdat)
-summary(RKBS.m1)
-anova(RKBS.m1, test = "Chisq")
-RKBS.m1coeff <- exp(RKBS.m1$coefficients)
+#RKBS.m1 <- glm(formula = N ~ stratum_name*snag, family = #quasipoisson(link=log), data = RKBSdat)
+#summary(RKBS.m1)
+#anova(RKBS.m1, test = "Chisq")
+#RKBS.m1coeff <- exp(RKBS.m1$coefficients)
 
 #############################################
 ## without interaction 
 
-RKBS.m2 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = RKBSdat)
+RKBS.m2 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = RKBSdat)
 summary(RKBS.m2)
 anova(RKBS.m2, test = "Chisq")
 RKBS.m2coeff <- exp(RKBS.m2$coefficients)
@@ -195,7 +201,7 @@ SMBSdat <- datty3 %>%
 #############################################
 ## poisson regression 
 
-SMBS.m1 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = SMBSdat)
+SMBS.m1 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = SMBSdat)
 summary(SMBS.m1)
 anova(SMBS.m1, test = "Chisq")
 SMBS.m1coeff <- exp(SMBS.m1$coefficients)
@@ -203,10 +209,10 @@ SMBS.m1coeff <- exp(SMBS.m1$coefficients)
 #############################################
 ## without interaction 
 
-SMBS.m2 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = SMBSdat)
-summary(SMBS.m2)
-anova(SMBS.m2, test = "Chisq")
-SMBS.m2coeff <- exp(SMBS.m2$coefficients)
+#SMBS.m2 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = SMBSdat)
+#summary(SMBS.m2)
+#anova(SMBS.m2, test = "Chisq")
+#SMBS.m2coeff <- exp(SMBS.m2$coefficients)
 
 
 ##############################################################################
@@ -217,15 +223,15 @@ WTCPdat <- datty3 %>%
 #############################################
 ## poisson regression 
 
-WTCP.m1 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = WTCPdat)
-summary(WTCP.m1)
-anova(WTCP.m1, test = "Chisq")
-WTCP.m1coeff <- exp(WTCP.m1$coefficients)
+#WTCP.m1 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = WTCPdat)
+#summary(WTCP.m1)
+#anova(WTCP.m1, test = "Chisq")
+#WTCP.m1coeff <- exp(WTCP.m1$coefficients)
 
 #############################################
 ## without interaction 
 
-WTCP.m2 <- glm(formula = N ~ stratum_name*snag, family = quasipoisson(link=log), data = WTCPdat)
+WTCP.m2 <- glm(formula = N ~ stratum_name + snag, family = quasipoisson(link=log), data = WTCPdat)
 summary(WTCP.m2)
 anova(WTCP.m2, test = "Chisq")
 WTCP.m2coeff <- exp(WTCP.m2$coefficients)

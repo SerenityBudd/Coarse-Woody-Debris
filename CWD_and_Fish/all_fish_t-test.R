@@ -61,16 +61,6 @@ ggboxplot(dt.richness.all, x = "snag", y = "Num_Species",
           color = "snag", palette = c("#00AFBB", "#E7B800"),
           ylab = "Species Richness", xlab = "Presence of Large Wood")
 
-## density plots for species richness ~ snag 
-ggplot(data = dt.richness.all, aes(Num_Species)) + 
-  geom_density(aes(fill = snag), alpha = .3) +
-  theme_bw() +
-  theme(text = element_text(size = 20)) +
-  scale_fill_manual(values = c("blue", "red"), name = "Snag") + 
-  xlab("Species Richness") +
-  ylab("Density") +
-  ggtitle(paste("Density Plot of Species Richness at all Pools"))
-
 
 #######################################################
 ## ABUNDANCE
@@ -105,16 +95,6 @@ t.abund <- with(dt.abund.all, t.test(Num_Fish~snag, alternative = "less"))
 ggboxplot(dt.abund.all, x = "snag", y = "Num_Fish", 
           color = "snag", palette = c("#00AFBB", "#E7B800"),
           ylab = "Species Abundance", xlab = "Presence of Large Wood")
-
-## density plots for species abundance ~ snag
-ggplot(data = dt.abund.all, aes(Num_Fish)) + 
-  geom_density(aes(fill = snag), alpha = .3) +
-  theme_bw() +
-  theme(text = element_text(size = 20)) +
-  scale_fill_manual(values = c("blue", "red"), name = "Snag") + 
-  xlab("Species Abundance") +
-  ylab("Density") +
-  ggtitle(paste("Density Plot of Species Abundance at all Pools"))
 
 
 #######################################################

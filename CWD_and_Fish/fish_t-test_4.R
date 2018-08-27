@@ -35,6 +35,7 @@ colnames(zzz4)[2] <- "Num_Fish"
 ## create a richness dataframe to do a t test on, combinging snag and yyy4
 dt.richness.t <- left_join(yyy4, select(funcdiv4, c(barcode, snag)), by = "barcode") %>% distinct
 
+## summary statistics 
 rich4stats <- 
   group_by(dt.richness.t, snag) %>%
   summarise(
@@ -61,6 +62,7 @@ with(dt.richness.t, boxplot(Num_Species~snag))
 ## create an abundance dataframe to do a t test on, combining snag and zzz4
 dt.abund.t <- left_join(zzz4, select(funcdiv4, c(barcode, snag)), by = "barcode") %>% distinct
 
+## summary statistics 
 abund4stats <- 
   group_by(dt.abund.t, snag) %>%
   summarise(
