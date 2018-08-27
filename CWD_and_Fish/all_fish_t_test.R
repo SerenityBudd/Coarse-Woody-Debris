@@ -39,7 +39,8 @@ dt.richness.all <- left_join(yyy.all, select(funcdiv4.8.13, c(barcode, snag)), b
 
 
 ## summary statistics 
-group_by(dt.richness.all, snag) %>%
+richstats <- 
+  group_by(dt.richness.all, snag) %>%
   summarise(
     count = n(),
     mean = mean(Num_Species, na.rm = TRUE),
@@ -49,9 +50,9 @@ group_by(dt.richness.all, snag) %>%
 
 ## the sample size is large enough (n > 30), we ignore the distribution of the data and use the t-test
 
-with(dt.richness.all, t.test(Num_Species~snag, alternative = "less")) 
+t.rich <- with(dt.richness.all, t.test(Num_Species~snag, alternative = "less")) 
 ## there is a signigficant diff in richness between sites with and without CWD
-with(dt.richness.all, wilcox.test(Num_Species~snag, alternative = "less")) 
+#with(dt.richness.all, wilcox.test(Num_Species~snag, alternative = "less")) 
 ##########################
 ## plotting the data 
 
@@ -82,7 +83,8 @@ dt.abund.all <- left_join(zzz.all, select(funcdiv4.8.13, c(barcode, snag)), by =
 
 
 ## summary statistics 
-group_by(dt.abund.all, snag) %>%
+abundstats <- 
+  group_by(dt.abund.all, snag) %>%
   summarise(
     count = n(),
     mean = mean(Num_Fish, na.rm = TRUE),
@@ -91,9 +93,9 @@ group_by(dt.abund.all, snag) %>%
 
 ## the sample size is large enough (n > 30), we ignore the distribution of the data and use the t-test
 
-with(dt.abund.all, t.test(Num_Fish~snag, alternative = "less"))
+t.abund <- with(dt.abund.all, t.test(Num_Fish~snag, alternative = "less"))
 ## there is a signigficant diff in abundance between sites with and without CWD
-with(dt.abund.all, wilcox.test(Num_Fish~snag, alternative = "less"))
+#with(dt.abund.all, wilcox.test(Num_Fish~snag, alternative = "less"))
 
 
 ##########################
