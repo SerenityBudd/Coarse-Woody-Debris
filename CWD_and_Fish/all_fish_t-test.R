@@ -59,7 +59,7 @@ t.rich <- with(dt.richness.all, t.test(Num_Species~snag, alternative = "less"))
 ## boxplot for species richness ~ snag
 ggboxplot(dt.richness.all, x = "snag", y = "Num_Species", 
           color = "snag", palette = c("#00AFBB", "#E7B800"),
-          ylab = "Species Richness", xlab = "Presence of Large Wood")
+          ylab = "Species Richness", xlab = "Presence of instream wood")
 
 
 #######################################################
@@ -94,7 +94,7 @@ t.abund <- with(dt.abund.all, t.test(Num_Fish~snag, alternative = "less"))
 ## boxplots for species abundance ~ snag
 ggboxplot(dt.abund.all, x = "snag", y = "Num_Fish", 
           color = "snag", palette = c("#00AFBB", "#E7B800"),
-          ylab = "Species Abundance", xlab = "Presence of Large Wood")
+          ylab = "Species Abundance", xlab = "Presence of instream wood")
 
 
 #######################################################

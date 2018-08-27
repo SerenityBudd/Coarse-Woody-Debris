@@ -49,4 +49,4 @@ ggplot(data = dt.plot13, aes(div_shan)) +
   scale_fill_manual(values = c("blue", "red"), name = "Snag") + 
   xlab("Shannon–Wiener Diversity Index") +
   ylab("Density") +
-  ggtitle(paste("Density Plot of Shannon-Wiener Index at Pool 13 Sites"))
+  ggtitle(paste("Density plot of Shannon-Wiener index at pool 13 sites"))
