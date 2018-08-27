@@ -2,7 +2,7 @@ source("libraries.R")
 load("data/funcdiv4.8.13.Rda")
 
 ################################################
-## Shannon Weaver Diversity
+## Shannon Wiener Diversity
 
 ## filter the dataframe by pool
 funcy4 <- funcdiv4.8.13 %>% 
@@ -13,15 +13,13 @@ xxx4 <- funcy4 %>%
 colnames(xxx4)[3] <- "Num_Fish_per_Species"
 
 ## spread the dataframe so each col is a fishcode
-aaa4 <- spread(data = xxx4, value = Num_Fish_per_Species, Fishcode) 
+aaa4 <- spread(data = xxx4, value = Num_Fish_per_Species, Fishcode) %>%
+  as.data.frame()
 ## replace the NAs with zero
 aaa4[is.na(aaa4)] <- 0
-## make the tibble a dataframe
-aaa4 <- data.frame(aaa4)
 
 ## make a dataframe that includes barcode/snag
 dt.plot4 <- left_join(aaa4, select(funcy4, c(barcode, snag)), by = "barcode") %>% distinct 
-dt.plot4 <- dt.plot4[complete.cases(dt.plot4),]
 
 ## make a dataframe to do analysis on, leaves out barcodes and snag out
 bbb4 <- select(dt.plot4, -c(barcode, snag))
@@ -32,6 +30,7 @@ div_shannon4 <- diversity(x = bbb4, index = "shannon", base = 2)
 ## create a column in the dataframe for the shannon div index
 dt.plot4$div_shan <- div_shannon4
 
+## summary statistics
 div4stats <- group_by(dt.plot4, snag) %>%
     summarise(
       count = n(),
@@ -48,7 +47,6 @@ ggplot(data = dt.plot4, aes(div_shan)) +
   theme_bw() +
   theme(text = element_text(size = 20)) +
   scale_fill_manual(values = c("blue", "red"), name = "Snag") + 
-  geom_vline(xintercept = c(1.5, 3.5), colour = "black") + 
-  xlab("Shannon–Weaver Diversity Index") +
+  xlab("Shannon–Wiener Diversity Index") +
   ylab("Density") +
-  ggtitle(paste("Density Plot of Shannon-Weaver Index at Pool 04 Sites"))
+  ggtitle(paste("Density Plot of Shannon-Wiener Index at Pool 04 Sites"))
